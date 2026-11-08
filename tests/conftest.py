@@ -47,6 +47,7 @@ def settings(tmp_path: Path, inbox: Path) -> Settings:
 @pytest.fixture(autouse=True)
 def services(settings: Settings) -> Services:
     built = build_services(settings)
+    built.ai._ollama_probe = lambda: None  # tests indépendants d'un éventuel Ollama local
     set_services(built)
     yield built
     set_services(None)

@@ -9,7 +9,7 @@ from mcp.types import ToolAnnotations
 from pydantic import BaseModel, Field
 
 from academic_writer.providers.base import GenerationResult
-from academic_writer.providers.manager import DATA_NOTICE, AIStatus, ConsentInfo
+from academic_writer.providers.manager import DATA_NOTICE, AIStatus, ConsentInfo, EngineChoice
 from academic_writer.server.services import get_services, user_errors
 
 
@@ -53,8 +53,21 @@ def register(mcp: MCPServer) -> None:
 
     @mcp.tool(title="Tester un fournisseur d'IA",
               annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=False))
-    def test_ai_provider(provider: Literal["anthropic", "openai"] | None = None) -> GenerationResult:
-        """Vérifie la clé et la connexion par un très court appel (« Réponds OK »), sans aucune donnée de projet.
-        Consomme quelques tokens. Nécessite le mode connecté."""
+    def test_ai_provider(provider: Literal["anthropic", "openai", "ollama"] | None = None) -> GenerationResult:
+        """Vérifie un moteur par un très court appel (« Réponds OK »), sans aucune donnée de projet.
+        anthropic/openai : consomme quelques tokens et nécessite le mode connecté ; ollama : local et gratuit."""
         with user_errors():
             return get_services().ai.test_provider(provider)
+
+    @mcp.tool(title="Moteur de rédaction",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False, idempotent_hint=True))
+    def get_writing_engine(
+        project_id: Annotated[str | None, Field(description="Projet (le consentement dépend du projet).")] = None,
+        engine: Annotated[Literal["auto", "assistant", "ollama", "anthropic", "openai"] | None, Field(
+            description="Moteur souhaité ; vide = réglage de la configuration (auto par défaut).")] = None,
+    ) -> EngineChoice:
+        """Indique quel moteur rédigera (fournisseur cloud autorisé, modèle local Ollama ou assistant MCP),
+        pourquoi, et l'état de chaque moteur. En mode « assistant », c'est l'assistant qui rédige à partir
+        du dossier préparé par le serveur."""
+        with user_errors():
+            return get_services().ai.resolve_engine(project_id, engine)

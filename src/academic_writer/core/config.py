@@ -93,7 +93,21 @@ class Settings(BaseSettings):
         default=25, ge=0, description="En dessous, une page PDF est considérée comme scannée."
     )
 
-    # --- fournisseurs IA (actifs uniquement en mode 'connected' + consentement par projet) ---
+    # --- moteur de rédaction ---
+    writing_engine: Literal["auto", "assistant", "ollama", "anthropic", "openai"] = Field(
+        default="auto",
+        description="auto : meilleur moteur disponible (fournisseur cloud autorisé > modèle local > assistant). "
+        "assistant : l'assistant MCP rédige, le serveur encadre. ollama : modèle local. anthropic/openai : cloud.",
+    )
+
+    # --- modèle local (Ollama) : aucun envoi externe ---
+    ollama_url: str = Field(default="http://localhost:11434", description="Serveur Ollama LOCAL uniquement.")
+    ollama_model: str = "qwen3.5:4b"
+    ollama_num_ctx: int = Field(default=8192, ge=2048, le=262144, description="Contexte (limité par la mémoire vidéo).")
+    ollama_think: bool | Literal["low", "medium", "high"] = False
+    ollama_timeout_seconds: int = Field(default=600, ge=30, le=3600)
+
+    # --- fournisseurs IA cloud (actifs uniquement en mode 'connected' + consentement par projet) ---
     ai_default_provider: Literal["anthropic", "openai"] = "anthropic"
     anthropic_model: str = "claude-opus-5-5"
     anthropic_effort: Literal["low", "medium", "high", "xhigh", "max"] = "high"
@@ -117,14 +131,14 @@ class Settings(BaseSettings):
     languagetool_dir: Path | None = Field(default=None, description="Défaut : <data_dir>/languagetool.")
     java_cmd: Path | None = Field(default=None, description="Chemin de java.exe (détection auto si vide).")
 
-    @field_validator("languagetool_url")
+    @field_validator("languagetool_url", "ollama_url")
     @classmethod
-    def _local_languagetool_only(cls, value: str) -> str:
+    def _local_services_only(cls, value: str) -> str:
         from urllib.parse import urlparse
 
         host = urlparse(value).hostname or ""
         if host not in ("localhost", "127.0.0.1", "::1"):
-            raise ValueError("languagetool_url doit désigner un serveur local (l'API publique interdit l'usage automatisé).")
+            raise ValueError("Ce service doit être local (localhost) : aucun texte ne doit partir vers un serveur tiers.")
         return value.rstrip("/")
 
     @field_validator("allowed_extensions")

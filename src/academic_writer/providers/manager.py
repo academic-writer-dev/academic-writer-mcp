@@ -45,11 +45,31 @@ def _normalize(text: str) -> str:
     return " ".join(text.split())
 
 
+LOCAL_PROVIDERS = frozenset({"ollama"})
+CLOUD_PROVIDERS = ("anthropic", "openai")
+
+
 class ProviderStatus(BaseModel):
     provider: str
     model: str
     key_configured: bool
     key_source: str | None
+
+
+class EngineAvailability(BaseModel):
+    engine: str
+    available: bool
+    local: bool = Field(description="Vrai si aucune donnée ne quitte l'ordinateur.")
+    model: str | None = None
+    reason: str
+
+
+class EngineChoice(BaseModel):
+    engine: str = Field(description="assistant, ollama, anthropic ou openai")
+    model: str | None = None
+    local: bool
+    reason: str
+    engines: list[EngineAvailability]
 
 
 class ConsentInfo(BaseModel):
@@ -67,20 +87,32 @@ class AIStatus(BaseModel):
     month_tokens_used: int
     month_budget: int | None
     month_cost_estimate: float | None = Field(description="Uniquement si des tarifs ont été saisis.")
+    writing_engine_setting: str
+    auto_choice: EngineChoice
     data_notice: str = DATA_NOTICE
     how_to_enable: list[str]
 
 
 class ProviderManager:
     def __init__(self, db: Database, settings: Settings, projects: ProjectService,
-                 factory: Callable[[str], AIProvider] | None = None) -> None:
+                 factory: Callable[[str], AIProvider] | None = None,
+                 ollama_probe: Callable[[], list[str] | None] | None = None) -> None:
         self.db = db
         self.settings = settings
         self.projects = projects
         self._factory = factory or self._build_provider
+        self._ollama_probe = ollama_probe or self._probe_ollama
 
     # --- construction ------------------------------------------------------
+    def _probe_ollama(self) -> list[str] | None:
+        from academic_writer.providers.ollama_provider import installed_models
+        return installed_models(self.settings.ollama_url)
+
     def _build_provider(self, provider: str) -> AIProvider:
+        if provider == "ollama":
+            from academic_writer.providers.ollama_provider import OllamaProvider
+            return OllamaProvider(self.settings.ollama_url, self.settings.ollama_model, self.settings.ollama_num_ctx,
+                                  self.settings.ollama_think, float(self.settings.ollama_timeout_seconds))
         key = secrets.get_key(provider)
         if not key:
             raise ProviderError("config", f"Aucune clé API {provider} configurée. Dans PowerShell : "
@@ -96,7 +128,59 @@ class ProviderManager:
         raise ProviderError("config", f"Fournisseur inconnu : {provider}")
 
     def model_of(self, provider: str) -> str:
-        return {"anthropic": self.settings.anthropic_model, "openai": self.settings.openai_model}.get(provider, provider)
+        return {"anthropic": self.settings.anthropic_model, "openai": self.settings.openai_model,
+                "ollama": self.settings.ollama_model}.get(provider, provider)
+
+    # --- choix du moteur -------------------------------------------------------
+    def engines(self, project_id: str | None = None) -> list[EngineAvailability]:
+        result: list[EngineAvailability] = []
+        consent = self.active_consent(project_id) if project_id else None
+        for name in CLOUD_PROVIDERS:
+            if self.settings.mode != "connected":
+                available, reason = False, "mode local (aucun envoi externe autorisé)"
+            elif secrets.key_source(name) is None:
+                available, reason = False, "aucune clé API configurée"
+            elif project_id is None:
+                available, reason = True, "clé configurée ; consentement requis par projet"
+            elif consent is None or consent.scope not in ("all", name):
+                available, reason = False, "pas de consentement pour ce projet"
+            else:
+                available, reason = True, "mode connecté, clé et consentement présents"
+            result.append(EngineAvailability(engine=name, available=available, local=False,
+                                             model=self.model_of(name), reason=reason))
+        installed = self._ollama_probe()
+        wanted = self.settings.ollama_model
+        if installed is None:
+            available, reason = False, "Ollama ne répond pas (non installé ou non lancé)"
+        elif wanted in installed or f"{wanted}:latest" in installed:
+            available, reason = True, "modèle local prêt (aucun envoi externe)"
+        else:
+            available, reason = False, f"modèle « {wanted} » non téléchargé (ollama pull {wanted})"
+        result.append(EngineAvailability(engine="ollama", available=available, local=True, model=wanted, reason=reason))
+        result.append(EngineAvailability(engine="assistant", available=True, local=True, model=None,
+                                         reason="l'assistant MCP rédige à partir du dossier préparé par le serveur"))
+        return result
+
+    def resolve_engine(self, project_id: str | None = None, requested: str | None = None) -> EngineChoice:
+        """Choisit le moteur : demandé explicitement, sinon réglage, sinon meilleur disponible."""
+        engines = self.engines(project_id)
+        by_name = {e.engine: e for e in engines}
+        wanted = requested or self.settings.writing_engine
+        if wanted != "auto":
+            engine = by_name.get(wanted)
+            if engine is None:
+                raise ValidationFailed(f"Moteur inconnu : {wanted}")
+            if not engine.available:
+                raise ProviderError("config", f"Moteur « {wanted} » indisponible : {engine.reason}.")
+            return EngineChoice(engine=wanted, model=engine.model, local=engine.local,
+                                reason=f"moteur demandé ({engine.reason})", engines=engines)
+        order = [self.settings.ai_default_provider] + [p for p in CLOUD_PROVIDERS if p != self.settings.ai_default_provider]
+        for name in order + ["ollama", "assistant"]:
+            engine = by_name[name]
+            if engine.available and (name not in CLOUD_PROVIDERS or project_id is not None):
+                return EngineChoice(engine=name, model=engine.model, local=engine.local,
+                                    reason=f"choix automatique : {engine.reason}", engines=engines)
+        raise AssertionError("le moteur assistant est toujours disponible")
 
     # --- consentement ------------------------------------------------------
     def active_consent(self, project_id: str) -> ConsentInfo | None:
@@ -186,11 +270,15 @@ class ProviderManager:
     def generate(self, project_id: str | None, request: GenerationRequest, provider: str | None = None,
                  *, require_consent: bool = True) -> GenerationResult:
         provider = provider or self.settings.ai_default_provider
-        self._check_connected()
-        if require_consent:
-            if project_id is None:
-                raise ProviderError("consent", "Projet requis pour un envoi de données.")
-            self._check_consent(project_id, provider)
+        if provider == "assistant":
+            raise ProviderError("config", "Le moteur « assistant » ne génère pas côté serveur : "
+                                "l'assistant MCP rédige lui-même à partir du dossier fourni.")
+        if provider not in LOCAL_PROVIDERS:
+            self._check_connected()
+            if require_consent:
+                if project_id is None:
+                    raise ProviderError("consent", "Projet requis pour un envoi de données.")
+                self._check_consent(project_id, provider)
         self._check_budget()
         request = request.model_copy(update={"max_output_tokens": min(request.max_output_tokens,
                                                                       self.settings.ai_max_output_tokens)})
@@ -231,9 +319,14 @@ class ProviderManager:
         consent = self.active_consent(project_id) if project_id else None
         if project_id and consent is None:
             steps.append("Donner le consentement pour ce projet (phrase exacte : « J'autorise l'envoi externe »).")
+        choice = self.resolve_engine(project_id, "auto")
+        ollama = next(e for e in choice.engines if e.engine == "ollama")
+        if not ollama.available:
+            steps.append(f"Modèle local (sans envoi externe) : {ollama.reason}.")
         return AIStatus(
             mode=self.settings.mode, connected=self.settings.mode == "connected",
             default_provider=self.settings.ai_default_provider, providers=providers, project_consent=consent,
             month_tokens_used=self.month_tokens(), month_budget=self.settings.ai_monthly_token_budget,
-            month_cost_estimate=self.month_cost(), how_to_enable=steps,
+            month_cost_estimate=self.month_cost(), writing_engine_setting=self.settings.writing_engine,
+            auto_choice=choice, how_to_enable=steps,
         )

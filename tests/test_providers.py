@@ -27,7 +27,8 @@ def mock() -> MockProvider:
 @pytest.fixture
 def connected(services: Services, mock: MockProvider) -> ProviderManager:
     services.settings.mode = "connected"
-    manager = ProviderManager(services.db, services.settings, services.projects, factory=lambda name: mock)
+    manager = ProviderManager(services.db, services.settings, services.projects, factory=lambda name: mock,
+                              ollama_probe=lambda: None)
     services.ai = manager
     return manager
 
@@ -39,7 +40,7 @@ def project(services: Services):
 
 def test_local_mode_blocks_everything(services: Services, project) -> None:
     services.ai = ProviderManager(services.db, services.settings, services.projects,
-                                  factory=lambda name: MockProvider())
+                                  factory=lambda name: MockProvider(), ollama_probe=lambda: None)
     with pytest.raises(ProviderError) as exc:
         services.ai.generate(project.id, REQUEST)
     assert exc.value.kind == "consent" and "mode = 'connected'" in str(exc.value)
@@ -126,7 +127,7 @@ def test_max_tokens_capped_by_settings(connected: ProviderManager, project, mock
 def test_missing_key_message(services: Services, monkeypatch: pytest.MonkeyPatch) -> None:
     services.settings.mode = "connected"
     monkeypatch.setattr(secrets, "get_key", lambda provider: None)
-    manager = ProviderManager(services.db, services.settings, services.projects)
+    manager = ProviderManager(services.db, services.settings, services.projects, ollama_probe=lambda: None)
     with pytest.raises(ProviderError) as exc:
         manager.test_provider("openai")
     assert exc.value.kind == "config" and "secrets set openai" in str(exc.value)
@@ -136,7 +137,8 @@ def test_status_lists_steps(services: Services, project, monkeypatch: pytest.Mon
     monkeypatch.setattr(secrets, "key_source", lambda provider: None)
     status = services.ai.status(project.id)
     assert status.mode == "local" and not status.connected
-    assert len(status.how_to_enable) == 4  # mode + 2 clés + consentement
+    assert len(status.how_to_enable) == 5  # mode + 2 clés + consentement + modèle local
+    assert status.auto_choice.engine == "assistant"
     assert all(not p.key_configured for p in status.providers)
 
 
@@ -257,3 +259,103 @@ async def test_mcp_ai_tools(services: Services, project, monkeypatch: pytest.Mon
         assert granted.structured_content["consent"]["scope"] == "all"
         test = await client.call_tool("test_ai_provider", {"provider": "anthropic"})
         assert test.is_error and "Mode local" in test.content[0].text
+
+
+# --- choix du moteur et modèle local (Ollama) ---------------------------------
+
+def _manager(services: Services, installed=None, mock: MockProvider | None = None) -> ProviderManager:
+    mock = mock or MockProvider(["Texte local."])
+    return ProviderManager(services.db, services.settings, services.projects,
+                           factory=lambda name: mock, ollama_probe=lambda: installed)
+
+
+def test_auto_engine_falls_back_to_assistant(services: Services, project) -> None:
+    choice = _manager(services).resolve_engine(project.id)
+    assert choice.engine == "assistant" and choice.local
+    reasons = {e.engine: e.reason for e in choice.engines}
+    assert "mode local" in reasons["anthropic"] and "ne répond pas" in reasons["ollama"]
+
+
+def test_auto_engine_prefers_local_model_when_installed(services: Services, project) -> None:
+    choice = _manager(services, installed=["qwen3.5:4b"]).resolve_engine(project.id)
+    assert choice.engine == "ollama" and choice.local and choice.model == "qwen3.5:4b"
+    missing = _manager(services, installed=["autre:7b"]).resolve_engine(project.id)
+    assert missing.engine == "assistant"
+    assert "ollama pull qwen3.5:4b" in next(e.reason for e in missing.engines if e.engine == "ollama")
+
+
+def test_auto_engine_prefers_authorized_cloud(services: Services, project, monkeypatch: pytest.MonkeyPatch) -> None:
+    services.settings.mode = "connected"
+    monkeypatch.setattr(secrets, "key_source", lambda provider: "coffre Windows" if provider == "openai" else None)
+    manager = _manager(services, installed=["qwen3.5:4b"])
+    assert manager.resolve_engine(project.id).engine == "ollama"  # pas encore de consentement
+    manager.set_consent(project.id, True, confirmation=PHRASE)
+    choice = manager.resolve_engine(project.id)
+    assert choice.engine == "openai" and not choice.local  # anthropic sans clé → openai
+
+
+def test_requested_engine_must_be_available(services: Services, project) -> None:
+    manager = _manager(services)
+    with pytest.raises(ProviderError) as exc:
+        manager.resolve_engine(project.id, "ollama")
+    assert "indisponible" in str(exc.value)
+    assert manager.resolve_engine(project.id, "assistant").engine == "assistant"
+
+
+def test_local_model_needs_no_consent_and_is_logged(services: Services, project) -> None:
+    manager = _manager(services, installed=["qwen3.5:4b"])
+    result = manager.generate(project.id, REQUEST, provider="ollama")  # mode local, sans consentement
+    assert result.text == "Texte local."
+    with services.db.read() as conn:
+        assert conn.execute("SELECT provider, status FROM ai_usage").fetchone()[:] == ("ollama", "ok")
+    with pytest.raises(ProviderError):
+        manager.generate(project.id, REQUEST, provider="assistant")
+
+
+def test_ollama_adapter_parses_response(monkeypatch: pytest.MonkeyPatch) -> None:
+    from academic_writer.providers.ollama_provider import OllamaProvider
+    provider = OllamaProvider("http://localhost:11434", "qwen3.5:4b", 8192, False, 30)
+    sent = {}
+
+    def fake_post(path, payload):
+        sent.update(payload)
+        return {"model": "qwen3.5:4b", "message": {"content": "Привет"}, "prompt_eval_count": 12,
+                "eval_count": 4, "done_reason": "length"}
+
+    monkeypatch.setattr(provider, "_post", fake_post)
+    result = provider.generate(REQUEST)
+    assert result.text == "Привет" and result.input_tokens == 12 and result.truncated
+    assert sent["stream"] is False and sent["options"] == {"num_predict": 8000, "num_ctx": 8192}
+    assert sent["messages"][0] == {"role": "system", "content": "Système"}
+
+
+def test_ollama_adapter_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    import io
+    import urllib.error
+    import urllib.request
+
+    from academic_writer.providers.ollama_provider import OllamaProvider, installed_models
+    provider = OllamaProvider("http://localhost:11434", "qwen3.5:4b", 8192, False, 30)
+
+    def not_found(*args, **kwargs):
+        raise urllib.error.HTTPError("http://localhost:11434/api/chat", 404, "Not Found", {}, io.BytesIO(b"{}"))
+
+    monkeypatch.setattr(urllib.request, "urlopen", not_found)
+    with pytest.raises(ProviderError) as exc:
+        provider.generate(REQUEST)
+    assert exc.value.kind == "config" and "ollama pull qwen3.5:4b" in str(exc.value)
+
+    def refused(*args, **kwargs):
+        raise urllib.error.URLError("connexion refusée")
+
+    monkeypatch.setattr(urllib.request, "urlopen", refused)
+    with pytest.raises(ProviderError) as exc:
+        provider.generate(REQUEST)
+    assert exc.value.kind == "network"
+    assert installed_models("http://localhost:11434") is None
+
+
+def test_ollama_url_must_be_local(tmp_path) -> None:
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
+        Settings(data_dir=tmp_path, ollama_url="http://example.com:11434")
