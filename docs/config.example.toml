@@ -1,0 +1,27 @@
+# Exemple de configuration d'Academic Writer MCP
+# À copier dans : %APPDATA%\AcademicWriter\config.toml
+# (ou indiquer un autre emplacement via la variable d'environnement ACADEMIC_WRITER_CONFIG)
+#
+# Chaque réglage peut aussi être défini par variable d'environnement :
+#   ACADEMIC_WRITER_DATA_DIR, ACADEMIC_WRITER_MODE, ACADEMIC_WRITER_MAX_FILE_SIZE_MB, ...
+# Priorité : variables d'environnement > ce fichier > valeurs par défaut.
+
+# Dossier des données (défaut : %LOCALAPPDATA%\AcademicWriter)
+data_dir = 'D:\AcademicWriter-Data'
+
+# 'local' (défaut) : aucun envoi externe. 'connected' : services externes autorisés.
+mode = 'local'
+
+log_level = 'INFO'            # DEBUG, INFO, WARNING, ERROR
+max_file_size_mb = 100        # 1 à 2048
+
+# Formats acceptés (sous-ensemble de : .docx .pdf .txt .md .xlsx .pptx)
+allowed_extensions = ['.docx', '.pdf', '.txt', '.md', '.xlsx', '.pptx']
+
+# Seuls les fichiers situés sous ces dossiers peuvent être importés (défaut : dossier utilisateur)
+allowed_import_dirs = ['C:\Users\<VotreNom>', 'D:\']
+
+# Protection contre les archives Office piégées
+zip_max_uncompressed_mb = 1024
+zip_max_entries = 20000
+zip_max_ratio = 200

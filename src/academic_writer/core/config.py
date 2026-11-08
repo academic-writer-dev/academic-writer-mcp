@@ -1,0 +1,133 @@
+"""Configuration d'Academic Writer.
+
+Ordre de priorité (du plus fort au plus faible) :
+1. paramètres passés explicitement (tests, code) ;
+2. variables d'environnement préfixées ``ACADEMIC_WRITER_`` (ex. ``ACADEMIC_WRITER_DATA_DIR``) ;
+3. fichier TOML : ``%APPDATA%\\AcademicWriter\\config.toml``
+   (emplacement modifiable via la variable ``ACADEMIC_WRITER_CONFIG``) ;
+4. valeurs par défaut ci-dessous.
+"""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+from typing import Literal
+
+from pydantic import Field, field_validator
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    TomlConfigSettingsSource,
+)
+
+ENV_PREFIX = "ACADEMIC_WRITER_"
+CONFIG_ENV_VAR = "ACADEMIC_WRITER_CONFIG"
+
+#: Formats acceptés à l'import (l'extraction de certains arrive en Phase 3).
+SUPPORTED_EXTENSIONS: tuple[str, ...] = (".docx", ".pdf", ".txt", ".md", ".xlsx", ".pptx")
+
+
+def default_config_file() -> Path:
+    appdata = os.environ.get("APPDATA")
+    base = Path(appdata) if appdata else Path.home() / ".config"
+    return base / "AcademicWriter" / "config.toml"
+
+
+def default_data_dir() -> Path:
+    local = os.environ.get("LOCALAPPDATA")
+    base = Path(local) if local else Path.home() / ".local" / "share"
+    return base / "AcademicWriter"
+
+
+def config_file_path() -> Path:
+    override = os.environ.get(CONFIG_ENV_VAR)
+    return Path(override) if override else default_config_file()
+
+
+class Settings(BaseSettings):
+    """Réglages validés de l'application."""
+
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX, extra="ignore")
+
+    data_dir: Path = Field(
+        default_factory=default_data_dir,
+        description="Dossier des données locales (projets, base SQLite, journaux, sauvegardes).",
+    )
+    mode: Literal["local", "connected"] = Field(
+        default="local",
+        description="'local' : aucun accès réseau. 'connected' : services externes autorisés "
+        "(vérification bibliographique, fournisseurs IA) après consentement.",
+    )
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    max_file_size_mb: int = Field(default=100, ge=1, le=2048)
+    allowed_extensions: list[str] = Field(default_factory=lambda: list(SUPPORTED_EXTENSIONS))
+    allowed_import_dirs: list[Path] = Field(
+        default_factory=lambda: [Path.home()],
+        description="Seuls les fichiers situés sous ces dossiers peuvent être importés.",
+    )
+    zip_max_uncompressed_mb: int = Field(default=1024, ge=1)
+    zip_max_entries: int = Field(default=20_000, ge=1)
+    zip_max_ratio: int = Field(default=200, ge=10, description="Taux de compression maximal (anti zip-bomb).")
+
+    @field_validator("allowed_extensions")
+    @classmethod
+    def _normalize_extensions(cls, value: list[str]) -> list[str]:
+        normalized = []
+        for ext in value:
+            ext = ext.strip().lower()
+            if not ext.startswith("."):
+                ext = "." + ext
+            if ext not in SUPPORTED_EXTENSIONS:
+                raise ValueError(f"Extension non prise en charge : {ext}")
+            normalized.append(ext)
+        return sorted(set(normalized))
+
+    @field_validator("allowed_import_dirs")
+    @classmethod
+    def _require_absolute_dirs(cls, value: list[Path]) -> list[Path]:
+        for path in value:
+            if not path.is_absolute():
+                raise ValueError(f"Dossier d'import non absolu : {path}")
+        return value
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (
+            init_settings,
+            env_settings,
+            TomlConfigSettingsSource(settings_cls, toml_file=config_file_path()),
+        )
+
+    # --- chemins dérivés -------------------------------------------------
+    @property
+    def projects_dir(self) -> Path:
+        return self.data_dir / "projects"
+
+    @property
+    def logs_dir(self) -> Path:
+        return self.data_dir / "logs"
+
+    @property
+    def backups_dir(self) -> Path:
+        return self.data_dir / "backups"
+
+    @property
+    def db_path(self) -> Path:
+        return self.data_dir / "academic_writer.db"
+
+    @property
+    def max_file_size_bytes(self) -> int:
+        return self.max_file_size_mb * 1024 * 1024
+
+    def ensure_dirs(self) -> None:
+        for directory in (self.data_dir, self.projects_dir, self.logs_dir, self.backups_dir):
+            directory.mkdir(parents=True, exist_ok=True)

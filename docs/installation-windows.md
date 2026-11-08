@@ -7,8 +7,12 @@ Le serveur utilise le transport **stdio** : le client lance lui-même le process
 Commande de lancement commune :
 
 ```
-uv --directory D:\MCP\academic-writer-mcp run academic-writer
+uv --directory D:\MCP\academic-writer-mcp run --no-sync python -m academic_writer
 ```
+
+Pourquoi `--no-sync` et `python -m` : voir la décision D-006 dans [decisions.md](decisions.md)
+(évite le verrouillage de `academic-writer.exe` par Windows pendant le développement).
+Après un ajout de dépendances : `uv sync`, puis redémarrer les clients.
 
 ## 1. Test avec MCP Inspector
 
@@ -23,7 +27,7 @@ Node.js est requis (Inspector est lancé via `npx`).
 ## 2. Claude Code (CLI / extension VS Code)
 
 ```powershell
-claude mcp add academic-writer --scope user -- uv --directory D:\MCP\academic-writer-mcp run academic-writer
+claude mcp add academic-writer --scope user -- uv --directory D:\MCP\academic-writer-mcp run --no-sync python -m academic_writer
 claude mcp list
 ```
 
@@ -51,7 +55,7 @@ Entrée à ajouter dans `mcpServers` :
   "mcpServers": {
     "academic-writer": {
       "command": "C:\\Users\\OSA Gaming\\.local\\bin\\uv.exe",
-      "args": ["--directory", "D:\\MCP\\academic-writer-mcp", "run", "academic-writer"]
+      "args": ["--directory", "D:\\MCP\\academic-writer-mcp", "run", "--no-sync", "python", "-m", "academic_writer"]
     }
   }
 }
@@ -69,7 +73,7 @@ Fichier `.vscode/mcp.json` dans l'espace de travail :
     "academic-writer": {
       "type": "stdio",
       "command": "C:\\Users\\OSA Gaming\\.local\\bin\\uv.exe",
-      "args": ["--directory", "D:\\MCP\\academic-writer-mcp", "run", "academic-writer"]
+      "args": ["--directory", "D:\\MCP\\academic-writer-mcp", "run", "--no-sync", "python", "-m", "academic_writer"]
     }
   }
 }

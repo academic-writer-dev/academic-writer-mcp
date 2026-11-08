@@ -23,6 +23,34 @@
 ## D-005 — Couche MCP dans `server/` (et non `mcp/`) — 2026-11-08
 - Évite la confusion avec le paquet `mcp` du SDK.
 
+## D-006 — Lancement des clients via `python -m academic_writer --no-sync` — 2026-11-08
+- Sous Windows, un `academic-writer.exe` en cours d'exécution (lancé par Claude Desktop /
+  Claude Code) est verrouillé et empêche uv de réinstaller le projet (`os error 32`).
+- Les clients lancent donc `uv --directory <projet> run --no-sync python -m academic_writer` :
+  aucun .exe du projet n'est verrouillé et les clients ne modifient pas l'environnement.
+- Après ajout de dépendances, lancer `uv sync` soi-même, puis redémarrer les clients.
+
+## D-007 — Configuration : pydantic-settings + TOML — 2026-11-08
+- Priorité : environnement (`ACADEMIC_WRITER_*`) > `%APPDATA%\AcademicWriter\config.toml` > défauts.
+- Données de l'utilisateur dans `D:\AcademicWriter-Data` (choix utilisateur).
+
+## D-008 — SQLite : connexion courte par opération, WAL, migrations par `user_version` — 2026-11-08
+- Les outils synchrones s'exécutent dans des threads ; plusieurs clients lancent chacun un
+  processus serveur sur la même base → connexions courtes + WAL + `busy_timeout`.
+- Sauvegarde automatique (API backup SQLite) avant chaque migration d'une base existante.
+- Les tables des phases suivantes seront ajoutées par de nouvelles migrations.
+
+## D-009 — Erreurs métier transmises via `ToolError` — 2026-11-08
+- Le SDK v2 masque les exceptions inattendues (« Error executing tool X »).
+- Les erreurs métier (`AcademicWriterError`) sont converties en `ToolError` : message clair
+  en français pour l'assistant ; les autres erreurs restent masquées et journalisées.
+
+## D-010 — Import : copie vérifiée en lecture seule, inspection sans dépendance native — 2026-11-08
+- Inspection maison (signatures, structure OOXML, zip-bomb, macros VBA, JavaScript PDF)
+  plutôt que `python-magic` (nécessite libmagic, fragile sous Windows).
+- Dossiers d'import autorisés configurables ; import depuis le dossier de données refusé.
+- Doublons détectés par SHA-256 dans un même projet.
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : à trancher avant distribution (licence commerciale Artifex,
   publication AGPL, ou alternative pypdf/pdfplumber). PyMuPDF sera isolé derrière une interface.
