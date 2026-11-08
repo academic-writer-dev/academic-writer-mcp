@@ -6,7 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-RequirementKind = Literal["task", "length", "structure", "format", "norm", "deadline", "variant", "data", "other"]
+RequirementKind = Literal["task", "step", "question", "objective", "length", "structure", "format", "norm",
+                          "deadline", "variant", "data", "other"]
 RequirementStatus = Literal["proposed", "confirmed", "rejected"]
 
 
@@ -22,6 +23,8 @@ class Requirement(BaseModel):
     status: RequirementStatus
     origin: Literal["extracted", "user"]
     position: int = 0
+    number: str | None = Field(default=None, description="Numéro dans les consignes d'origine.")
+    group_label: str | None = Field(default=None, description="Intertitre sous lequel l'exigence apparaît.")
 
 
 class RequirementList(BaseModel):
@@ -42,6 +45,8 @@ class AssignmentAnalysis(BaseModel):
     length: str | None
     norms: list[str]
     deadlines: list[str]
+    missing_data: list[str] = Field(default_factory=list,
+                                    description="Grandeurs utilisées dans les consignes sans valeur numérique fournie.")
     warnings: list[str]
     requirements: list[Requirement]
     next_step: str

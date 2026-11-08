@@ -256,6 +256,36 @@ CREATE TABLE section_revisions (
 CREATE INDEX idx_section_revisions ON section_revisions(section_id, status);
 """,
     ),
+    Migration(
+        version=6,
+        description="Exigences : types objectif / étape / question, numéro d'origine et intertitre",
+        sql="""
+CREATE TABLE requirements_v6 (
+    id                 TEXT PRIMARY KEY,
+    project_id         TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    source_document_id TEXT REFERENCES documents(id) ON DELETE RESTRICT,
+    page               INTEGER,
+    kind               TEXT NOT NULL CHECK (kind IN ('task', 'step', 'question', 'objective', 'length', 'structure',
+                                                     'format', 'norm', 'deadline', 'variant', 'data', 'other')),
+    text               TEXT NOT NULL,
+    value              TEXT,
+    status             TEXT NOT NULL DEFAULT 'proposed' CHECK (status IN ('proposed', 'confirmed', 'rejected')),
+    origin             TEXT NOT NULL CHECK (origin IN ('extracted', 'user')),
+    position           INTEGER NOT NULL DEFAULT 0,
+    created_at         TEXT NOT NULL,
+    updated_at         TEXT NOT NULL,
+    number             TEXT,
+    group_label        TEXT
+);
+INSERT INTO requirements_v6 (id, project_id, source_document_id, page, kind, text, value, status, origin, position,
+                             created_at, updated_at)
+    SELECT id, project_id, source_document_id, page, kind, text, value, status, origin, position, created_at, updated_at
+    FROM requirements;
+DROP TABLE requirements;
+ALTER TABLE requirements_v6 RENAME TO requirements;
+CREATE INDEX idx_requirements_project ON requirements(project_id, kind);
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

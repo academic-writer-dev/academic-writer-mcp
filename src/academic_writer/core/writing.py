@@ -44,12 +44,13 @@ from academic_writer.writing.models import (
     WriteResult,
 )
 from academic_writer.writing.outline import build_sections, coverage_issues
-from academic_writer.writing.requirements import extract_candidates
+from academic_writer.writing.requirements import extract_candidates, missing_symbols
 
 logger = logging.getLogger("academic_writer.writing")
 
 _BUDGET = {"ollama": 9000, "anthropic": 40000, "openai": 40000, "assistant": 40000}
-_KINDS = ("task", "length", "structure", "format", "norm", "deadline", "variant", "data", "other")
+_KINDS = ("task", "step", "question", "objective", "length", "structure", "format", "norm", "deadline", "variant",
+          "data", "other")
 
 
 class OutlineOperation(BaseModel):
@@ -68,7 +69,7 @@ def _req_from_row(row: sqlite3.Row) -> Requirement:
         id=row["id"], project_id=row["project_id"], source_document_id=row["source_document_id"],
         source_filename=row["original_filename"] if "original_filename" in row.keys() else None,
         page=row["page"], kind=row["kind"], text=row["text"], value=row["value"], status=row["status"],
-        origin=row["origin"], position=row["position"],
+        origin=row["origin"], position=row["position"], number=row["number"], group_label=row["group_label"],
     )
 
 
@@ -106,6 +107,7 @@ class WritingService:
                                        "importez les consignes ou précisez document_id.")
         now = utc_now()
         created: list[str] = []
+        texts: list[str] = []
         with self.db.read() as conn:
             existing = {(r["kind"], r["text"]) for r in conn.execute(
                 "SELECT kind, text FROM requirements WHERE project_id = ? AND status != 'proposed'", (project_id,))}
@@ -113,6 +115,7 @@ class WritingService:
             result, summary = self.extraction.extract(document.id)
             warnings.extend(f"{document.original_filename} : {w}" for w in summary.injection_warnings)
             candidates = extract_candidates(result)
+            texts.extend(b.text for b in result.blocks)
             if not candidates:
                 warnings.append(f"{document.original_filename} : aucune exigence reconnue automatiquement.")
             with self.db.transaction() as conn:
@@ -124,9 +127,10 @@ class WritingService:
                     requirement_id = new_id()
                     conn.execute(
                         "INSERT INTO requirements (id, project_id, source_document_id, page, kind, text, value, status, "
-                        "origin, position, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'proposed', 'extracted', ?, ?, ?)",
+                        "origin, position, created_at, updated_at, number, group_label) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, 'proposed', 'extracted', ?, ?, ?, ?, ?)",
                         (requirement_id, project_id, document.id, candidate.page, candidate.kind, candidate.text,
-                         candidate.value, position, now, now))
+                         candidate.value, position, now, now, candidate.number, candidate.group_label))
                     created.append(requirement_id)
                 record_event(conn, project_id=project_id, entity_type="document", entity_id=document.id,
                              action="requirements_extracted", details={"count": len(candidates)})
@@ -136,15 +140,26 @@ class WritingService:
         if len(variants) > 1:
             warnings.append(f"Plusieurs variantes mentionnées ({', '.join(variants)}) : préciser la vôtre.")
         lengths = [r.value for r in active if r.kind == "length" and r.value]
+        data_values = " ".join((r.value or "") + " " + r.text for r in active if r.kind == "data")
+        computing = [r for r in active if r.kind in ("task", "step") and re.search(
+            r"рассчита|вычисл|определ|calcul|détermin|comput|determin", r.text, re.IGNORECASE)]
+        missing = missing_symbols(texts, data_values)
+        if computing and not any(r.kind == "data" for r in active):
+            warnings.append("Les consignes demandent des calculs mais ne contiennent aucune valeur numérique : "
+                            "les données (variante, paramètres" + (f" : {', '.join(missing[:12])}" if missing else "")
+                            + ") devront être fournies par l'utilisateur.")
+        elif missing:
+            warnings.append(f"Grandeurs citées sans valeur dans les consignes : {', '.join(missing[:12])}.")
         return AssignmentAnalysis(
             project_id=project_id, analyzed_documents=[d.original_filename for d in documents], extracted=len(created),
             by_kind=listing.by_kind, variant=variants[0] if len(variants) == 1 else None,
             length=lengths[0] if lengths else None,
             norms=sorted({n.strip() for r in active if r.kind == "norm" and r.value for n in r.value.split(",")}),
             deadlines=sorted({r.value for r in active if r.kind == "deadline" and r.value}),
-            warnings=warnings, requirements=listing.requirements,
+            missing_data=missing, warnings=warnings, requirements=listing.requirements,
             next_step="Présenter les exigences à l'utilisateur, les faire confirmer ou rejeter (manage_requirement), "
-                      "compléter les manques, puis créer le plan (create_academic_outline).",
+                      "demander les données manquantes (manage_requirement action=add kind=data), puis créer le plan "
+                      "(create_academic_outline).",
         )
 
     def list_requirements(self, project_id: str, kind: str | None = None, status: str | None = None) -> RequirementList:

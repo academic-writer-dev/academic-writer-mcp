@@ -26,7 +26,8 @@ _READ = ToolAnnotations(read_only_hint=True, open_world_hint=False, idempotent_h
 _WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False)
 _GENERATE = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=True)
 Engine = Literal["auto", "assistant", "ollama", "anthropic", "openai"]
-Kind = Literal["task", "length", "structure", "format", "norm", "deadline", "variant", "data", "other"]
+Kind = Literal["task", "step", "question", "objective", "length", "structure", "format", "norm", "deadline",
+               "variant", "data", "other"]
 
 
 def register(mcp: MCPServer) -> None:

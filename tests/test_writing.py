@@ -54,6 +54,82 @@ def _approved_outline(services: Services, project):
     return services.writing.validate_outline(outline.id, approve=True, force=True).outline
 
 
+# --- non-régression : vraies consignes « ЛР4 ТММ » (structure extraite du PDF réel) -------------
+
+def _lr4_document():
+    from academic_writer.document.model import Block, ExtractedDocument
+    items = [
+        ("paragraph", "Лабораторная работа №4. «Нарезание эвольвентных зубчатых колес инструментом реечного типа» "
+                      "Цель работы Ознакомление студентов с процессом нарезания на станке методом обката прямозубых колес."),
+        ("paragraph", "Последовательность выполнения лабораторной работы"),
+        ("list_item", "1. Изучить конструкцию макета."),
+        ("list_item", "2. Установить на диске 9 бумажный кружок 10. Для этого следует отвернуть винт 14 и снять шайбу 13. "
+                      "Бумажный кружок положить на плоскость диска и наколоть на штифты."),
+        ("list_item", "3. Разомкнуть кинематическую связь каретки 2 и диска 9. При этом следует повернуть рычаг 16 на 180˚;"),
+        ("list_item", "7. Установить рейку в требуемом положении (0, + х · m, – х · m). Причем положительным является "
+                      "смещение рейки при ее движении от центра заготовки."),
+        ("paragraph", "Для установки рейки необходимо немного отвернуть винты 7, сместить ее на требуемую величину и вновь "
+                      "завернуть эти винты."),
+        ("list_item", "8. Спрофилировать по 2-3 зуба без смещения рейки, с положительным и отрицательным смещением."),
+        ("list_item", "9. Рассчитать основные геометрические параметры для трех модификаций зубчатого колеса."),
+        ("list_item", "11. Подготовить отчет по лабораторной работе."),
+        ("paragraph", "Вопросы для защиты лабораторной работы"),
+        ("list_item", "1. Что такое зубчатое колесо?"),
+        ("list_item", "5. Дайте определение окружностям: r, rb, ra, rf."),
+        ("list_item", "7. Назовите основные параметры инструментальной рейки."),
+    ]
+    return ExtractedDocument(format="pdf", extractor="test",
+                             blocks=[Block(type=kind, text=text, page=1) for kind, text in items])
+
+
+def test_lr4_structural_extraction() -> None:
+    from academic_writer.writing.requirements import extract_candidates, missing_symbols
+    candidates = extract_candidates(_lr4_document())
+    by_kind = {}
+    for candidate in candidates:
+        by_kind.setdefault(candidate.kind, []).append(candidate)
+    assert [c.number for c in by_kind["step"]] == ["1", "2", "3", "7", "8"]  # étapes 2 et 7 présentes
+    step7 = next(c for c in by_kind["step"] if c.number == "7")
+    assert "Для установки рейки" in step7.text  # paragraphe de continuation rattaché
+    assert [c.number for c in by_kind["task"]] == ["9"]  # seul livrable
+    assert "Подготовить отчет" in by_kind["other"][0].text
+    assert [c.number for c in by_kind["question"]] == ["1", "5", "7"]
+    assert all(c.group_label.startswith("Вопросы") for c in by_kind["question"])
+    assert by_kind["objective"][0].text.startswith("Ознакомление студентов")
+    assert missing_symbols([b.text for b in _lr4_document().blocks], "") == ["x", "m", "r", "rb", "ra", "rf"]
+
+
+def test_lr4_outline_has_no_duplicates(settings) -> None:
+    from academic_writer.domains.structures import build_template
+    from academic_writer.writing.models import Requirement
+    from academic_writer.writing.outline import build_sections
+    from academic_writer.writing.requirements import extract_candidates
+    reqs = [Requirement(id=f"r{i}", project_id="p", kind=c.kind, text=c.text, status="proposed", origin="extracted")
+            for i, c in enumerate(extract_candidates(_lr4_document()))]
+    template = build_template(DocumentType.RAPPORT_LABORATOIRE, "ru", DomainRegistry(settings).get("genie_mecanique"), "ru")
+    sections, _, _ = build_sections(template, reqs, "ru", None)
+    titles = [s.title for s in sections]
+    assert [t for t in titles if t.startswith("Задача")] == [
+        "Задача 1. Рассчитать основные геометрические параметры для трех модификаций зубчатого колеса"]
+    assert not any("…" in t for t in titles)
+    assert titles.count("Ответы на контрольные вопросы") == 1
+    procedure = next(s for s in sections if s.section_key == "procedure")
+    assert len(procedure.requirement_ids) == 5
+    assert "Обработка результатов" in titles and not any("погрешност" in t for t in titles)
+    assert not next(s for s in sections if s.section_key == "measurements").required
+
+
+def test_lr4_analysis_reports_missing_data(services: Services, inbox: Path) -> None:
+    project = services.projects.create("ЛР4", DocumentType.RAPPORT_LABORATOIRE, Language.RU)
+    path = inbox / "lr4.txt"
+    path.write_text("Последовательность выполнения\n\n9. Рассчитать параметры колеса при смещении (0, + х · m).",
+                    encoding="utf-8")
+    services.documents.import_document(project.id, str(path), DocumentRole.INSTRUCTIONS)
+    analysis = services.writing.analyze_assignment(project.id)
+    assert analysis.missing_data == ["x", "m"]
+    assert any("aucune valeur numérique" in w for w in analysis.warnings)
+
+
 # --- extraction des exigences -------------------------------------------------
 
 def test_classify_multilingual() -> None:

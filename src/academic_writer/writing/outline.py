@@ -36,7 +36,27 @@ STRUCTURE_KEYWORDS = {
     "title_page": r"титульн|page de (?:garde|titre)|title page",
     "keywords": r"ключев\w* слов|mots-clés|keywords",
 }
-GLOBAL_KINDS = {"length", "format", "norm", "deadline", "variant"}
+GLOBAL_KINDS = {"length", "format", "norm", "deadline", "variant", "other"}
+LINKED_KINDS = ("task", "structure", "step", "question", "objective")
+QUESTIONS_TITLE = {"fr": "Réponses aux questions de contrôle", "ru": "Ответы на контрольные вопросы",
+                   "en": "Answers to review questions"}
+PROCESSING_TITLE = {"fr": "Traitement des résultats", "ru": "Обработка результатов", "en": "Data processing"}
+STEP_ANCHORS = {"rapport_laboratoire": "procedure", "procedure": "steps"}
+UNCERTAINTY_HINTS = re.compile(r"погрешн|неопредел|измерен|измерит|incertitud|mesur|uncertaint|measur|error analysis",
+                               re.IGNORECASE)
+
+
+def task_title(text: str, limit: int = 110) -> str:
+    """Titre court et propre : première phrase, coupée à une virgule ou un mot (jamais de « … »)."""
+    body = re.sub(r"^\s*(?:\d{1,2}(?:\.\d{1,2})?\s*[.)]\s*)", "", text).strip()
+    first = re.split(r"(?<=[.;:!?])\s", body, maxsplit=1)[0].rstrip(".;: ")
+    if len(first) <= limit:
+        return first
+    cut = first[:limit]
+    comma = max(cut.rfind(", "), cut.rfind(" — "), cut.rfind(" ("))
+    if comma >= limit // 2:
+        return cut[:comma].rstrip(" ,(")
+    return cut[: cut.rfind(" ")].rstrip(" ,")
 
 
 @dataclass
@@ -98,23 +118,62 @@ def build_sections(template: StructureTemplate, requirements: list[Requirement],
                 if target is not None and req.id not in target.requirement_ids:
                     target.requirement_ids.append(req.id)
 
-    # Tâches → sous-sections sous la section d'ancrage de la famille.
+    def find(*keys: str) -> PlannedSection | None:
+        return next((s for s in sections if s.section_key in keys), None)
+
+    def anchor_index_for(key: str) -> int:
+        index = next((i for i, s in enumerate(sections) if s.section_key == key), None)
+        if index is None:
+            index = next((i for i, s in enumerate(sections) if s.section_key in ("conclusion", "conclusions")),
+                         len(sections)) - 1
+        return max(index, 0)
+
+    # Rapport de TP sans mesures ni incertitudes : section de traitement simplifiée, mesures facultatives.
+    if template.family == "rapport_laboratoire" and not any(UNCERTAINTY_HINTS.search(r.text) for r in active):
+        processing, measurements = find("processing"), find("measurements")
+        if processing is not None:
+            processing.title = PROCESSING_TITLE.get(language, processing.title)
+            processing.guidance = None
+        if measurements is not None:
+            measurements.required = False
+
+    # Objectif → section « objectif » (ou introduction).
+    objective_section = find("objective", "introduction")
+    for req in (r for r in active if r.kind == "objective"):
+        target = objective_section or sections[0]
+        target.requirement_ids.append(req.id)
+
+    # Étapes (manipulations) → regroupées dans la section de procédure, jamais en sous-sections.
+    steps = [r for r in active if r.kind == "step"]
+    if steps:
+        anchor = sections[anchor_index_for(STEP_ANCHORS.get(template.family, TASK_ANCHORS.get(template.family, "body")))]
+        anchor.requirement_ids.extend(r.id for r in steps)
+
+    # Questions de contrôle → une seule section de réponses (créée si le gabarit n'en a pas).
+    questions = [r for r in active if r.kind == "question"]
+    if questions:
+        section = find("control_questions")
+        if section is None:
+            position = next((i for i, s in enumerate(sections) if s.section_key in ("references", "appendices")),
+                            len(sections))
+            section = PlannedSection(title=QUESTIONS_TITLE.get(language, QUESTIONS_TITLE["fr"]), level=1, required=True,
+                                     section_key="control_questions", guidance=None, target_words=None,
+                                     origin="requirement")
+            sections.insert(position, section)
+        section.required = True
+        section.target_words = max(section.target_words or 0, 60 * len(questions))
+        section.requirement_ids.extend(r.id for r in questions)
+
+    # Tâches (livrables) → sous-sections sous la section d'ancrage de la famille.
     tasks = [r for r in active if r.kind == "task"]
     if tasks:
-        anchor_key = TASK_ANCHORS.get(template.family, "body")
-        anchor_index = next((i for i, s in enumerate(sections) if s.section_key == anchor_key), None)
-        if anchor_index is None:
-            anchor_index = next((i for i, s in enumerate(sections) if s.section_key in ("conclusion", "conclusions")),
-                                len(sections)) - 1
-            anchor_index = max(anchor_index, 0)
+        anchor_index = anchor_index_for(TASK_ANCHORS.get(template.family, "body"))
         anchor = sections[anchor_index]
-        per_task = max(50, round((anchor.target_words or 300) / len(tasks) / 10) * 10)
+        per_task = max(80, round((anchor.target_words or 300) / len(tasks) / 10) * 10)
         label = TASK_LABEL.get(language, "Tâche")
         for number, req in enumerate(tasks, start=1):
-            title = re.sub(r"^\s*(?:\d{1,2}\s*[.)]\s*)", "", req.text).strip()
-            title = (title[:90] + "…") if len(title) > 90 else title
             sections.insert(anchor_index + number, PlannedSection(
-                title=f"{label} {number}. {title}", level=2, required=True, section_key=None,
+                title=f"{label} {number}. {task_title(req.text)}", level=2, required=True, section_key=None,
                 guidance=req.text, target_words=per_task, requirement_ids=[req.id], origin="requirement"))
         anchor.requirement_ids.extend(r.id for r in active if r.kind == "data" and r.id not in anchor.requirement_ids)
 
@@ -128,7 +187,7 @@ def coverage_issues(sections: list[dict], requirements: list[Requirement], globa
     issues: list[OutlineIssue] = []
     linked = {rid for s in sections for rid in s["requirement_ids"]} | set(global_ids)
     for req in requirements:
-        if req.status == "rejected" or req.kind not in ("task", "structure"):
+        if req.status == "rejected" or req.kind not in LINKED_KINDS:
             continue
         if req.id not in linked:
             issues.append(OutlineIssue(severity="error", requirement_id=req.id,
