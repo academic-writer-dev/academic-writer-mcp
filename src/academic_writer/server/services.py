@@ -15,6 +15,7 @@ from academic_writer.core.domains import DomainService
 from academic_writer.core.errors import AcademicWriterError
 from academic_writer.core.extraction import ExtractionService
 from academic_writer.core.projects import ProjectService
+from academic_writer.providers.manager import ProviderManager
 from academic_writer.storage.db import Database
 
 
@@ -26,6 +27,7 @@ class Services:
     documents: DocumentService
     extraction: ExtractionService
     domains: DomainService
+    ai: ProviderManager
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -37,8 +39,9 @@ def build_services(settings: Settings | None = None) -> Services:
     documents = DocumentService(db, settings, projects)
     extraction = ExtractionService(db, settings, projects, documents)
     domains = DomainService(db, settings, projects, extraction)
+    ai = ProviderManager(db, settings, projects)
     return Services(settings=settings, db=db, projects=projects, documents=documents, extraction=extraction,
-                    domains=domains)
+                    domains=domains, ai=ai)
 
 
 _services: Services | None = None

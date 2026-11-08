@@ -18,6 +18,7 @@ EXPECTED_TOOLS = {
     "extract_document_content", "extract_document_tables", "extract_document_images", "search_in_documents",
     "identify_domain", "set_project_domain", "list_domain_profiles", "get_domain_profile",
     "get_document_structure_template", "lookup_terminology", "reload_domain_profiles",
+    "get_ai_status", "set_project_ai_consent", "test_ai_provider",
 }
 
 

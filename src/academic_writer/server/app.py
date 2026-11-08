@@ -16,7 +16,14 @@ from pydantic import BaseModel, Field
 
 from academic_writer import __version__
 from academic_writer.core.log_setup import configure_logging
-from academic_writer.server import resources, tools_documents, tools_domains, tools_extraction, tools_projects
+from academic_writer.server import (
+    resources,
+    tools_ai,
+    tools_documents,
+    tools_domains,
+    tools_extraction,
+    tools_projects,
+)
 from academic_writer.server.services import get_services
 
 logger = logging.getLogger("academic_writer")
@@ -104,6 +111,7 @@ tools_projects.register(mcp)
 tools_documents.register(mcp)
 tools_extraction.register(mcp)
 tools_domains.register(mcp)
+tools_ai.register(mcp)
 resources.register(mcp)
 
 

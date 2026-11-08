@@ -9,7 +9,9 @@ except PackageNotFoundError:  # exécution depuis les sources sans installation
 
 
 def main() -> None:
-    """Point d'entrée de la commande `academic-writer` : lance le serveur MCP (stdio)."""
-    from academic_writer.server.app import run
+    """Point d'entrée de la commande `academic-writer` : serveur MCP (sans argument) ou sous-commandes."""
+    import sys
 
-    run()
+    from academic_writer.cli import main as cli_main
+
+    sys.exit(cli_main())

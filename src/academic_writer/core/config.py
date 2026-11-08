@@ -93,6 +93,40 @@ class Settings(BaseSettings):
         default=25, ge=0, description="En dessous, une page PDF est considérée comme scannée."
     )
 
+    # --- fournisseurs IA (actifs uniquement en mode 'connected' + consentement par projet) ---
+    ai_default_provider: Literal["anthropic", "openai"] = "anthropic"
+    anthropic_model: str = "claude-opus-5-5"
+    anthropic_effort: Literal["low", "medium", "high", "xhigh", "max"] = "high"
+    anthropic_refusal_fallback: bool = Field(
+        default=True, description="Repli serveur automatique en cas de refus (paramètre fallbacks='default')."
+    )
+    openai_model: str = "gpt-5.5"
+    ai_max_output_tokens: int = Field(default=16000, ge=256, le=32000)
+    ai_timeout_seconds: int = Field(default=300, ge=10, le=1800)
+    ai_monthly_token_budget: int | None = Field(
+        default=None, ge=1000, description="Plafond mensuel (tokens entrée + sortie, tous fournisseurs). Vide = sans plafond."
+    )
+    ai_prices_per_million: dict[str, dict[str, float]] = Field(
+        default_factory=dict,
+        description="Tarifs saisis par l'utilisateur, ex. {'claude-opus-5-5': {'input': 4.0, 'output': 20.0}} "
+        "(USD par million de tokens). Sans tarif, aucun coût n'est estimé.",
+    )
+
+    # --- LanguageTool local ---
+    languagetool_url: str = Field(default="http://localhost:8081", description="Serveur LanguageTool LOCAL uniquement.")
+    languagetool_dir: Path | None = Field(default=None, description="Défaut : <data_dir>/languagetool.")
+    java_cmd: Path | None = Field(default=None, description="Chemin de java.exe (détection auto si vide).")
+
+    @field_validator("languagetool_url")
+    @classmethod
+    def _local_languagetool_only(cls, value: str) -> str:
+        from urllib.parse import urlparse
+
+        host = urlparse(value).hostname or ""
+        if host not in ("localhost", "127.0.0.1", "::1"):
+            raise ValueError("languagetool_url doit désigner un serveur local (l'API publique interdit l'usage automatisé).")
+        return value.rstrip("/")
+
     @field_validator("allowed_extensions")
     @classmethod
     def _normalize_extensions(cls, value: list[str]) -> list[str]:

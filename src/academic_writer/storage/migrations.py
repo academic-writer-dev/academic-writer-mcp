@@ -149,6 +149,37 @@ ALTER TABLE projects ADD COLUMN domain_confirmed_at TEXT;
 ALTER TABLE projects ADD COLUMN convention TEXT CHECK (convention IN ('ru', 'fr', 'intl'));
 """,
     ),
+    Migration(
+        version=4,
+        description="Consentements au traitement externe et suivi de l'usage des fournisseurs IA",
+        sql="""
+CREATE TABLE ai_consents (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    scope       TEXT NOT NULL CHECK (scope IN ('all', 'anthropic', 'openai')),
+    granted_at  TEXT NOT NULL,
+    revoked_at  TEXT,
+    note        TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX idx_ai_consents_project ON ai_consents(project_id);
+
+CREATE TABLE ai_usage (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id    TEXT REFERENCES projects(id) ON DELETE RESTRICT,
+    provider      TEXT NOT NULL,
+    model         TEXT NOT NULL,
+    task          TEXT NOT NULL,
+    input_tokens  INTEGER NOT NULL DEFAULT 0,
+    output_tokens INTEGER NOT NULL DEFAULT 0,
+    cost_estimate REAL,
+    status        TEXT NOT NULL CHECK (status IN ('ok', 'refused', 'error')),
+    error_kind    TEXT,
+    request_id    TEXT,
+    created_at    TEXT NOT NULL
+);
+CREATE INDEX idx_ai_usage_created ON ai_usage(created_at);
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version
