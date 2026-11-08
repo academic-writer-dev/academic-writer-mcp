@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Tests / outils
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Données locales de l'utilisateur (jamais versionnées)
+data/*
+!data/.gitkeep
+*.db
+*.sqlite3
+.env
