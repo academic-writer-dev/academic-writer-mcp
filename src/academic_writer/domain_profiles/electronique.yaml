@@ -1,0 +1,35 @@
+id: electronique
+parent: generaliste
+names: {fr: "Électronique et électrotechnique", ru: "Электроника и электротехника", en: "Electronics and electrical engineering"}
+description:
+  fr: "Circuits analogiques et numériques, électronique de puissance, machines électriques, traitement du signal."
+  ru: "Аналоговые и цифровые схемы, силовая электроника, электрические машины, обработка сигналов."
+  en: "Analog and digital circuits, power electronics, electrical machines, signal processing."
+keywords:
+  fr: ["circuit* électrique*", "résistance* électrique*", "condensateur*", "inductance*", "transistor*", "amplificateur* opérationnel*", "diode*", "microcontrôleur*", "carte électronique", "tension", "courant électrique", "puissance active", "impédance", "oscilloscope", "filtre*", "traitement du signal", "électronique de puissance", "moteur asynchrone", "transformateur*", "schéma électrique"]
+  ru: ["электрическ* цеп*", "резистор*", "конденсатор*", "катушк* индуктивност*", "транзистор*", "операционн* усилител*", "диод*", "микроконтроллер*", "печатн* плат*", "напряжени* питания", "сил* тока", "активн* мощност*", "импеданс*", "осциллограф*", "фильтр*", "обработк* сигналов", "силов* электроник*", "асинхронн* двигател*", "трансформатор*", "принципиальн* схем*"]
+  en: ["electric circuit*", "resistor*", "capacitor*", "inductor*", "transistor*", "operational amplifier*", "diode*", "microcontroller*", "printed circuit board", "voltage", "current", "active power", "impedance", "oscilloscope", "filter*", "signal processing", "power electronics", "induction motor*", "transformer*", "circuit diagram"]
+terminology:
+  - {id: voltage, fr: "tension", ru: "напряжение", en: "voltage"}
+  - {id: current, fr: "intensité du courant", ru: "сила тока", en: "current"}
+  - {id: impedance, fr: "impédance", ru: "полное сопротивление (импеданс)", en: "impedance"}
+  - {id: opamp, fr: "amplificateur opérationnel (AOP)", ru: "операционный усилитель (ОУ)", en: "operational amplifier (op-amp)"}
+  - {id: pcb, fr: "circuit imprimé", ru: "печатная плата", en: "printed circuit board (PCB)"}
+  - {id: rms, fr: "valeur efficace", ru: "действующее значение", en: "RMS value"}
+  - {id: power_factor, fr: "facteur de puissance", ru: "коэффициент мощности", en: "power factor"}
+validation_rules:
+  - {id: component_refs, severity: warning, description: {fr: "Repères des composants identiques sur le schéma, la nomenclature et le texte.", ru: "Позиционные обозначения совпадают на схеме, в перечне элементов и тексте.", en: "Component designators match across schematic, BOM and text."}}
+  - {id: rms_vs_peak, severity: warning, description: {fr: "Préciser valeur efficace, crête ou moyenne pour chaque grandeur alternative.", ru: "Указывать действующее, амплитудное или среднее значение для переменных величин.", en: "State RMS, peak or average for each AC quantity."}}
+calculations:
+  - {id: circuit_analysis, tools: [sympy, units], description: {fr: "Analyse de circuits (lois de Kirchhoff, impédances complexes)", ru: "Расчёт цепей (законы Кирхгофа, комплексные сопротивления)", en: "Circuit analysis (Kirchhoff laws, complex impedance)"}}
+  - {id: signal, tools: [numpy], description: {fr: "Analyse spectrale, filtrage", ru: "Спектральный анализ, фильтрация", en: "Spectral analysis, filtering"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["IEEE"], intl: ["IEEE"]}
+standards:
+  - {code: "ГОСТ 2.702-2011", convention: ru, title: {fr: "Règles d'exécution des schémas électriques", ru: "ЕСКД. Правила выполнения электрических схем", en: "Rules for electrical diagrams"}}
+  - {code: "ГОСТ 2.710-81", convention: ru, title: {fr: "Repères alphanumériques des schémas électriques", ru: "ЕСКД. Обозначения буквенно-цифровые в электрических схемах", en: "Alphanumeric designations in electrical diagrams"}}
+  - {code: "ГОСТ 2.728-74", convention: ru, title: {fr: "Symboles : résistances, condensateurs", ru: "ЕСКД. Обозначения условные графические. Резисторы, конденсаторы", en: "Graphical symbols: resistors, capacitors"}}
+  - {code: "ГОСТ 2.743-91", convention: ru, title: {fr: "Symboles : électronique numérique", ru: "ЕСКД. Обозначения условные графические. Элементы цифровой техники", en: "Graphical symbols: digital elements"}}
+  - {code: "IEC 60617", convention: intl, title: {fr: "Symboles graphiques pour schémas", ru: "Условные графические обозначения для схем", en: "Graphical symbols for diagrams"}}
+  - {code: "IEC 60062", convention: intl, title: {fr: "Codes de marquage des résistances et condensateurs", ru: "Коды маркировки резисторов и конденсаторов", en: "Marking codes for resistors and capacitors"}}
+  - {code: "IEC 61000", convention: intl, title: {fr: "Compatibilité électromagnétique", ru: "Электромагнитная совместимость", en: "Electromagnetic compatibility"}}

@@ -1,0 +1,44 @@
+id: medecine
+parent: generaliste
+names: {fr: "Médecine et sciences de la santé", ru: "Медицина и науки о здоровье", en: "Medicine and health sciences"}
+description:
+  fr: "Recherche clinique, épidémiologie, pharmacologie, soins. Domaine réglementé à haut risque."
+  ru: "Клинические исследования, эпидемиология, фармакология. Регулируемая область высокого риска."
+  en: "Clinical research, epidemiology, pharmacology, care. Regulated high-risk field."
+risk_level: high
+risk_notice:
+  fr: "Domaine médical : les vérifications automatiques sont limitées. Aucun contenu produit ne constitue un avis médical ; toute information clinique, posologie ou recommandation doit être validée par un professionnel de santé qualifié et vérifiée dans des sources de référence à jour."
+  ru: "Медицинская область: автоматическая проверка ограничена. Созданный текст не является медицинской рекомендацией; любые клинические сведения, дозировки и рекомендации должны быть проверены квалифицированным специалистом по актуальным источникам."
+  en: "Medical field: automated checks are limited. No generated content is medical advice; any clinical information, dosage or recommendation must be validated by a qualified health professional against up-to-date reference sources."
+keywords:
+  fr: ["patient*", "clinique*", "essai* clinique*", "diagnostic médical", "thérapeuti*", "posologie", "pathologie*", "épidémiologi*", "prévalence", "incidence", "cohorte*", "randomis*", "placebo", "médicament*", "symptôme*", "traitement médical", "hôpital", "soins"]
+  ru: ["пациент*", "клиническ*", "клиническ* исследован*", "диагноз*", "терапи*", "дозировк*", "патолог*", "эпидемиолог*", "распространённост*", "заболеваемост*", "когорт*", "рандомизирован*", "плацебо", "лекарствен*", "симптом*", "лечени*", "больниц*", "стационар*"]
+  en: ["patient*", "clinical", "clinical trial*", "diagnosis", "therapeutic", "dosage", "pathology", "epidemiolog*", "prevalence", "incidence", "cohort*", "randomized", "randomised", "placebo", "drug*", "symptom*", "treatment", "hospital*"]
+terminology:
+  - {id: prevalence, fr: "prévalence", ru: "распространённость", en: "prevalence", note: {fr: "À distinguer de l'incidence (nouveaux cas sur une période).", ru: "Не путать с заболеваемостью (новые случаи за период).", en: "Distinct from incidence (new cases over a period)."}}
+  - {id: incidence, fr: "incidence", ru: "заболеваемость (частота новых случаев)", en: "incidence"}
+  - {id: rct, fr: "essai contrôlé randomisé", ru: "рандомизированное контролируемое исследование", en: "randomised controlled trial (RCT)"}
+  - {id: informed_consent, fr: "consentement éclairé", ru: "информированное согласие", en: "informed consent"}
+  - {id: adverse_event, fr: "événement indésirable", ru: "нежелательное явление", en: "adverse event"}
+  - {id: odds_ratio, fr: "rapport de cotes (odds ratio)", ru: "отношение шансов", en: "odds ratio"}
+  - {id: relative_risk, fr: "risque relatif", ru: "относительный риск", en: "relative risk"}
+validation_rules:
+  - {id: professional_validation, severity: error, description: {fr: "Validation obligatoire par un professionnel de santé qualifié avant toute utilisation clinique.", ru: "Обязательная проверка квалифицированным медицинским специалистом перед клиническим использованием.", en: "Mandatory validation by a qualified health professional before any clinical use."}}
+  - {id: no_dosage_generation, severity: error, description: {fr: "Ne jamais proposer de posologie : reprendre uniquement les données sourcées fournies.", ru: "Никогда не предлагать дозировки: только данные из указанных источников.", en: "Never propose dosages: only reuse sourced data provided."}}
+  - {id: ethics_approval, severity: error, description: {fr: "Avis du comité d'éthique et consentement mentionnés pour toute recherche sur des personnes.", ru: "Для исследований с участием людей указаны одобрение этического комитета и согласие.", en: "Ethics committee approval and consent stated for any human research."}}
+  - {id: reporting_guideline, severity: warning, description: {fr: "Suivre la grille de rédaction adaptée (CONSORT, STROBE, PRISMA...).", ru: "Следовать соответствующему руководству (CONSORT, STROBE, PRISMA).", en: "Follow the relevant reporting guideline (CONSORT, STROBE, PRISMA)."}}
+  - {id: anonymisation, severity: error, description: {fr: "Aucune donnée permettant d'identifier un patient.", ru: "Никаких данных, позволяющих идентифицировать пациента.", en: "No patient-identifying data."}}
+calculations:
+  - {id: epidemiology, tools: [numpy], description: {fr: "Indicateurs épidémiologiques (prévalence, incidence, RR, OR)", ru: "Эпидемиологические показатели", en: "Epidemiological measures (prevalence, incidence, RR, OR)"}}
+  - {id: biostatistics, tools: [numpy], description: {fr: "Biostatistiques, intervalles de confiance", ru: "Биостатистика, доверительные интервалы", en: "Biostatistics, confidence intervals"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008", "Vancouver"], fr: ["Vancouver"], intl: ["Vancouver", "AMA"]}
+  notes: {fr: "Privilégier les sources primaires évaluées par les pairs et les recommandations officielles récentes.", ru: "Предпочтение рецензируемым первоисточникам и актуальным клиническим рекомендациям.", en: "Prefer peer-reviewed primary sources and recent official guidelines."}
+standards:
+  - {code: "Recommandations ICMJE", convention: intl, title: {fr: "Conduite, rédaction et publication des travaux en revues médicales", ru: "Рекомендации ICMJE по публикациям в медицинских журналах", en: "ICMJE Recommendations for medical journals"}}
+  - {code: "CONSORT", convention: intl, title: {fr: "Rapport des essais randomisés", ru: "Описание рандомизированных исследований", en: "Reporting randomised trials"}}
+  - {code: "STROBE", convention: intl, title: {fr: "Rapport des études observationnelles", ru: "Описание обсервационных исследований", en: "Reporting observational studies"}}
+  - {code: "PRISMA", convention: intl, title: {fr: "Revues systématiques et méta-analyses", ru: "Систематические обзоры и метаанализы", en: "Systematic reviews and meta-analyses"}}
+  - {code: "Déclaration d'Helsinki (AMM)", convention: intl, title: {fr: "Principes éthiques de la recherche médicale", ru: "Этические принципы медицинских исследований", en: "Ethical principles for medical research"}}
+  - {code: "CIM-11 / ICD-11 (OMS)", convention: intl, title: {fr: "Classification internationale des maladies", ru: "Международная классификация болезней", en: "International Classification of Diseases"}}
+  - {code: "ГОСТ Р 52379-2005", convention: ru, title: {fr: "Bonnes pratiques cliniques", ru: "Надлежащая клиническая практика", en: "Good clinical practice"}}

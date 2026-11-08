@@ -4,8 +4,9 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : Phase 3 terminée — lecture des documents (DOCX, PDF, TXT, MD, XLSX, PPTX),
-> OCR (fra/rus/eng) et recherche plein texte multilingue.**
+> **Statut : Phase 4 terminée — 17 profils disciplinaires trilingues, identification du domaine,
+> gabarits de structure ГОСТ / NF-EN / ISO.** Phases 1 à 3 : projets, import sécurisé,
+> lecture des documents (DOCX, PDF, TXT, MD, XLSX, PPTX), OCR, recherche plein texte.
 
 ## Principes
 
@@ -23,10 +24,13 @@ techniques et professionnels (FR / RU / EN).
 | Projets | `create_project`, `get_project`, `list_projects`, `update_project`, `archive_project` |
 | Documents | `import_document`, `list_documents`, `get_document_metadata` |
 | Extraction et recherche | `extract_document_content`, `extract_document_tables`, `extract_document_images`, `search_in_documents` |
+| Disciplines | `identify_domain`, `set_project_domain`, `list_domain_profiles`, `get_domain_profile`, `get_document_structure_template`, `lookup_terminology`, `reload_domain_profiles` |
 
 Ressources : `academic-writer://info`, `academic-writer://projects`,
 `academic-writer://projects/{project_id}`, `academic-writer://document-types`,
-`academic-writer://languages`. Prompt : `academic_analysis`.
+`academic-writer://languages`, `academic-writer://domains`, `academic-writer://domains/{domain_id}`,
+`academic-writer://conventions`. Prompt : `academic_analysis`.
+Profils disciplinaires : [docs/profils-disciplinaires.md](docs/profils-disciplinaires.md).
 
 ## Pile technique
 
@@ -83,6 +87,8 @@ src/academic_writer/
   storage/    SQLite : connexion, transactions, migrations, sauvegardes
   security/   contrôle des chemins, inspection des fichiers
   document/   lecteurs (docx, pdf_pdfium, pdf_pymupdf, text, xlsx, pptx), OCR, mise en page, rendu
+  domains/    schéma des profils, chargement/héritage, détection, gabarits de structure
+  domain_profiles/  17 profils YAML + _document_structures.yaml (3 conventions × 11 familles)
 tests/        tests unitaires, sécurité, intégration MCP
 docs/         documentation technique
 ```

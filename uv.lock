@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "academic-writer"
-version = "0.3.0"
+version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "charset-normalizer" },
@@ -21,6 +21,7 @@ dependencies = [
     { name = "pypdfium2" },
     { name = "python-docx" },
     { name = "python-pptx" },
+    { name = "pyyaml" },
 ]
 
 [package.optional-dependencies]
@@ -49,6 +50,7 @@ requires-dist = [
     { name = "pypdfium2", specifier = ">=4.30" },
     { name = "python-docx", specifier = ">=1.1" },
     { name = "python-pptx", specifier = ">=1.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
 ]
 provides-extras = ["pymupdf"]
 

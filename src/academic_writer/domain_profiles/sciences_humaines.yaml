@@ -1,0 +1,26 @@
+id: sciences_humaines
+parent: generaliste
+names: {fr: "Sciences humaines et sociales", ru: "Гуманитарные и социальные науки", en: "Humanities and social sciences"}
+description:
+  fr: "Sociologie, psychologie, histoire, philosophie, sciences de l'éducation, linguistique."
+  ru: "Социология, психология, история, философия, педагогика, лингвистика."
+  en: "Sociology, psychology, history, philosophy, education, linguistics."
+keywords:
+  fr: ["sociologi*", "psychologi*", "historiographie", "philosophi*", "pédagogi*", "linguistique", "entretien* semi-directif*", "enquête qualitative", "questionnaire*", "représentations sociales", "identité", "discours", "corpus", "terrain d'enquête", "épistémologi*", "concept*"]
+  ru: ["социолог*", "психолог*", "историограф*", "философ*", "педагог*", "лингвистик*", "полуструктурированн* интервью", "качественн* исследован*", "анкетирован*", "социальн* представлен*", "идентичност*", "дискурс*", "корпус* текстов", "эпистемолог*"]
+  en: ["sociolog*", "psycholog*", "historiography", "philosoph*", "pedagog*", "linguistics", "semi-structured interview*", "qualitative research", "questionnaire*", "social representation*", "identity", "discourse", "corpus", "fieldwork", "epistemolog*"]
+terminology:
+  - {id: qualitative, fr: "méthode qualitative", ru: "качественный метод", en: "qualitative method"}
+  - {id: interview, fr: "entretien semi-directif", ru: "полуструктурированное интервью", en: "semi-structured interview"}
+  - {id: sample, fr: "échantillon", ru: "выборка", en: "sample"}
+  - {id: informed_consent, fr: "consentement éclairé", ru: "информированное согласие", en: "informed consent"}
+validation_rules:
+  - {id: ethics_participants, severity: warning, description: {fr: "Consentement et anonymisation des participants décrits.", ru: "Описаны согласие и анонимизация участников.", en: "Participant consent and anonymisation described."}}
+  - {id: quotes_exact, severity: error, description: {fr: "Les citations sont exactes, entre guillemets, avec leur source et page.", ru: "Цитаты точные, в кавычках, с источником и страницей.", en: "Quotations exact, in quotation marks, with source and page."}}
+calculations:
+  - {id: descriptive_stats, tools: [numpy], description: {fr: "Statistiques descriptives d'enquête", ru: "Описательная статистика опросов", en: "Survey descriptive statistics"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Chicago"], intl: ["APA 7", "Chicago", "MLA"]}
+standards:
+  - {code: "APA 7", convention: intl, title: {fr: "Manuel de publication de l'APA (7e édition)", ru: "Руководство APA (7-е издание)", en: "APA Publication Manual (7th edition)"}}
+  - {code: "Chicago Manual of Style", convention: intl, title: {fr: "Manuel de style de Chicago", ru: "Чикагское руководство по стилю", en: "The Chicago Manual of Style"}}

@@ -1,0 +1,43 @@
+id: informatique
+parent: generaliste
+names: {fr: "Informatique", ru: "Информатика и программная инженерия", en: "Computer science and software engineering"}
+description:
+  fr: "Algorithmique, génie logiciel, bases de données, réseaux, sécurité informatique, intelligence artificielle."
+  ru: "Алгоритмы, программная инженерия, базы данных, сети, информационная безопасность, искусственный интеллект."
+  en: "Algorithms, software engineering, databases, networks, information security, artificial intelligence."
+keywords:
+  fr: ["algorithme*", "complexité algorithmique", "programmation", "logiciel*", "base* de données", "requête* sql", "architecture logicielle", "uml", "diagramme de classes", "api", "interface utilisateur", "réseau* informatique*", "protocole*", "cybersécurité", "apprentissage automatique", "réseau* de neurones", "jeu de données", "développement web", "test* unitaire*", "code source"]
+  ru: ["алгоритм*", "программирован*", "программн* обеспечен*", "баз* данных", "sql", "архитектур* по", "uml", "диаграмм* классов", "интерфейс*", "компьютерн* сет*", "протокол*", "информационн* безопасност*", "машинн* обучен*", "нейронн* сет*", "набор* данных", "исходн* код*", "тестирован*", "веб-приложен*"]
+  en: ["algorithm*", "computational complexity", "programming", "software", "database*", "sql", "software architecture", "uml", "class diagram", "api", "user interface", "computer network*", "protocol*", "cybersecurity", "machine learning", "neural network*", "dataset*", "source code", "unit test*", "web application*"]
+terminology:
+  - {id: algorithm, fr: "algorithme", ru: "алгоритм", en: "algorithm"}
+  - {id: complexity, fr: "complexité (temporelle, spatiale)", ru: "вычислительная сложность", en: "time/space complexity"}
+  - {id: requirement, fr: "exigence", ru: "требование", en: "requirement"}
+  - {id: database, fr: "base de données", ru: "база данных", en: "database"}
+  - {id: framework, fr: "cadriciel (framework)", ru: "фреймворк (программный каркас)", en: "framework"}
+  - {id: dataset, fr: "jeu de données", ru: "набор данных (датасет)", en: "dataset"}
+  - {id: overfitting, fr: "surapprentissage", ru: "переобучение", en: "overfitting"}
+  - {id: vulnerability, fr: "vulnérabilité", ru: "уязвимость", en: "vulnerability"}
+document_sections:
+  projet:
+    - {id: requirements_analysis, after: analysis, title: {fr: "Analyse des exigences", ru: "Анализ требований", en: "Requirements analysis"}}
+    - {id: implementation, after: design, title: {fr: "Implémentation", ru: "Реализация", en: "Implementation"}}
+    - {id: testing, after: calculations, title: {fr: "Tests et évaluation", ru: "Тестирование и оценка", en: "Testing and evaluation"}}
+validation_rules:
+  - {id: reproducibility, severity: warning, description: {fr: "Versions des logiciels, bibliothèques et jeux de données indiquées (reproductibilité).", ru: "Указаны версии ПО, библиотек и наборов данных (воспроизводимость).", en: "Software, library and dataset versions stated (reproducibility)."}}
+  - {id: metrics_defined, severity: warning, description: {fr: "Métriques d'évaluation définies avant d'être utilisées (précision, rappel...).", ru: "Метрики оценки определены до использования.", en: "Evaluation metrics defined before use."}}
+  - {id: code_listing, severity: info, description: {fr: "Extraits de code courts et commentés ; code complet en annexe ou dépôt cité.", ru: "Короткие листинги с комментариями; полный код в приложении или репозитории.", en: "Short commented code excerpts; full code in appendix or cited repository."}}
+calculations:
+  - {id: complexity, tools: [sympy], description: {fr: "Analyse de complexité", ru: "Анализ сложности", en: "Complexity analysis"}}
+  - {id: ml_metrics, tools: [numpy], description: {fr: "Métriques d'apprentissage automatique", ru: "Метрики машинного обучения", en: "Machine learning metrics"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["IEEE", "ACM"], intl: ["IEEE", "ACM"]}
+standards:
+  - {code: "ГОСТ 19.201-78", convention: ru, title: {fr: "Cahier des charges d'un programme (ESPD)", ru: "ЕСПД. Техническое задание. Требования к содержанию и оформлению", en: "Program specification (ESPD)"}}
+  - {code: "ГОСТ 19.404-79", convention: ru, title: {fr: "Note explicative (ESPD)", ru: "ЕСПД. Пояснительная записка", en: "Explanatory note (ESPD)"}}
+  - {code: "ГОСТ 19.701-90", convention: ru, title: {fr: "Organigrammes d'algorithmes", ru: "ЕСПД. Схемы алгоритмов, программ, данных и систем", en: "Flowcharts"}}
+  - {code: "ГОСТ 34.602-2020", convention: ru, title: {fr: "Cahier des charges d'un système automatisé", ru: "Техническое задание на создание автоматизированной системы", en: "Specification for automated systems"}}
+  - {code: "ISO/IEC 25010", convention: intl, title: {fr: "Modèle de qualité des logiciels", ru: "Модель качества программных продуктов", en: "Software product quality model"}}
+  - {code: "ISO/IEC/IEEE 29148", convention: intl, title: {fr: "Ingénierie des exigences", ru: "Инженерия требований", en: "Requirements engineering"}}
+  - {code: "ISO/IEC/IEEE 12207", convention: intl, title: {fr: "Processus du cycle de vie du logiciel", ru: "Процессы жизненного цикла ПО", en: "Software life cycle processes"}}
+  - {code: "ISO/IEC 27001", convention: intl, title: {fr: "Management de la sécurité de l'information", ru: "Менеджмент информационной безопасности", en: "Information security management"}}

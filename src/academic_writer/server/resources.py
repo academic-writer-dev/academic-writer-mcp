@@ -7,6 +7,7 @@ import json
 from mcp.server import MCPServer
 
 from academic_writer.core.models import DOCUMENT_TYPE_LABELS, LANGUAGE_LABELS
+from academic_writer.domains.model import CONVENTION_LABELS
 from academic_writer.server.services import get_services
 
 
@@ -36,6 +37,21 @@ def register(mcp: MCPServer) -> None:
     def document_types_resource() -> str:
         """Types de documents pris en charge (code → libellé)."""
         return _json({t.value: label for t, label in DOCUMENT_TYPE_LABELS.items()})
+
+    @mcp.resource("academic-writer://domains", mime_type="application/json", title="Profils disciplinaires")
+    def domains_resource() -> str:
+        """Profils disciplinaires disponibles."""
+        return get_services().domains.list_domains().model_dump_json(indent=2)
+
+    @mcp.resource("academic-writer://domains/{domain_id}", mime_type="application/json", title="Profil disciplinaire")
+    def domain_resource(domain_id: str) -> str:
+        """Profil disciplinaire complet (héritage résolu)."""
+        return get_services().domains.get_domain(domain_id).model_dump_json(indent=2)
+
+    @mcp.resource("academic-writer://conventions", mime_type="application/json", title="Conventions de présentation")
+    def conventions_resource() -> str:
+        """Conventions de présentation prises en charge."""
+        return _json(CONVENTION_LABELS)
 
     @mcp.resource("academic-writer://languages", mime_type="application/json", title="Langues")
     def languages_resource() -> str:

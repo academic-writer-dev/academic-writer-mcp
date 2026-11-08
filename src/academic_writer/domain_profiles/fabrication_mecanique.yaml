@@ -1,0 +1,40 @@
+id: fabrication_mecanique
+parent: genie_mecanique
+names: {fr: "Fabrication mécanique", ru: "Технология машиностроения", en: "Manufacturing engineering"}
+description:
+  fr: "Procédés d'usinage et de mise en forme, gammes de fabrication, métrologie, qualité des surfaces."
+  ru: "Механическая обработка, технологические процессы, метрология, качество поверхности."
+  en: "Machining and forming processes, process planning, metrology, surface quality."
+keywords:
+  fr: ["usinage", "tournage", "fraisage", "perçage", "rectification", "outil* de coupe", "vitesse de coupe", "avance par tour", "profondeur de passe", "gamme d'usinage", "gamme de fabrication", "machine-outil*", "commande numérique", "rugosité", "état de surface", "brut", "posage", "isostatisme", "contrat de phase", "métrologie"]
+  ru: ["механическ* обработк*", "токарн*", "фрезерован*", "сверлен*", "шлифован*", "режущ* инструмент*", "скорост* резания", "подач*", "глубин* резания", "технологическ* процесс*", "маршрутн* карт*", "операционн* карт*", "станок", "станка", "станков", "чпу", "шероховатост*", "заготовк*", "базирован*", "припуск*"]
+  en: ["machining", "turning", "milling", "drilling", "grinding", "cutting tool*", "cutting speed", "feed rate", "depth of cut", "process plan*", "machine tool*", "cnc", "surface roughness", "workpiece*", "fixturing", "datum*", "tool life", "metrology"]
+terminology:
+  - {id: cutting_speed, fr: "vitesse de coupe (Vc)", ru: "скорость резания (v)", en: "cutting speed (vc)", definition: {fr: "Vc = π·D·n / 1000 (m/min, D en mm, n en tr/min).", ru: "v = π·D·n / 1000 (м/мин, D в мм, n в об/мин).", en: "vc = π·D·n / 1000 (m/min, D in mm, n in rpm)."}}
+  - {id: feed, fr: "avance", ru: "подача", en: "feed"}
+  - {id: depth_of_cut, fr: "profondeur de passe", ru: "глубина резания", en: "depth of cut"}
+  - {id: process_plan, fr: "gamme d'usinage", ru: "технологический процесс (маршрут обработки)", en: "process plan"}
+  - {id: roughness, fr: "rugosité (Ra)", ru: "шероховатость (Ra)", en: "surface roughness (Ra)"}
+  - {id: tolerance, fr: "tolérance", ru: "допуск", en: "tolerance"}
+  - {id: fit, fr: "ajustement", ru: "посадка", en: "fit"}
+  - {id: blank, fr: "brut", ru: "заготовка", en: "blank"}
+  - {id: allowance, fr: "surépaisseur d'usinage", ru: "припуск на обработку", en: "machining allowance"}
+  - {id: locating, fr: "mise en position (isostatisme)", ru: "базирование", en: "locating (fixturing)"}
+document_sections:
+  projet:
+    - {id: process_plan, after: design, title: {fr: "Gamme de fabrication et contrats de phase", ru: "Технологический маршрут и операционные карты", en: "Process plan and operation sheets"}}
+    - {id: cutting_conditions, after: calculations, title: {fr: "Calcul des conditions de coupe", ru: "Расчёт режимов резания", en: "Cutting conditions calculation"}}
+validation_rules:
+  - {id: cutting_units, severity: warning, description: {fr: "Vc en m/min, avance en mm/tr ou mm/min, n en tr/min : vérifier la cohérence.", ru: "v в м/мин, подача в мм/об или мм/мин, n в об/мин: проверить согласованность.", en: "vc in m/min, feed in mm/rev or mm/min, n in rpm: check consistency."}}
+  - {id: tool_data_source, severity: warning, description: {fr: "Les données de coupe proviennent d'un catalogue d'outils ou d'un abaque cité.", ru: "Режимы резания взяты из цитируемого справочника или каталога инструмента.", en: "Cutting data come from a cited tool catalogue or handbook."}}
+calculations:
+  - {id: cutting_conditions, tools: [sympy, units], description: {fr: "Conditions de coupe, puissance, temps d'usinage", ru: "Режимы резания, мощность, основное время", en: "Cutting conditions, power, machining time"}}
+  - {id: tolerance_chains, tools: [sympy], description: {fr: "Chaînes de cotes", ru: "Размерные цепи", en: "Tolerance stack-ups"}}
+standards:
+  - {code: "ГОСТ 3.1102-2011", convention: ru, title: {fr: "ESTD : stades d'élaboration et types de documents", ru: "ЕСТД. Стадии разработки и виды документов", en: "Technological documentation: stages and types"}}
+  - {code: "ГОСТ 3.1118-82", convention: ru, title: {fr: "ESTD : fiches de gamme", ru: "ЕСТД. Формы и правила оформления маршрутных карт", en: "Route cards"}}
+  - {code: "ГОСТ 2789-73", convention: ru, title: {fr: "Rugosité de surface", ru: "Шероховатость поверхности. Параметры и характеристики", en: "Surface roughness parameters"}}
+  - {code: "ГОСТ 2.309-73", convention: ru, title: {fr: "Indication de la rugosité sur les dessins", ru: "ЕСКД. Обозначения шероховатости поверхностей", en: "Indication of surface roughness"}}
+  - {code: "NF EN ISO 21920-2", convention: fr, title: {fr: "État de surface : profil (paramètres)", ru: "Структура поверхности: профиль", en: "Surface texture: profile parameters"}}
+  - {code: "ISO 3685", convention: intl, title: {fr: "Essais de durée de vie des outils de tournage", ru: "Испытания стойкости токарных резцов", en: "Tool-life testing with single-point turning tools"}}
+  - {code: "ISO 513", convention: intl, title: {fr: "Classification des matériaux de coupe durs", ru: "Классификация твёрдых режущих материалов", en: "Classification of hard cutting materials"}}

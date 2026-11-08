@@ -1,0 +1,29 @@
+id: mathematiques
+parent: generaliste
+names: {fr: "Mathématiques", ru: "Математика", en: "Mathematics"}
+description:
+  fr: "Analyse, algèbre, probabilités et statistiques, mathématiques appliquées et numériques."
+  ru: "Математический анализ, алгебра, теория вероятностей и статистика, прикладная и вычислительная математика."
+  en: "Analysis, algebra, probability and statistics, applied and numerical mathematics."
+keywords:
+  fr: ["théorème*", "lemme*", "démonstration*", "corollaire*", "intégrale*", "dérivée*", "équation* différentielle*", "matrice*", "espace vectoriel", "valeur* propre*", "probabilité*", "variable aléatoire", "espérance", "variance", "convergence", "série* entière*", "méthode* numérique*", "topologie", "fonction continue"]
+  ru: ["теорем*", "лемм*", "доказательств*", "следстви*", "интеграл*", "производн*", "дифференциальн* уравнен*", "матриц*", "векторн* пространств*", "собственн* значен*", "вероятност*", "случайн* величин*", "математическ* ожидан*", "дисперси*", "сходимост*", "степенн* ряд*", "численн* метод*", "топологи*", "непрерывн* функци*"]
+  en: ["theorem*", "lemma*", "proof*", "corollary", "integral*", "derivative*", "differential equation*", "matrix", "matrices", "vector space*", "eigenvalue*", "probability", "random variable*", "expectation", "variance", "convergence", "power series", "numerical method*", "topology", "continuous function*"]
+terminology:
+  - {id: theorem, fr: "théorème", ru: "теорема", en: "theorem"}
+  - {id: proof, fr: "démonstration", ru: "доказательство", en: "proof"}
+  - {id: eigenvalue, fr: "valeur propre", ru: "собственное значение", en: "eigenvalue"}
+  - {id: expectation, fr: "espérance mathématique", ru: "математическое ожидание", en: "expected value"}
+  - {id: standard_deviation, fr: "écart-type", ru: "среднеквадратическое отклонение", en: "standard deviation"}
+  - {id: confidence_interval, fr: "intervalle de confiance", ru: "доверительный интервал", en: "confidence interval"}
+validation_rules:
+  - {id: definitions_first, severity: warning, description: {fr: "Toute notation est définie avant usage ; hypothèses des théorèmes explicites.", ru: "Все обозначения определены до использования; условия теорем указаны явно.", en: "All notation defined before use; theorem hypotheses explicit."}}
+  - {id: proof_steps, severity: warning, description: {fr: "Chaque étape de démonstration est justifiée (résultat cité ou calcul).", ru: "Каждый шаг доказательства обоснован.", en: "Each proof step is justified (cited result or computation)."}}
+calculations:
+  - {id: symbolic, tools: [sympy], description: {fr: "Calcul symbolique (dérivées, intégrales, équations)", ru: "Символьные вычисления", en: "Symbolic computation"}}
+  - {id: statistics, tools: [numpy], description: {fr: "Statistiques descriptives et inférentielles", ru: "Описательная и выводная статистика", en: "Descriptive and inferential statistics"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["AMS", "ISO 690"], intl: ["AMS"]}
+standards:
+  - {code: "ISO 80000-2", convention: intl, title: {fr: "Signes et symboles mathématiques", ru: "Математические знаки и символы", en: "Mathematical signs and symbols"}}
+  - {code: "NF EN ISO 80000-2", convention: fr, title: {fr: "Signes et symboles mathématiques", ru: "Математические знаки и символы", en: "Mathematical signs and symbols"}}

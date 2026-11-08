@@ -140,6 +140,15 @@ CREATE TRIGGER chunks_au AFTER UPDATE ON chunks BEGIN
 END;
 """,
     ),
+    Migration(
+        version=3,
+        description="Domaine disciplinaire et convention de présentation des projets",
+        sql="""
+ALTER TABLE projects ADD COLUMN domain_id TEXT;
+ALTER TABLE projects ADD COLUMN domain_confirmed_at TEXT;
+ALTER TABLE projects ADD COLUMN convention TEXT CHECK (convention IN ('ru', 'fr', 'intl'));
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

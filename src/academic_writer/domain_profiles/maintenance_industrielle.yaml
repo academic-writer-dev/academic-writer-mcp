@@ -1,0 +1,62 @@
+id: maintenance_industrielle
+parent: genie_mecanique
+names: {fr: "Maintenance industrielle", ru: "Техническое обслуживание и ремонт оборудования", en: "Industrial maintenance"}
+description:
+  fr: "Stratégies de maintenance, fiabilité, disponibilité, diagnostic, gestion des actifs."
+  ru: "Стратегии ТОиР, надёжность, готовность, диагностика, управление активами."
+  en: "Maintenance strategies, reliability, availability, diagnostics, asset management."
+keywords:
+  fr: ["maintenance préventive", "maintenance corrective", "maintenance prédictive", "maintenance conditionnelle", "défaillance*", "panne*", "fiabilité", "disponibilité", "maintenabilité", "mtbf", "mttr", "amdec", "gmao", "arbre de défaillance*", "taux de défaillance", "analyse vibratoire", "thermographie", "pièce* de rechange", "ordre* de travail", "trs"]
+  ru: ["техническ* обслуживан*", "ремонт*", "тоир", "ппр", "отказ*", "неисправност*", "надёжност*", "безотказност*", "ремонтопригодност*", "коэффициент* готовност*", "наработк* на отказ", "диагностик*", "вибродиагностик*", "термограф*", "запасн* част*", "дефект*", "износ*", "межремонтн*"]
+  en: ["preventive maintenance", "corrective maintenance", "predictive maintenance", "condition monitoring", "failure*", "breakdown*", "reliability", "availability", "maintainability", "mtbf", "mttr", "fmea", "fmeca", "cmms", "fault tree", "failure rate", "vibration analysis", "spare part*", "work order*", "oee"]
+terminology:
+  - {id: failure, fr: "défaillance", ru: "отказ", en: "failure", definition: {fr: "Perte de l'aptitude d'un bien à accomplir une fonction requise (événement).", ru: "Событие, заключающееся в нарушении работоспособного состояния объекта.", en: "Loss of the ability of an item to perform a required function (event)."}, note: {fr: "La panne est l'état qui suit la défaillance (NF EN 13306).", ru: "Неисправность — состояние; отказ — событие.", en: "A fault is the state that follows a failure (EN 13306)."}}
+  - {id: preventive, fr: "maintenance préventive", ru: "плановое (профилактическое) техническое обслуживание", en: "preventive maintenance"}
+  - {id: corrective, fr: "maintenance corrective", ru: "внеплановый (аварийный) ремонт", en: "corrective maintenance"}
+  - {id: condition_based, fr: "maintenance conditionnelle", ru: "обслуживание по фактическому состоянию", en: "condition-based maintenance"}
+  - {id: mtbf, fr: "MTBF (moyenne des temps de bon fonctionnement)", ru: "средняя наработка на отказ", en: "MTBF (mean operating time between failures)"}
+  - {id: mttr, fr: "MTTR (moyenne des temps techniques de réparation)", ru: "среднее время восстановления", en: "MTTR (mean time to restoration)"}
+  - {id: availability, fr: "disponibilité", ru: "коэффициент готовности", en: "availability"}
+  - {id: reliability, fr: "fiabilité", ru: "безотказность (надёжность)", en: "reliability"}
+  - {id: fmeca, fr: "AMDEC", ru: "анализ видов, последствий и критичности отказов (АВПКО)", en: "FMECA"}
+  - {id: cmms, fr: "GMAO", ru: "автоматизированная система управления ТОиР", en: "CMMS"}
+  - {id: oee, fr: "TRS (taux de rendement synthétique)", ru: "общая эффективность оборудования (OEE)", en: "OEE (overall equipment effectiveness)"}
+methodology:
+  fr:
+    - "Identifier l'équipement, son contexte et sa criticité."
+    - "Collecter l'historique des défaillances (GMAO, rapports d'intervention)."
+    - "Calculer les indicateurs (MTBF, MTTR, disponibilité) à partir de données réelles."
+    - "Analyser les causes (AMDEC, arbre des causes, 5 pourquoi)."
+    - "Proposer un plan de maintenance chiffré et vérifiable."
+  ru:
+    - "Определить оборудование, условия эксплуатации и критичность."
+    - "Собрать историю отказов (журналы, акты, система ТОиР)."
+    - "Рассчитать показатели (наработка на отказ, время восстановления, готовность) по реальным данным."
+    - "Проанализировать причины (АВПКО, дерево отказов)."
+    - "Предложить обоснованный план ТОиР."
+  en:
+    - "Identify the equipment, its context and criticality."
+    - "Collect failure history (CMMS, intervention reports)."
+    - "Compute indicators (MTBF, MTTR, availability) from real data."
+    - "Analyse root causes (FMECA, fault tree, 5 whys)."
+    - "Propose a costed, verifiable maintenance plan."
+document_sections:
+  rapport_intervention:
+    - {id: equipment_history, after: identification, required: false, title: {fr: "Historique de l'équipement", ru: "История эксплуатации оборудования", en: "Equipment history"}}
+    - {id: kpi, after: analysis, required: false, title: {fr: "Indicateurs de maintenance", ru: "Показатели ТОиР", en: "Maintenance indicators"}}
+validation_rules:
+  - {id: kpi_from_data, severity: error, description: {fr: "MTBF, MTTR et disponibilité calculés à partir de données d'historique citées, jamais estimés sans source.", ru: "Показатели надёжности рассчитываются по указанным данным, а не задаются без источника.", en: "MTBF, MTTR and availability computed from cited historical data, never estimated without source."}}
+  - {id: availability_formula, severity: warning, description: {fr: "Vérifier D = MTBF / (MTBF + MTTR) et la période d'observation.", ru: "Проверить Kг = T0 / (T0 + Tв) и период наблюдения.", en: "Check A = MTBF / (MTBF + MTTR) and the observation period."}}
+calculations:
+  - {id: reliability_indicators, tools: [sympy, units], description: {fr: "MTBF, MTTR, disponibilité, taux de défaillance", ru: "Наработка на отказ, время восстановления, готовность, интенсивность отказов", en: "MTBF, MTTR, availability, failure rate"}}
+  - {id: weibull, tools: [numpy], description: {fr: "Loi de Weibull (paramètres de forme et d'échelle)", ru: "Распределение Вейбулла", en: "Weibull analysis"}}
+  - {id: criticality, tools: [], description: {fr: "Criticité AMDEC (F × G × D)", ru: "Критичность (АВПКО)", en: "FMECA criticality (RPN)"}}
+standards:
+  - {code: "ГОСТ 18322-2016", convention: ru, title: {fr: "Système de maintenance et réparation : termes", ru: "Система технического обслуживания и ремонта техники. Термины и определения", en: "Maintenance and repair system: terms"}}
+  - {code: "ГОСТ 27.002-2015", convention: ru, title: {fr: "Sûreté de fonctionnement : termes", ru: "Надёжность в технике. Термины и определения", en: "Dependability: terms"}}
+  - {code: "NF EN 13306", convention: fr, title: {fr: "Maintenance : terminologie", ru: "Техническое обслуживание: терминология", en: "Maintenance terminology"}}
+  - {code: "NF EN 15341", convention: fr, title: {fr: "Indicateurs de performance de la maintenance", ru: "Ключевые показатели эффективности ТОиР", en: "Maintenance key performance indicators"}}
+  - {code: "NF EN 13460", convention: fr, title: {fr: "Documentation de maintenance", ru: "Документация по ТОиР", en: "Documentation for maintenance"}}
+  - {code: "IEC 60812", convention: intl, title: {fr: "AMDE / AMDEC", ru: "Анализ видов и последствий отказов", en: "Failure modes and effects analysis (FMEA and FMECA)"}}
+  - {code: "ISO 55000", convention: intl, title: {fr: "Gestion d'actifs : vue d'ensemble", ru: "Управление активами: общие положения", en: "Asset management: overview"}}
+  - {code: "ISO 14224", convention: intl, title: {fr: "Collecte de données de fiabilité et maintenance", ru: "Сбор данных о надёжности и ТО", en: "Collection of reliability and maintenance data"}}

@@ -1,0 +1,30 @@
+id: physique
+parent: generaliste
+names: {fr: "Physique", ru: "Физика", en: "Physics"}
+description:
+  fr: "Mécanique, thermodynamique, électromagnétisme, optique, physique quantique, mesures physiques."
+  ru: "Механика, термодинамика, электромагнетизм, оптика, квантовая физика, физические измерения."
+  en: "Mechanics, thermodynamics, electromagnetism, optics, quantum physics, physical measurements."
+keywords:
+  fr: ["thermodynamique", "entropie", "enthalpie", "électromagnétisme", "champ magnétique", "champ électrique", "optique", "longueur d'onde", "photon*", "mécanique quantique", "relativité", "incertitude* de mesure", "énergie cinétique", "quantité de mouvement", "oscillateur*", "spectroscopie", "rayonnement"]
+  ru: ["термодинамик*", "энтропи*", "энтальпи*", "электромагнет*", "магнитн* пол*", "электрическ* пол*", "оптик*", "длин* волны", "фотон*", "квантов* механик*", "относительност*", "погрешност* измерен*", "кинетическ* энерги*", "импульс*", "колебан*", "спектроскоп*", "излучен*"]
+  en: ["thermodynamics", "entropy", "enthalpy", "electromagnetism", "magnetic field", "electric field", "optics", "wavelength", "photon*", "quantum mechanics", "relativity", "measurement uncertainty", "kinetic energy", "momentum", "oscillator*", "spectroscopy", "radiation"]
+terminology:
+  - {id: uncertainty, fr: "incertitude-type", ru: "стандартная неопределённость", en: "standard uncertainty"}
+  - {id: momentum, fr: "quantité de mouvement", ru: "импульс (количество движения)", en: "momentum"}
+  - {id: wavelength, fr: "longueur d'onde", ru: "длина волны", en: "wavelength"}
+  - {id: mass, fr: "masse", ru: "масса", en: "mass", avoid: {fr: ["poids (pour une masse en kg)"], ru: ["вес (для массы в кг)"], en: ["weight (for mass in kg)"]}}
+validation_rules:
+  - {id: uncertainty_reported, severity: warning, description: {fr: "Résultats de mesure accompagnés de leur incertitude et de sa méthode d'évaluation (GUM).", ru: "Результаты измерений сопровождаются неопределённостью и способом её оценки.", en: "Measurement results reported with uncertainty and its evaluation method (GUM)."}}
+  - {id: dimensional_analysis, severity: warning, description: {fr: "Homogénéité dimensionnelle des formules vérifiée.", ru: "Проверена размерность формул.", en: "Dimensional homogeneity of formulas checked."}}
+calculations:
+  - {id: dimensional, tools: [units, sympy], description: {fr: "Analyse dimensionnelle", ru: "Анализ размерностей", en: "Dimensional analysis"}}
+  - {id: uncertainty_propagation, tools: [sympy, numpy], description: {fr: "Propagation des incertitudes", ru: "Распространение неопределённостей", en: "Uncertainty propagation"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["AIP", "ISO 690"], intl: ["AIP", "APS"]}
+standards:
+  - {code: "ГОСТ Р 54500.3-2011", convention: ru, title: {fr: "Guide pour l'expression de l'incertitude de mesure (GUM)", ru: "Неопределённость измерения. Руководство по выражению неопределённости измерения", en: "Guide to the expression of uncertainty in measurement"}}
+  - {code: "NF ENV 13005", convention: fr, title: {fr: "Guide pour l'expression de l'incertitude de mesure", ru: "Руководство по выражению неопределённости", en: "Guide to the expression of uncertainty in measurement"}}
+  - {code: "JCGM 100:2008 (GUM)", convention: intl, title: {fr: "Guide pour l'expression de l'incertitude de mesure", ru: "Руководство по выражению неопределённости измерения", en: "Guide to the expression of uncertainty in measurement"}}
+  - {code: "ISO 80000", convention: intl, title: {fr: "Grandeurs et unités (série)", ru: "Величины и единицы (серия)", en: "Quantities and units (series)"}}
+  - {code: "Brochure SI (BIPM)", convention: intl, title: {fr: "Le Système international d'unités", ru: "Международная система единиц", en: "The International System of Units"}}

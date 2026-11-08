@@ -16,6 +16,8 @@ EXPECTED_TOOLS = {
     "ping", "create_project", "get_project", "list_projects", "update_project", "archive_project",
     "import_document", "list_documents", "get_document_metadata",
     "extract_document_content", "extract_document_tables", "extract_document_images", "search_in_documents",
+    "identify_domain", "set_project_domain", "list_domain_profiles", "get_domain_profile",
+    "get_document_structure_template", "lookup_terminology", "reload_domain_profiles",
 }
 
 

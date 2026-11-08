@@ -1,0 +1,77 @@
+id: genie_mecanique
+parent: generaliste
+names: {fr: "Génie mécanique", ru: "Машиностроение и механика", en: "Mechanical engineering"}
+description:
+  fr: "Conception mécanique, mécanique des solides, résistance des matériaux, théorie des mécanismes et des machines (TMM), éléments de machines."
+  ru: "Конструирование, механика твёрдого тела, сопротивление материалов, теория механизмов и машин (ТММ), детали машин."
+  en: "Mechanical design, solid mechanics, strength of materials, theory of machines and mechanisms, machine elements."
+keywords:
+  fr: ["mécanisme*", "cinémati*", "manivelle*", "bielle*", "coulisseau*", "engrenage*", "réducteur*", "roulement*", "résistance des matériaux", "contrainte*", "déformation*", "moment fléchissant", "effort tranchant", "flexion", "torsion", "dimensionnement", "liaison* mécanique*", "degré* de mobilité", "couple moteur", "arbre de transmission", "accélération de coriolis", "épure*", "élément* de machine*"]
+  ru: ["механизм*", "кинематическ*", "кривошип*", "шатун*", "ползун*", "кулис*", "звено", "звена", "звеньев", "кинематическ* пар*", "степен* подвижност*", "структурн* анализ*", "план* скоростей", "план* ускорений", "ускорени* кориолиса", "зубчат*", "редуктор*", "подшипник*", "сопротивлени* материалов", "напряжени*", "деформаци*", "изгибающ* момент*", "крутящ* момент*", "детал* машин", "стойк*"]
+  en: ["mechanism*", "kinematic*", "crank*", "connecting rod*", "slider*", "linkage*", "gear*", "gearbox*", "bearing*", "strength of materials", "stress*", "strain*", "bending moment", "shear force", "torsion", "degree* of freedom", "mobility", "coriolis acceleration", "machine element*", "shaft*"]
+terminology:
+  - {id: rotational_frequency, fr: "fréquence de rotation", ru: "частота вращения", en: "rotational frequency", definition: {fr: "n, en tr/min ; à distinguer de la vitesse angulaire ω en rad/s (ω = πn/30).", ru: "n, об/мин; отличать от угловой скорости ω, рад/с (ω = πn/30).", en: "n, in rpm; distinct from angular velocity ω in rad/s (ω = πn/30)."}, avoid: {fr: ["vitesse de rotation (pour n en tr/min)"], ru: ["скорость вращения (для n в об/мин)"], en: ["rotation speed (for n in rpm)"]}}
+  - {id: angular_velocity, fr: "vitesse angulaire", ru: "угловая скорость", en: "angular velocity"}
+  - {id: torque, fr: "couple / moment de torsion", ru: "крутящий момент", en: "torque"}
+  - {id: stress, fr: "contrainte", ru: "напряжение", en: "stress", avoid: {fr: ["pression (pour une contrainte interne)"], en: ["pressure (for internal stress)"]}}
+  - {id: yield_strength, fr: "limite d'élasticité", ru: "предел текучести", en: "yield strength"}
+  - {id: young_modulus, fr: "module d'Young", ru: "модуль упругости (модуль Юнга)", en: "Young's modulus"}
+  - {id: kinematic_pair, fr: "liaison cinématique (paire cinématique)", ru: "кинематическая пара", en: "kinematic pair"}
+  - {id: link, fr: "élément (membre) du mécanisme", ru: "звено", en: "link"}
+  - {id: frame, fr: "bâti", ru: "стойка", en: "frame (ground link)"}
+  - {id: crank, fr: "manivelle", ru: "кривошип", en: "crank"}
+  - {id: connecting_rod, fr: "bielle", ru: "шатун", en: "connecting rod (coupler)"}
+  - {id: slider, fr: "coulisseau", ru: "ползун", en: "slider"}
+  - {id: slotted_link, fr: "coulisse", ru: "кулиса", en: "slotted link (rocker)"}
+  - {id: mobility, fr: "degré de mobilité", ru: "степень подвижности", en: "mobility (degrees of freedom)", definition: {fr: "Formule de Tchebychev pour un mécanisme plan : W = 3n − 2p₅ − p₄.", ru: "Формула Чебышева для плоского механизма: W = 3n − 2p₅ − p₄.", en: "Chebyshev–Grübler formula for planar mechanisms: W = 3n − 2p₅ − p₄."}}
+  - {id: assur_group, fr: "groupe d'Assour", ru: "структурная группа Ассура", en: "Assur group"}
+  - {id: coriolis, fr: "accélération de Coriolis", ru: "ускорение Кориолиса", en: "Coriolis acceleration"}
+  - {id: gear_module, fr: "module (de denture)", ru: "модуль зацепления", en: "module (gear)"}
+methodology:
+  fr:
+    - "Définir le cahier des charges : fonctions, charges, conditions de service."
+    - "Établir le schéma cinématique et l'analyse structurelle (mobilité)."
+    - "Mener l'analyse cinématique (vitesses, accélérations), puis dynamique."
+    - "Dimensionner (RDM) avec coefficients de sécurité justifiés."
+    - "Vérifier les résultats (ordres de grandeur, unités, méthodes alternatives)."
+  ru:
+    - "Определить исходные данные: функции, нагрузки, условия работы."
+    - "Построить кинематическую схему и выполнить структурный анализ (степень подвижности)."
+    - "Выполнить кинематический анализ (планы скоростей и ускорений), затем силовой."
+    - "Провести расчёт на прочность с обоснованным коэффициентом запаса."
+    - "Проверить результаты (порядок величин, единицы, альтернативные методы)."
+  en:
+    - "Define requirements: functions, loads, operating conditions."
+    - "Draw the kinematic diagram and perform structural analysis (mobility)."
+    - "Perform kinematic (velocities, accelerations) then dynamic analysis."
+    - "Size components (strength of materials) with justified safety factors."
+    - "Check results (orders of magnitude, units, alternative methods)."
+document_sections:
+  projet:
+    - {id: kinematic_diagram, after: analysis, title: {fr: "Schéma cinématique et analyse structurelle", ru: "Кинематическая схема и структурный анализ", en: "Kinematic diagram and structural analysis"}}
+    - {id: strength_check, after: calculations, title: {fr: "Vérification de la résistance", ru: "Проверочный расчёт на прочность", en: "Strength verification"}}
+  travaux_courts:
+    - {id: diagram, after: data, required: false, title: {fr: "Schéma (échelle, repères)", ru: "Схема (масштаб, обозначения)", en: "Diagram (scale, labels)"}, guidance: {fr: "Indiquer les échelles μ (ex. μV en m/s·mm).", ru: "Указать масштабные коэффициенты μ (например, μV, м/с·мм).", en: "State scale factors μ (e.g. μV in m/s per mm)."}}
+validation_rules:
+  - {id: angular_units, severity: warning, description: {fr: "Distinguer n (tr/min) et ω (rad/s) ; vérifier ω = πn/30.", ru: "Различать n (об/мин) и ω (рад/с); проверять ω = πn/30.", en: "Distinguish n (rpm) and ω (rad/s); check ω = πn/30."}}
+  - {id: mobility_check, severity: warning, description: {fr: "Le degré de mobilité calculé doit correspondre au nombre de moteurs (entrées).", ru: "Степень подвижности должна соответствовать числу ведущих звеньев.", en: "Computed mobility must match the number of inputs."}}
+  - {id: safety_factor, severity: warning, description: {fr: "Tout coefficient de sécurité est justifié par une source ou une norme.", ru: "Коэффициент запаса обоснован источником или стандартом.", en: "Every safety factor is justified by a source or standard."}}
+  - {id: drawing_scales, severity: info, description: {fr: "Les échelles des épures (μl, μV, μa) sont indiquées et cohérentes.", ru: "Масштабные коэффициенты (μl, μV, μa) указаны и согласованы.", en: "Graphical scale factors (μl, μV, μa) are stated and consistent."}}
+calculations:
+  - {id: mobility, tools: [sympy], description: {fr: "Degré de mobilité (Tchebychev / Grübler)", ru: "Степень подвижности (формула Чебышева)", en: "Mobility (Chebyshev–Grübler)"}}
+  - {id: kinematics, tools: [sympy, units], description: {fr: "Vitesses et accélérations (méthode des plans, analytique)", ru: "Скорости и ускорения (метод планов, аналитический)", en: "Velocities and accelerations (graphical, analytical)"}}
+  - {id: strength, tools: [sympy, units], description: {fr: "Contraintes, déformations, coefficient de sécurité", ru: "Напряжения, деформации, коэффициент запаса", en: "Stresses, strains, safety factor"}}
+  - {id: gears, tools: [sympy], description: {fr: "Rapports de transmission, géométrie des engrenages", ru: "Передаточные отношения, геометрия зацепления", en: "Gear ratios and geometry"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["ISO 690", "IEEE"], intl: ["IEEE", "ASME"]}
+standards:
+  - {code: "ГОСТ 2.770-68", convention: ru, title: {fr: "Symboles graphiques : éléments de cinématique", ru: "Обозначения условные графические в схемах. Элементы кинематики", en: "Graphical symbols: kinematic elements"}}
+  - {code: "ГОСТ 2.104", convention: ru, title: {fr: "Cartouches (inscriptions de base)", ru: "ЕСКД. Основные надписи", en: "Title blocks"}}
+  - {code: "ГОСТ 2.109", convention: ru, title: {fr: "Exigences de base des dessins", ru: "ЕСКД. Основные требования к чертежам", en: "Basic requirements for drawings"}}
+  - {code: "ГОСТ 2.307", convention: ru, title: {fr: "Cotation", ru: "ЕСКД. Нанесение размеров и предельных отклонений", en: "Dimensioning"}}
+  - {code: "ГОСТ 25346-2013", convention: ru, title: {fr: "Tolérances et ajustements (ESDP)", ru: "Основные нормы взаимозаменяемости. ЕСДП", en: "Limits and fits"}}
+  - {code: "NF EN ISO 1101", convention: fr, title: {fr: "Spécification géométrique des produits : tolérancement géométrique", ru: "Геометрические допуски", en: "GPS: geometrical tolerancing"}}
+  - {code: "NF EN ISO 286-1", convention: fr, title: {fr: "Tolérances et ajustements", ru: "Допуски и посадки", en: "Limits and fits"}}
+  - {code: "ISO 3952", convention: intl, title: {fr: "Schémas cinématiques : symboles graphiques", ru: "Кинематические схемы: условные обозначения", en: "Kinematic diagrams: graphical symbols"}}
+  - {code: "ISO 128", convention: intl, title: {fr: "Dessins techniques : principes de représentation", ru: "Технические чертежи: общие принципы", en: "Technical drawings: principles of presentation"}}
+  - {code: "ISO 80000-4", convention: intl, title: {fr: "Grandeurs et unités : mécanique", ru: "Величины и единицы: механика", en: "Quantities and units: mechanics"}}

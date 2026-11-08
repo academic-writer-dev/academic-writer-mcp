@@ -101,6 +101,9 @@ class Project(BaseModel):
     language: Language
     discipline: str | None = None
     status: ProjectStatus
+    domain_id: str | None = Field(default=None, description="Profil disciplinaire confirmé par l'utilisateur.")
+    domain_confirmed_at: str | None = None
+    convention: str | None = Field(default=None, description="Convention de présentation : ru, fr ou intl.")
     created_at: str
     updated_at: str
 

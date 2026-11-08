@@ -52,6 +52,9 @@ def _row_to_project(row: sqlite3.Row) -> Project:
         language=Language(row["language"]),
         discipline=row["discipline"],
         status=ProjectStatus(row["status"]),
+        domain_id=row["domain_id"],
+        domain_confirmed_at=row["domain_confirmed_at"],
+        convention=row["convention"],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
@@ -141,6 +144,25 @@ class ProjectService:
             record_event(conn, project_id=project_id, entity_type="project", entity_id=project_id,
                          action="updated", details={"fields": sorted(k for k in changes if k != "updated_at")})
         logger.info("Projet modifié : %s", project_id)
+        return self.get(project_id)
+
+    def set_domain(self, project_id: str, domain_id: str, convention: str | None) -> Project:
+        """Enregistre le domaine choisi par l'utilisateur (et éventuellement la convention)."""
+        project = self.get(project_id)
+        if project.status is ProjectStatus.ARCHIVED:
+            raise ValidationFailed("Projet archivé : modification impossible.")
+        if convention is not None and convention not in ("ru", "fr", "intl"):
+            raise ValidationFailed("Convention inconnue : utilisez ru, fr ou intl.")
+        now = utc_now()
+        with self.db.transaction() as conn:
+            conn.execute(
+                "UPDATE projects SET domain_id = ?, domain_confirmed_at = ?, convention = coalesce(?, convention), "
+                "updated_at = ? WHERE id = ?",
+                (domain_id, now, convention, now, project_id),
+            )
+            record_event(conn, project_id=project_id, entity_type="project", entity_id=project_id,
+                         action="domain_set", details={"domain_id": domain_id, "convention": convention})
+        logger.info("Domaine du projet %s : %s", project_id, domain_id)
         return self.get(project_id)
 
     def archive(self, project_id: str) -> Project:

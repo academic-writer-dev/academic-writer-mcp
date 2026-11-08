@@ -1,0 +1,35 @@
+id: droit
+parent: generaliste
+names: {fr: "Droit", ru: "Право", en: "Law"}
+description:
+  fr: "Droit public, privé, des affaires, international. Domaine à haut risque : les textes évoluent et dépendent de la juridiction."
+  ru: "Публичное, частное, предпринимательское, международное право. Область высокого риска: нормы меняются и зависят от юрисдикции."
+  en: "Public, private, business and international law. High-risk field: rules change and depend on jurisdiction."
+risk_level: high
+risk_notice:
+  fr: "Domaine juridique : le contenu produit ne constitue pas un conseil juridique. Les textes, la jurisprudence et leur version en vigueur dépendent de la juridiction et de la date ; toute analyse doit être vérifiée sur les sources officielles et validée par un juriste qualifié."
+  ru: "Правовая область: созданный текст не является юридической консультацией. Нормы, судебная практика и их действующая редакция зависят от юрисдикции и даты; анализ должен проверяться по официальным источникам и квалифицированным юристом."
+  en: "Legal field: generated content is not legal advice. Statutes, case law and the version in force depend on jurisdiction and date; any analysis must be checked against official sources and validated by a qualified lawyer."
+keywords:
+  fr: ["juridiction*", "jurisprudence", "code civil", "code pénal", "contrat*", "responsabilité civile", "tribunal", "cour de cassation", "conseil d'état", "législation", "loi n°", "décret*", "arrêt*", "alinéa", "doctrine", "droit des obligations", "litige*", "plaideur*"]
+  ru: ["юрисдикци*", "судебн* практик*", "гражданск* кодекс*", "уголовн* кодекс*", "договор*", "гражданско-правов* ответственност*", "суд", "суда", "верховн* суд*", "законодательств*", "федеральн* закон*", "постановлен*", "статья", "статьи", "доктрин*", "обязательственн* прав*", "иск*", "правоотношен*"]
+  en: ["jurisdiction*", "case law", "civil code", "criminal code", "contract*", "tort*", "court*", "supreme court", "legislation", "statute*", "regulation*", "judgment*", "paragraph", "legal doctrine", "law of obligations", "litigation", "plaintiff*", "defendant*"]
+terminology:
+  - {id: case_law, fr: "jurisprudence", ru: "судебная практика", en: "case law"}
+  - {id: statute, fr: "loi / texte législatif", ru: "закон (нормативный правовой акт)", en: "statute"}
+  - {id: contract, fr: "contrat", ru: "договор", en: "contract"}
+  - {id: liability, fr: "responsabilité", ru: "ответственность", en: "liability"}
+  - {id: doctrine, fr: "doctrine", ru: "доктрина (правовая наука)", en: "legal scholarship (doctrine)"}
+  - {id: in_force, fr: "version en vigueur", ru: "действующая редакция", en: "version in force"}
+validation_rules:
+  - {id: legal_validation, severity: error, description: {fr: "Validation par un juriste qualifié avant toute utilisation pratique.", ru: "Проверка квалифицированным юристом перед практическим использованием.", en: "Validation by a qualified lawyer before any practical use."}}
+  - {id: version_date, severity: error, description: {fr: "Chaque texte cité indique la juridiction et la version (date) consultée.", ru: "Для каждой нормы указаны юрисдикция и редакция (дата).", en: "Each cited text states jurisdiction and version (date) consulted."}}
+  - {id: no_invented_case, severity: error, description: {fr: "Ne jamais citer une décision ou un article sans référence vérifiable (juridiction, date, numéro).", ru: "Никогда не ссылаться на решение или статью без проверяемых реквизитов.", en: "Never cite a decision or article without verifiable reference (court, date, number)."}}
+calculations:
+  - {id: deadlines, tools: [], description: {fr: "Calcul de délais (à vérifier selon la juridiction)", ru: "Исчисление сроков (проверять по юрисдикции)", en: "Deadline computation (jurisdiction-dependent)"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Usages juridiques français"], intl: ["OSCOLA", "Bluebook"]}
+  notes: {fr: "Citer les décisions avec juridiction, formation, date et numéro ; les textes avec leur référence officielle.", ru: "Судебные решения — с указанием суда, даты и номера; нормы — с официальными реквизитами.", en: "Cite decisions with court, date and number; statutes with official reference."}
+standards:
+  - {code: "OSCOLA", convention: intl, title: {fr: "Système de citation juridique (Oxford)", ru: "Оксфордский стандарт юридического цитирования", en: "Oxford Standard for Citation of Legal Authorities"}}
+  - {code: "The Bluebook", convention: intl, title: {fr: "Système de citation juridique (États-Unis)", ru: "Система юридического цитирования (США)", en: "A Uniform System of Citation (US)"}}

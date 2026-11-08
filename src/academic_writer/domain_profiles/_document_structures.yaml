@@ -1,0 +1,476 @@
+# Structures de base des documents par convention de présentation.
+#   ru   : usages russes (ГОСТ / ЕСКД) — les exigences du вуз / de la кафедра priment.
+#   fr   : usages francophones (NF / EN) — les exigences de l'établissement priment.
+#   intl : usages internationaux (ISO, revues scientifiques).
+# Les références normatives sont indicatives : vérifier l'édition en vigueur.
+# Identifiants de sections communs (introduction, conclusion, references...) : ils servent
+# de points d'ancrage aux sections ajoutées par les profils disciplinaires.
+
+families:
+  travaux_courts: [td, tp, devoir]
+  rapport_laboratoire: [rapport_laboratoire]
+  projet: [projet_universitaire]
+  memoire: [memoire_licence, memoire_master]
+  these: [these_doctorat]
+  article: [article_scientifique, communication_scientifique]
+  rapport_technique: [rapport_technique, etude_technique, document_conception]
+  rapport_intervention: [rapport_inspection, rapport_maintenance, rapport_audit]
+  cahier_des_charges: [cahier_des_charges]
+  procedure: [procedure_operationnelle, documentation_professionnelle]
+  autre: [autre]
+
+structures:
+  # ======================================================================
+  ru:
+    travaux_courts:
+      standard: "Требования кафедры; оформление по ГОСТ 7.32-2017 / ГОСТ 2.105-2019 при необходимости"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: statement, title: {fr: "Énoncé", ru: "Условие задания", en: "Problem statement"}}
+        - {id: data, title: {fr: "Données", ru: "Исходные данные", en: "Given data"},
+           guidance: {fr: "Toutes les données avec leurs unités (variante, numéro).", ru: "Все исходные данные с единицами измерения (номер варианта).", en: "All given data with units (variant number)."}}
+        - {id: solution, title: {fr: "Résolution", ru: "Решение", en: "Solution"},
+           guidance: {fr: "Formule littérale, application numérique, résultat avec unité.", ru: "Расчётная формула, подстановка значений, результат с единицей измерения.", en: "Symbolic formula, numerical substitution, result with unit."}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Вывод", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Sources", ru: "Список использованных источников", en: "References"}}
+    rapport_laboratoire:
+      standard: "Методические указания кафедры; оформление по ГОСТ 7.32-2017 / ГОСТ 2.105-2019"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: objective, title: {fr: "Objectif", ru: "Цель работы", en: "Objective"}}
+        - {id: theory, title: {fr: "Rappels théoriques", ru: "Теоретические сведения", en: "Theoretical background"}}
+        - {id: equipment, title: {fr: "Matériel et montage", ru: "Оборудование и схема установки", en: "Equipment and setup"}}
+        - {id: procedure, title: {fr: "Protocole", ru: "Порядок выполнения работы", en: "Procedure"}}
+        - {id: measurements, title: {fr: "Résultats de mesure", ru: "Результаты измерений", en: "Measurement results"},
+           guidance: {fr: "Tableaux numérotés, unités dans les en-têtes, valeurs brutes non modifiées.", ru: "Пронумерованные таблицы, единицы в заголовках, исходные значения без изменений.", en: "Numbered tables, units in headers, raw values unchanged."}}
+        - {id: processing, title: {fr: "Traitement des résultats et incertitudes", ru: "Обработка результатов и оценка погрешностей", en: "Data processing and uncertainty"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Выводы", en: "Conclusions"}}
+        - {id: control_questions, required: false, title: {fr: "Réponses aux questions de contrôle", ru: "Ответы на контрольные вопросы", en: "Answers to review questions"}}
+        - {id: references, required: false, title: {fr: "Sources", ru: "Список использованных источников", en: "References"}}
+    projet:
+      standard: "ГОСТ 2.105-2019, ГОСТ 2.106-2019 (пояснительная записка), требования кафедры"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: assignment, title: {fr: "Sujet du projet", ru: "Задание на курсовой проект (работу)", en: "Project assignment"}}
+        - {id: abstract, required: false, title: {fr: "Résumé", ru: "Реферат", en: "Abstract"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: analysis, title: {fr: "Partie analytique", ru: "Аналитическая часть", en: "Analysis"}}
+        - {id: design, title: {fr: "Partie conception", ru: "Проектная (конструкторская) часть", en: "Design"}}
+        - {id: calculations, title: {fr: "Partie calculs", ru: "Расчётная часть", en: "Calculations"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список использованных источников", en: "References"}, standard: "ГОСТ Р 7.0.100-2018"}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    memoire:
+      standard: "ГОСТ 7.32-2017 (структура и оформление), положение о ВКР вуза"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: assignment, title: {fr: "Sujet du mémoire", ru: "Задание на выпускную квалификационную работу", en: "Thesis assignment"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Реферат", en: "Abstract"},
+           guidance: {fr: "Volume, nombre de figures, tableaux, sources ; mots-clés ; objet, but, méthodes, résultats.", ru: "Объём, количество иллюстраций, таблиц, источников; ключевые слова; объект, цель, методы, результаты.", en: "Length, number of figures, tables, sources; keywords; object, aim, methods, results."}, standard: "ГОСТ 7.32-2017"}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Contents"}}
+        - {id: terms, required: false, title: {fr: "Termes et définitions", ru: "Термины и определения", en: "Terms and definitions"}}
+        - {id: abbreviations, required: false, title: {fr: "Abréviations et notations", ru: "Перечень сокращений и обозначений", en: "Abbreviations and symbols"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"},
+           guidance: {fr: "Actualité, but, tâches, objet, sujet, méthodes, nouveauté, intérêt pratique.", ru: "Актуальность, цель, задачи, объект, предмет, методы, новизна, практическая значимость.", en: "Relevance, aim, tasks, object, subject, methods, novelty, practical value."}}
+        - {id: literature_review, title: {fr: "Revue analytique", ru: "Аналитический обзор", en: "Literature review"}}
+        - {id: methodology, title: {fr: "Méthodes de recherche", ru: "Методы исследования", en: "Research methods"}}
+        - {id: results, title: {fr: "Partie principale - résultats", ru: "Основная часть - результаты", en: "Main part - results"}}
+        - {id: economics, required: false, title: {fr: "Justification économique", ru: "Экономическое обоснование", en: "Economic justification"}}
+        - {id: safety, required: false, title: {fr: "Sécurité et santé au travail", ru: "Безопасность жизнедеятельности и охрана труда", en: "Occupational health and safety"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список использованных источников", en: "References"}, standard: "ГОСТ Р 7.0.100-2018"}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    these:
+      standard: "ГОСТ Р 7.0.11-2011 (диссертация и автореферат)"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: contents, title: {fr: "Sommaire", ru: "Оглавление", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"},
+           guidance: {fr: "Actualité ; degré d'élaboration ; buts et tâches ; nouveauté scientifique ; portée théorique et pratique ; méthodologie ; thèses soutenues ; fiabilité et validation des résultats.", ru: "Актуальность темы; степень разработанности; цели и задачи; научная новизна; теоретическая и практическая значимость; методология и методы; положения, выносимые на защиту; степень достоверности и апробация результатов.", en: "Relevance; state of research; aims and tasks; scientific novelty; theoretical and practical significance; methodology; statements to be defended; reliability and approbation of results."}}
+        - {id: chapters, title: {fr: "Partie principale (chapitres)", ru: "Основная часть (главы)", en: "Main part (chapters)"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: abbreviations, required: false, title: {fr: "Abréviations et symboles", ru: "Список сокращений и условных обозначений", en: "Abbreviations and symbols"}}
+        - {id: glossary, required: false, title: {fr: "Glossaire", ru: "Словарь терминов", en: "Glossary"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+        - {id: illustrations, required: false, title: {fr: "Liste des illustrations", ru: "Список иллюстративного материала", en: "List of illustrations"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    article:
+      standard: "Требования редакции; ГОСТ Р 7.0.7-2021 (статьи в журналах); ссылки ГОСТ Р 7.0.5-2008"
+      sections:
+        - {id: udc, title: {fr: "Indice CDU (UDC)", ru: "Индекс УДК", en: "UDC index"}}
+        - {id: title_authors, title: {fr: "Titre, auteurs, affiliations", ru: "Заглавие, авторы, аффилиации", en: "Title, authors, affiliations"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Аннотация", en: "Abstract"}}
+        - {id: keywords, title: {fr: "Mots-clés", ru: "Ключевые слова", en: "Keywords"}}
+        - {id: abstract_en, required: false, title: {fr: "Résumé en anglais", ru: "Аннотация на английском языке", en: "English abstract"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: methods, title: {fr: "Matériels et méthodes", ru: "Материалы и методы", en: "Materials and methods"}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: discussion, title: {fr: "Discussion", ru: "Обсуждение", en: "Discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+    rapport_technique:
+      standard: "ГОСТ 7.32-2017 (отчёт о НИР); ГОСТ 2.105-2019 (текстовые документы ЕСКД)"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: contributors, required: false, title: {fr: "Liste des auteurs", ru: "Список исполнителей", en: "List of contributors"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Реферат", en: "Abstract"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Contents"}}
+        - {id: terms, required: false, title: {fr: "Termes et définitions", ru: "Термины и определения", en: "Terms and definitions"}}
+        - {id: abbreviations, required: false, title: {fr: "Abréviations et notations", ru: "Перечень сокращений и обозначений", en: "Abbreviations and symbols"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: body, title: {fr: "Partie principale", ru: "Основная часть", en: "Main part"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Sources", ru: "Список использованных источников", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    rapport_intervention:
+      standard: "Нормативные документы предприятия; ГОСТ Р ИСО 19011 (аудит)"
+      sections:
+        - {id: identification, title: {fr: "Identification", ru: "Идентификация объекта", en: "Identification"},
+           guidance: {fr: "Site, équipement, référence, date, intervenants.", ru: "Объект, оборудование, инвентарный номер, дата, исполнители.", en: "Site, equipment, reference, date, staff."}}
+        - {id: request, title: {fr: "Objet et périmètre", ru: "Основание и цель работ", en: "Purpose and scope"}}
+        - {id: normative_refs, required: false, title: {fr: "Documents de référence", ru: "Нормативные документы", en: "Reference documents"}}
+        - {id: method, title: {fr: "Méthodes et moyens de contrôle", ru: "Методы и средства контроля", en: "Methods and instruments"}}
+        - {id: findings, title: {fr: "Constats", ru: "Результаты осмотра (контроля)", en: "Findings"},
+           guidance: {fr: "Faits observés et mesurés (avec unités), écarts, photos référencées.", ru: "Выявленные факты и измерения (с единицами), несоответствия, фото.", en: "Observed and measured facts (with units), deviations, referenced photos."}}
+        - {id: analysis, title: {fr: "Analyse des causes", ru: "Анализ причин", en: "Root-cause analysis"}}
+        - {id: actions, required: false, title: {fr: "Travaux réalisés", ru: "Выполненные работы", en: "Work performed"}}
+        - {id: recommendations, title: {fr: "Recommandations et plan d'actions", ru: "Рекомендации", en: "Recommendations and action plan"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения (акты, протоколы, фото)", en: "Appendices"}}
+    cahier_des_charges:
+      standard: "ГОСТ 15.016-2016 (ТЗ на продукцию); ГОСТ 34.602-2020 (ТЗ на АС); ГОСТ 19.201-78 (ТЗ на программы)"
+      sections:
+        - {id: general, title: {fr: "Informations générales", ru: "Общие сведения", en: "General information"}}
+        - {id: purpose, title: {fr: "Buts et destination", ru: "Цели и назначение", en: "Purpose"}}
+        - {id: object, title: {fr: "Caractéristique de l'objet", ru: "Характеристика объекта", en: "Object description"}}
+        - {id: requirements, title: {fr: "Exigences", ru: "Требования", en: "Requirements"}}
+        - {id: work_stages, title: {fr: "Étapes et contenu des travaux", ru: "Состав и содержание работ", en: "Work stages"}}
+        - {id: acceptance, title: {fr: "Contrôle et réception", ru: "Порядок контроля и приёмки", en: "Verification and acceptance"}}
+        - {id: documentation, title: {fr: "Exigences de documentation", ru: "Требования к документированию", en: "Documentation requirements"}}
+        - {id: sources, required: false, title: {fr: "Sources d'élaboration", ru: "Источники разработки", en: "Source documents"}}
+    procedure:
+      standard: "ГОСТ 2.601-2019 (эксплуатационные документы); ГОСТ Р ИСО 9001-2015"
+      sections:
+        - {id: purpose, title: {fr: "Objet", ru: "Назначение", en: "Purpose"}}
+        - {id: scope, title: {fr: "Domaine d'application", ru: "Область применения", en: "Scope"}}
+        - {id: normative_refs, title: {fr: "Documents de référence", ru: "Нормативные ссылки", en: "References"}}
+        - {id: terms, required: false, title: {fr: "Définitions", ru: "Термины и определения", en: "Definitions"}}
+        - {id: responsibilities, title: {fr: "Responsabilités", ru: "Ответственность", en: "Responsibilities"}}
+        - {id: safety, title: {fr: "Sécurité", ru: "Требования безопасности", en: "Safety"}}
+        - {id: steps, title: {fr: "Mode opératoire", ru: "Порядок выполнения", en: "Procedure steps"}}
+        - {id: records, required: false, title: {fr: "Enregistrements", ru: "Записи", en: "Records"}}
+        - {id: revision_history, title: {fr: "Historique des révisions", ru: "Лист регистрации изменений", en: "Revision history"}}
+    autre:
+      standard: null
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: body, title: {fr: "Développement", ru: "Основная часть", en: "Main part"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Sources", ru: "Список использованных источников", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+
+  # ======================================================================
+  fr:
+    travaux_courts:
+      standard: "Consignes de l'enseignant"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: statement, title: {fr: "Énoncé", ru: "Условие задания", en: "Problem statement"}}
+        - {id: data, title: {fr: "Données et hypothèses", ru: "Исходные данные и допущения", en: "Data and assumptions"}}
+        - {id: solution, title: {fr: "Résolution détaillée", ru: "Решение", en: "Detailed solution"},
+           guidance: {fr: "Expression littérale, application numérique, résultat encadré avec unité et chiffres significatifs adaptés.", ru: "Формула, подстановка, результат с единицей.", en: "Symbolic expression, numerical application, boxed result with unit."}}
+        - {id: results, title: {fr: "Synthèse des résultats", ru: "Результаты", en: "Summary of results"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Вывод", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Источники", en: "References"}}
+    rapport_laboratoire:
+      standard: "Consignes de l'enseignant"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: objective, title: {fr: "Objectifs", ru: "Цель работы", en: "Objectives"}}
+        - {id: theory, title: {fr: "Rappels théoriques", ru: "Теоретические сведения", en: "Theoretical background"}}
+        - {id: equipment, title: {fr: "Matériel et montage", ru: "Оборудование и схема установки", en: "Equipment and setup"}}
+        - {id: procedure, title: {fr: "Protocole expérimental", ru: "Порядок выполнения работы", en: "Experimental procedure"}}
+        - {id: measurements, title: {fr: "Résultats", ru: "Результаты измерений", en: "Results"}}
+        - {id: processing, title: {fr: "Exploitation des résultats et incertitudes", ru: "Обработка результатов и погрешности", en: "Analysis and uncertainty"}}
+        - {id: discussion, title: {fr: "Discussion", ru: "Обсуждение", en: "Discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Выводы", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Источники", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    projet:
+      standard: "Consignes de l'établissement"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: abstract, required: false, title: {fr: "Résumé", ru: "Реферат", en: "Abstract"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: specification, title: {fr: "Cahier des charges", ru: "Техническое задание", en: "Specification"}}
+        - {id: analysis, title: {fr: "État de l'art et analyse", ru: "Анализ", en: "State of the art and analysis"}}
+        - {id: design, title: {fr: "Conception", ru: "Проектирование", en: "Design"}}
+        - {id: calculations, title: {fr: "Calculs et dimensionnement", ru: "Расчёты", en: "Calculations and sizing"}}
+        - {id: validation, title: {fr: "Résultats et validation", ru: "Результаты и проверка", en: "Results and validation"}}
+        - {id: conclusion, title: {fr: "Conclusion et perspectives", ru: "Заключение", en: "Conclusion and outlook"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    memoire:
+      standard: "Guide de l'établissement ; NF Z 41-006 (présentation des thèses, référence utile)"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: abstract, title: {fr: "Résumé et mots-clés", ru: "Резюме и ключевые слова", en: "Abstract and keywords"}}
+        - {id: abstract_en, title: {fr: "Abstract (anglais)", ru: "Аннотация на английском", en: "English abstract"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Contents"}}
+        - {id: lists, required: false, title: {fr: "Listes des figures, tableaux et abréviations", ru: "Списки рисунков, таблиц и сокращений", en: "Lists of figures, tables and abbreviations"}}
+        - {id: introduction, title: {fr: "Introduction générale", ru: "Введение", en: "General introduction"},
+           guidance: {fr: "Contexte, problématique, objectifs, démarche et annonce du plan.", ru: "Контекст, проблема, цели, подход, структура работы.", en: "Context, research question, objectives, approach, outline."}}
+        - {id: literature_review, title: {fr: "État de l'art", ru: "Обзор литературы", en: "Literature review"}}
+        - {id: methodology, title: {fr: "Matériels et méthodes", ru: "Материалы и методы", en: "Materials and methods"}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: discussion, title: {fr: "Discussion", ru: "Обсуждение", en: "Discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion générale et perspectives", ru: "Заключение и перспективы", en: "General conclusion and outlook"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    these:
+      standard: "NF Z 41-006 ; règles de l'école doctorale"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: abstract, title: {fr: "Résumé (français) et mots-clés", ru: "Резюме на французском", en: "French abstract and keywords"}}
+        - {id: abstract_en, title: {fr: "Abstract (anglais) et keywords", ru: "Аннотация на английском", en: "English abstract and keywords"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Оглавление", en: "Contents"}}
+        - {id: lists, required: false, title: {fr: "Listes des figures, tableaux, abréviations", ru: "Списки рисунков, таблиц, сокращений", en: "Lists of figures, tables, abbreviations"}}
+        - {id: introduction, title: {fr: "Introduction générale", ru: "Введение", en: "General introduction"}}
+        - {id: literature_review, title: {fr: "État de l'art", ru: "Обзор литературы", en: "Literature review"}}
+        - {id: chapters, title: {fr: "Chapitres de contribution", ru: "Главы с результатами", en: "Contribution chapters"}}
+        - {id: discussion, title: {fr: "Discussion générale", ru: "Общее обсуждение", en: "General discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion générale et perspectives", ru: "Заключение и перспективы", en: "General conclusion and outlook"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+        - {id: publications, required: false, title: {fr: "Liste des publications", ru: "Список публикаций автора", en: "List of publications"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    article:
+      standard: "Instructions aux auteurs de la revue ou de la conférence (souvent IMRaD)"
+      sections:
+        - {id: title_authors, title: {fr: "Titre, auteurs, affiliations", ru: "Заглавие, авторы, аффилиации", en: "Title, authors, affiliations"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Аннотация", en: "Abstract"}}
+        - {id: keywords, title: {fr: "Mots-clés", ru: "Ключевые слова", en: "Keywords"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: methods, title: {fr: "Matériels et méthodes", ru: "Материалы и методы", en: "Materials and methods"}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: discussion, title: {fr: "Discussion", ru: "Обсуждение", en: "Discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: funding_conflicts, required: false, title: {fr: "Financement et conflits d'intérêts", ru: "Финансирование и конфликт интересов", en: "Funding and conflicts of interest"}}
+        - {id: references, title: {fr: "Références", ru: "Список литературы", en: "References"}}
+    rapport_technique:
+      standard: "Usages de l'organisme ; structure inspirée d'ANSI/NISO Z39.18"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: summary, title: {fr: "Synthèse", ru: "Краткое изложение", en: "Executive summary"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction (contexte, objet, périmètre)", ru: "Введение", en: "Introduction (context, purpose, scope)"}}
+        - {id: normative_refs, required: false, title: {fr: "Documents de référence", ru: "Нормативные документы", en: "Reference documents"}}
+        - {id: analysis, title: {fr: "Analyse de l'existant", ru: "Анализ существующего положения", en: "Current-state analysis"}}
+        - {id: body, title: {fr: "Étude technique", ru: "Техническое исследование", en: "Technical study"}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: recommendations, title: {fr: "Recommandations", ru: "Рекомендации", en: "Recommendations"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Источники", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    rapport_intervention:
+      standard: "NF EN 13460 (documentation de maintenance) ; NF EN ISO 19011 (audits)"
+      sections:
+        - {id: identification, title: {fr: "Identification", ru: "Идентификация объекта", en: "Identification"},
+           guidance: {fr: "Site, équipement (repère), date, intervenants, demandeur.", ru: "Объект, оборудование, дата, исполнители, заказчик.", en: "Site, equipment tag, date, staff, requester."}}
+        - {id: request, title: {fr: "Objet, périmètre et critères", ru: "Цель, границы и критерии", en: "Purpose, scope and criteria"}}
+        - {id: normative_refs, required: false, title: {fr: "Documents de référence", ru: "Нормативные документы", en: "Reference documents"}}
+        - {id: method, title: {fr: "Méthode et moyens", ru: "Методы и средства", en: "Method and means"}}
+        - {id: findings, title: {fr: "Constats", ru: "Результаты", en: "Findings"},
+           guidance: {fr: "Distinguer faits mesurés, conformités, écarts et observations.", ru: "Разделять измеренные факты, соответствия, несоответствия и наблюдения.", en: "Separate measured facts, conformities, nonconformities and observations."}}
+        - {id: analysis, title: {fr: "Analyse et diagnostic", ru: "Анализ и диагностика", en: "Analysis and diagnosis"}}
+        - {id: actions, required: false, title: {fr: "Actions réalisées", ru: "Выполненные работы", en: "Actions performed"}}
+        - {id: recommendations, title: {fr: "Recommandations et plan d'actions", ru: "Рекомендации и план действий", en: "Recommendations and action plan"},
+           guidance: {fr: "Pour chaque action : priorité, responsable, échéance.", ru: "Для каждого действия: приоритет, ответственный, срок.", en: "For each action: priority, owner, deadline."}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    cahier_des_charges:
+      standard: "NF EN 16271 (expression fonctionnelle du besoin, CdCF)"
+      sections:
+        - {id: general, title: {fr: "Présentation générale du problème", ru: "Общее описание проблемы", en: "General presentation"}}
+        - {id: purpose, title: {fr: "Objectifs et enjeux", ru: "Цели", en: "Objectives"}}
+        - {id: scope, title: {fr: "Périmètre et limites", ru: "Границы проекта", en: "Scope and limits"}}
+        - {id: requirements, title: {fr: "Expression fonctionnelle du besoin", ru: "Функциональные требования", en: "Functional need statement"},
+           guidance: {fr: "Fonctions de service, critères d'appréciation, niveaux et flexibilités.", ru: "Функции, критерии, уровни, допуски.", en: "Service functions, criteria, levels and flexibility."}}
+        - {id: constraints, title: {fr: "Contraintes", ru: "Ограничения", en: "Constraints"}}
+        - {id: deliverables, title: {fr: "Livrables", ru: "Результаты работ", en: "Deliverables"}}
+        - {id: work_stages, title: {fr: "Délais et jalons", ru: "Сроки и этапы", en: "Schedule and milestones"}}
+        - {id: acceptance, title: {fr: "Conditions de réception", ru: "Порядок приёмки", en: "Acceptance conditions"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    procedure:
+      standard: "NF EN ISO 9001 (information documentée)"
+      sections:
+        - {id: purpose, title: {fr: "Objet", ru: "Назначение", en: "Purpose"}}
+        - {id: scope, title: {fr: "Domaine d'application", ru: "Область применения", en: "Scope"}}
+        - {id: normative_refs, title: {fr: "Documents de référence", ru: "Нормативные ссылки", en: "References"}}
+        - {id: terms, required: false, title: {fr: "Définitions", ru: "Термины и определения", en: "Definitions"}}
+        - {id: responsibilities, title: {fr: "Responsabilités", ru: "Ответственность", en: "Responsibilities"}}
+        - {id: safety, title: {fr: "Sécurité et prérequis", ru: "Безопасность и предварительные условия", en: "Safety and prerequisites"}}
+        - {id: steps, title: {fr: "Description du mode opératoire", ru: "Порядок выполнения", en: "Procedure steps"}}
+        - {id: records, required: false, title: {fr: "Enregistrements", ru: "Записи", en: "Records"}}
+        - {id: revision_history, title: {fr: "Historique des révisions", ru: "Лист регистрации изменений", en: "Revision history"}}
+    autre:
+      standard: null
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: body, title: {fr: "Développement", ru: "Основная часть", en: "Main part"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Источники", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+
+  # ======================================================================
+  intl:
+    travaux_courts:
+      standard: "Instructor's guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: statement, title: {fr: "Énoncé", ru: "Условие задания", en: "Problem statement"}}
+        - {id: data, title: {fr: "Données et hypothèses", ru: "Исходные данные", en: "Data and assumptions"}}
+        - {id: solution, title: {fr: "Résolution", ru: "Решение", en: "Solution"}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Вывод", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Источники", en: "References"}}
+    rapport_laboratoire:
+      standard: "Instructor's guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: abstract, required: false, title: {fr: "Résumé", ru: "Аннотация", en: "Abstract"}}
+        - {id: objective, title: {fr: "Introduction et objectifs", ru: "Цель работы", en: "Introduction and objectives"}}
+        - {id: theory, title: {fr: "Théorie", ru: "Теория", en: "Theory"}}
+        - {id: equipment, title: {fr: "Matériel", ru: "Оборудование", en: "Apparatus"}}
+        - {id: procedure, title: {fr: "Méthode", ru: "Методика", en: "Method"}}
+        - {id: measurements, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: processing, title: {fr: "Analyse et incertitudes", ru: "Анализ и погрешности", en: "Analysis and uncertainty"}}
+        - {id: discussion, title: {fr: "Discussion", ru: "Обсуждение", en: "Discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Выводы", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Источники", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    projet:
+      standard: "Institution guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Аннотация", en: "Abstract"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: specification, title: {fr: "Exigences", ru: "Требования", en: "Requirements"}}
+        - {id: analysis, title: {fr: "Contexte et état de l'art", ru: "Обзор", en: "Background"}}
+        - {id: design, title: {fr: "Conception", ru: "Проектирование", en: "Design"}}
+        - {id: calculations, title: {fr: "Calculs et mise en œuvre", ru: "Расчёты и реализация", en: "Calculations and implementation"}}
+        - {id: validation, title: {fr: "Validation", ru: "Проверка", en: "Evaluation"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Références", ru: "Список литературы", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    memoire:
+      standard: "ISO 7144 (presentation of theses); institution guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Аннотация", en: "Abstract"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Table of contents"}}
+        - {id: lists, required: false, title: {fr: "Listes des figures et tableaux", ru: "Списки рисунков и таблиц", en: "Lists of figures and tables"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: literature_review, title: {fr: "Revue de littérature", ru: "Обзор литературы", en: "Literature review"}}
+        - {id: methodology, title: {fr: "Méthodologie", ru: "Методология", en: "Methodology"}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: discussion, title: {fr: "Discussion", ru: "Обсуждение", en: "Discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Références", ru: "Список литературы", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    these:
+      standard: "ISO 7144 (presentation of theses); graduate school rules"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Аннотация", en: "Abstract"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Оглавление", en: "Table of contents"}}
+        - {id: lists, required: false, title: {fr: "Listes des figures, tableaux, symboles", ru: "Списки рисунков, таблиц, обозначений", en: "Lists of figures, tables, symbols"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: literature_review, title: {fr: "Revue de littérature", ru: "Обзор литературы", en: "Literature review"}}
+        - {id: chapters, title: {fr: "Chapitres de recherche", ru: "Главы исследования", en: "Research chapters"}}
+        - {id: discussion, title: {fr: "Discussion générale", ru: "Общее обсуждение", en: "General discussion"}}
+        - {id: conclusion, title: {fr: "Conclusions", ru: "Заключение", en: "Conclusions"}}
+        - {id: references, title: {fr: "Références", ru: "Список литературы", en: "References"}}
+        - {id: publications, required: false, title: {fr: "Publications", ru: "Публикации", en: "Publications"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    article:
+      standard: "IMRaD; journal author guidelines (e.g. ICMJE for medicine)"
+      sections:
+        - {id: title_authors, title: {fr: "Titre, auteurs, affiliations", ru: "Заглавие, авторы, аффилиации", en: "Title, authors, affiliations"}}
+        - {id: abstract, title: {fr: "Résumé", ru: "Аннотация", en: "Abstract"}}
+        - {id: keywords, title: {fr: "Mots-clés", ru: "Ключевые слова", en: "Keywords"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: methods, title: {fr: "Méthodes", ru: "Методы", en: "Methods"}}
+        - {id: results, title: {fr: "Résultats", ru: "Результаты", en: "Results"}}
+        - {id: discussion, title: {fr: "Discussion", ru: "Обсуждение", en: "Discussion"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: funding_conflicts, required: false, title: {fr: "Financement et conflits d'intérêts", ru: "Финансирование и конфликт интересов", en: "Funding and competing interests"}}
+        - {id: data_availability, required: false, title: {fr: "Disponibilité des données", ru: "Доступность данных", en: "Data availability"}}
+        - {id: references, title: {fr: "Références", ru: "Список литературы", en: "References"}}
+    rapport_technique:
+      standard: "ANSI/NISO Z39.18 (scientific and technical reports)"
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: summary, title: {fr: "Synthèse", ru: "Краткое изложение", en: "Executive summary"}}
+        - {id: contents, title: {fr: "Table des matières", ru: "Содержание", en: "Table of contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: methodology, title: {fr: "Méthodes, hypothèses et procédures", ru: "Методы, допущения и процедуры", en: "Methods, assumptions and procedures"}}
+        - {id: results, title: {fr: "Résultats et discussion", ru: "Результаты и обсуждение", en: "Results and discussion"}}
+        - {id: conclusion, title: {fr: "Conclusions", ru: "Выводы", en: "Conclusions"}}
+        - {id: recommendations, title: {fr: "Recommandations", ru: "Рекомендации", en: "Recommendations"}}
+        - {id: references, title: {fr: "Références", ru: "Источники", en: "References"}}
+        - {id: symbols, required: false, title: {fr: "Symboles et abréviations", ru: "Обозначения и сокращения", en: "Symbols and abbreviations"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    rapport_intervention:
+      standard: "ISO 19011 (audits); EN 13460 (maintenance documentation)"
+      sections:
+        - {id: identification, title: {fr: "Identification", ru: "Идентификация", en: "Identification"}}
+        - {id: request, title: {fr: "Objectifs, périmètre et critères", ru: "Цели, границы, критерии", en: "Objectives, scope and criteria"}}
+        - {id: method, title: {fr: "Méthode", ru: "Методика", en: "Method"}}
+        - {id: findings, title: {fr: "Constats", ru: "Результаты", en: "Findings"}}
+        - {id: analysis, title: {fr: "Analyse", ru: "Анализ", en: "Analysis"}}
+        - {id: actions, required: false, title: {fr: "Actions réalisées", ru: "Выполненные работы", en: "Actions taken"}}
+        - {id: recommendations, title: {fr: "Recommandations", ru: "Рекомендации", en: "Recommendations"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    cahier_des_charges:
+      standard: "ISO/IEC/IEEE 29148 (requirements engineering)"
+      sections:
+        - {id: introduction, title: {fr: "Introduction (objet, portée, définitions)", ru: "Введение (назначение, границы, определения)", en: "Introduction (purpose, scope, definitions)"}}
+        - {id: general, title: {fr: "Description générale et parties prenantes", ru: "Общее описание и заинтересованные стороны", en: "Overall description and stakeholders"}}
+        - {id: requirements, title: {fr: "Exigences fonctionnelles et non fonctionnelles", ru: "Функциональные и нефункциональные требования", en: "Functional and non-functional requirements"}}
+        - {id: constraints, title: {fr: "Contraintes", ru: "Ограничения", en: "Constraints"}}
+        - {id: acceptance, title: {fr: "Vérification et critères d'acceptation", ru: "Проверка и критерии приёмки", en: "Verification and acceptance criteria"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
+    procedure:
+      standard: "ISO 9001 (documented information); IEC/IEEE 82079-1 (information for use)"
+      sections:
+        - {id: purpose, title: {fr: "Objet", ru: "Назначение", en: "Purpose"}}
+        - {id: scope, title: {fr: "Domaine d'application", ru: "Область применения", en: "Scope"}}
+        - {id: normative_refs, title: {fr: "Références", ru: "Ссылки", en: "References"}}
+        - {id: terms, required: false, title: {fr: "Définitions", ru: "Определения", en: "Definitions"}}
+        - {id: responsibilities, title: {fr: "Responsabilités", ru: "Ответственность", en: "Responsibilities"}}
+        - {id: safety, title: {fr: "Sécurité", ru: "Безопасность", en: "Safety"}}
+        - {id: steps, title: {fr: "Étapes", ru: "Порядок действий", en: "Steps"}}
+        - {id: records, required: false, title: {fr: "Enregistrements", ru: "Записи", en: "Records"}}
+        - {id: revision_history, title: {fr: "Historique des révisions", ru: "История изменений", en: "Revision history"}}
+    autre:
+      standard: null
+      sections:
+        - {id: title_page, title: {fr: "Page de titre", ru: "Титульный лист", en: "Title page"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"}}
+        - {id: body, title: {fr: "Développement", ru: "Основная часть", en: "Main part"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Источники", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}

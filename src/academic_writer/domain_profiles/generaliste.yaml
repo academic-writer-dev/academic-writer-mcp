@@ -1,0 +1,77 @@
+# Profil généraliste : socle commun hérité par tous les profils disciplinaires.
+# Normes : références indicatives, vérifier l'édition en vigueur.
+id: generaliste
+names: {fr: "Généraliste", ru: "Общий профиль", en: "General"}
+description:
+  fr: "Règles communes de rigueur académique, applicables à toutes les disciplines."
+  ru: "Общие правила академической строгости для всех дисциплин."
+  en: "Common rules of academic rigour applicable to all disciplines."
+keywords: {}
+terminology:
+  - id: hypothesis
+    fr: "hypothèse"
+    ru: "гипотеза"
+    en: "hypothesis"
+    definition: {fr: "Proposition à vérifier, jamais présentée comme un fait établi.", ru: "Утверждение, требующее проверки; не выдаётся за установленный факт.", en: "Statement to be tested, never presented as an established fact."}
+  - id: abstract
+    fr: "résumé"
+    ru: "реферат / аннотация"
+    en: "abstract"
+    note: {fr: "En russe, « реферат » (ГОСТ 7.32) décrit le document ; « аннотация » est plus courte.", ru: "Реферат (ГОСТ 7.32) и аннотация различаются по объёму и назначению.", en: "In Russian, 'referat' (GOST 7.32) and 'annotatsiya' differ in length and purpose."}
+  - id: references_list
+    fr: "bibliographie / liste des références"
+    ru: "список использованных источников"
+    en: "list of references"
+  - id: uncertainty
+    fr: "incertitude de mesure"
+    ru: "неопределённость измерения"
+    en: "measurement uncertainty"
+    avoid: {fr: ["erreur (pour une incertitude)"], ru: ["ошибка (вместо погрешности или неопределённости)"]}
+methodology:
+  fr:
+    - "Formuler la problématique et les objectifs."
+    - "Recenser et citer les sources vérifiables."
+    - "Décrire la méthode de façon reproductible."
+    - "Présenter les résultats sans les modifier, avec leurs unités et incertitudes."
+    - "Distinguer résultats, interprétations et hypothèses."
+    - "Conclure en répondant aux objectifs, avec les limites du travail."
+  ru:
+    - "Сформулировать проблему и цели."
+    - "Подобрать и корректно процитировать проверяемые источники."
+    - "Описать методику воспроизводимо."
+    - "Представить результаты без искажений, с единицами и погрешностями."
+    - "Разделять результаты, интерпретации и гипотезы."
+    - "Сделать выводы в соответствии с целями, указав ограничения работы."
+  en:
+    - "State the research question and objectives."
+    - "Collect and cite verifiable sources."
+    - "Describe the method reproducibly."
+    - "Report results unaltered, with units and uncertainties."
+    - "Separate results, interpretations and hypotheses."
+    - "Conclude against the objectives, stating limitations."
+validation_rules:
+  - {id: si_units, check: si_units, severity: warning, description: {fr: "Utiliser les unités SI et leurs symboles normalisés ; espace entre valeur et unité.", ru: "Использовать единицы СИ и их стандартные обозначения; пробел между числом и единицей.", en: "Use SI units and standard symbols; space between value and unit."}}
+  - {id: numbered_floats, check: numbered_floats, severity: warning, description: {fr: "Figures et tableaux numérotés, titrés et appelés dans le texte.", ru: "Рисунки и таблицы пронумерованы, имеют названия и ссылки в тексте.", en: "Figures and tables numbered, captioned and referenced in the text."}}
+  - {id: citations_match, check: citations_match, severity: error, description: {fr: "Chaque citation correspond à une entrée bibliographique et inversement.", ru: "Каждая ссылка соответствует записи в списке источников и наоборот.", en: "Every citation matches a reference entry and vice versa."}}
+  - {id: no_unsourced_data, check: unsourced_data, severity: error, description: {fr: "Aucune donnée chiffrée ou statistique sans source ni calcul vérifiable.", ru: "Никаких числовых или статистических данных без источника или проверяемого расчёта.", en: "No figures or statistics without a source or verifiable calculation."}}
+  - {id: abbreviations_defined, check: abbreviations, severity: info, description: {fr: "Sigles définis à la première occurrence.", ru: "Сокращения расшифрованы при первом упоминании.", en: "Abbreviations defined at first use."}}
+  - {id: significant_figures, check: significant_figures, severity: info, description: {fr: "Nombre de chiffres significatifs cohérent avec la précision des données.", ru: "Число значащих цифр соответствует точности исходных данных.", en: "Significant figures consistent with data precision."}}
+calculations:
+  - {id: unit_consistency, tools: [units], description: {fr: "Homogénéité des unités", ru: "Согласованность единиц", en: "Unit consistency"}}
+  - {id: arithmetic, tools: [sympy], description: {fr: "Vérification des calculs numériques", ru: "Проверка числовых расчётов", en: "Numerical calculation checks"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008", "ГОСТ Р 7.0.100-2018"], fr: ["ISO 690", "APA 7"], intl: ["APA 7", "ISO 690"]}
+  notes: {fr: "Ne jamais inventer de référence : toute source non vérifiée est signalée comme telle.", ru: "Никогда не выдумывать источники: непроверенные источники помечаются.", en: "Never invent references: unverified sources are flagged as such."}
+standards:
+  - {code: "ГОСТ 7.32-2017", convention: ru, title: {fr: "Rapport de recherche : structure et règles de présentation", ru: "Отчёт о научно-исследовательской работе. Структура и правила оформления", en: "Research report: structure and presentation rules"}}
+  - {code: "ГОСТ 2.105-2019", convention: ru, title: {fr: "ESKD : exigences générales des documents textuels", ru: "ЕСКД. Общие требования к текстовым документам", en: "ESKD: general requirements for text documents"}}
+  - {code: "ГОСТ Р 7.0.100-2018", convention: ru, title: {fr: "Notice bibliographique", ru: "Библиографическая запись. Библиографическое описание", en: "Bibliographic record and description"}}
+  - {code: "ГОСТ Р 7.0.5-2008", convention: ru, title: {fr: "Référence bibliographique", ru: "Библиографическая ссылка", en: "Bibliographic reference"}}
+  - {code: "ГОСТ 8.417-2002", convention: ru, title: {fr: "Unités de grandeurs", ru: "Единицы величин", en: "Units of quantities"}}
+  - {code: "ГОСТ 7.9-95", convention: ru, title: {fr: "Résumé (référat) et annotation", ru: "Реферат и аннотация", en: "Abstracts and annotations"}}
+  - {code: "NF ISO 690", convention: fr, title: {fr: "Références bibliographiques et citations", ru: "Библиографические ссылки и цитирование", en: "Bibliographic references and citations"}}
+  - {code: "NF Z 41-006", convention: fr, title: {fr: "Présentation des thèses et documents assimilés", ru: "Оформление диссертаций", en: "Presentation of theses"}}
+  - {code: "ISO 690", convention: intl, title: {fr: "Références bibliographiques et citations", ru: "Библиографические ссылки и цитирование", en: "Guidelines for bibliographic references and citations"}}
+  - {code: "ISO 80000-1", convention: intl, title: {fr: "Grandeurs et unités : généralités", ru: "Величины и единицы: общие положения", en: "Quantities and units: general"}}
+  - {code: "ISO 7144", convention: intl, title: {fr: "Présentation des thèses", ru: "Оформление диссертаций", en: "Presentation of theses"}}
+  - {code: "ISO 214", convention: intl, title: {fr: "Résumés analytiques", ru: "Рефераты", en: "Abstracts for publication and documentation"}}

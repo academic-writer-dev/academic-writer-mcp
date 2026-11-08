@@ -1,0 +1,32 @@
+id: gestion
+parent: generaliste
+names: {fr: "Gestion et management", ru: "Менеджмент и управление", en: "Management and business administration"}
+description:
+  fr: "Management de projet, stratégie, organisation, qualité, ressources humaines, logistique, marketing."
+  ru: "Управление проектами, стратегия, организация, качество, управление персоналом, логистика, маркетинг."
+  en: "Project management, strategy, organisation, quality, human resources, logistics, marketing."
+keywords:
+  fr: ["management", "gestion de projet", "diagramme de gantt", "parties prenantes", "stratégie d'entreprise", "analyse swot", "indicateur* de performance", "kpi", "tableau de bord", "démarche qualité", "amélioration continue", "lean", "logistique", "chaîne d'approvisionnement", "ressources humaines", "marketing", "business plan", "gestion des risques"]
+  ru: ["менеджмент*", "управлени* проект*", "диаграмм* ганта", "заинтересованн* сторон*", "стратеги* предприятия", "swot-анализ*", "ключев* показател* эффективност*", "kpi", "систем* менеджмента качества", "непрерывн* улучшен*", "бережлив* производств*", "логистик*", "цеп* поставок", "управлени* персонал*", "маркетинг*", "бизнес-план*", "управлени* риск*"]
+  en: ["management", "project management", "gantt chart", "stakeholder*", "business strategy", "swot analysis", "key performance indicator*", "kpi*", "dashboard*", "quality management", "continuous improvement", "lean", "logistics", "supply chain", "human resources", "marketing", "business plan", "risk management"]
+terminology:
+  - {id: stakeholder, fr: "partie prenante", ru: "заинтересованная сторона", en: "stakeholder"}
+  - {id: kpi, fr: "indicateur clé de performance", ru: "ключевой показатель эффективности", en: "key performance indicator"}
+  - {id: milestone, fr: "jalon", ru: "контрольная точка (веха)", en: "milestone"}
+  - {id: deliverable, fr: "livrable", ru: "результат (поставляемый продукт)", en: "deliverable"}
+  - {id: risk, fr: "risque", ru: "риск", en: "risk"}
+validation_rules:
+  - {id: smart_objectives, severity: info, description: {fr: "Objectifs spécifiques, mesurables, atteignables, réalistes, datés.", ru: "Цели конкретные, измеримые, достижимые, реалистичные, ограниченные во времени.", en: "Objectives specific, measurable, achievable, relevant, time-bound."}}
+  - {id: survey_method, severity: warning, description: {fr: "Enquêtes : échantillon, questionnaire et taux de réponse décrits.", ru: "Опросы: описаны выборка, анкета и доля ответов.", en: "Surveys: sample, questionnaire and response rate described."}}
+calculations:
+  - {id: project_planning, tools: [], description: {fr: "Planification (chemin critique, charges)", ru: "Планирование (критический путь)", en: "Planning (critical path)"}}
+  - {id: kpi, tools: [numpy], description: {fr: "Calcul d'indicateurs", ru: "Расчёт показателей", en: "Indicator calculation"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Harvard"], intl: ["APA 7", "Harvard"]}
+standards:
+  - {code: "ISO 9001", convention: intl, title: {fr: "Systèmes de management de la qualité", ru: "Системы менеджмента качества", en: "Quality management systems"}}
+  - {code: "ISO 21500", convention: intl, title: {fr: "Management de projet : lignes directrices", ru: "Управление проектами: руководство", en: "Project management guidance"}}
+  - {code: "ISO 31000", convention: intl, title: {fr: "Management du risque", ru: "Менеджмент риска", en: "Risk management"}}
+  - {code: "ISO 14001", convention: intl, title: {fr: "Management environnemental", ru: "Экологический менеджмент", en: "Environmental management"}}
+  - {code: "ГОСТ Р ИСО 9001-2015", convention: ru, title: {fr: "Systèmes de management de la qualité", ru: "Системы менеджмента качества. Требования", en: "Quality management systems"}}
+  - {code: "NF EN ISO 9001", convention: fr, title: {fr: "Systèmes de management de la qualité", ru: "Системы менеджмента качества", en: "Quality management systems"}}

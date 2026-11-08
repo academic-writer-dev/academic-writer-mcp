@@ -1,0 +1,38 @@
+id: genie_civil
+parent: generaliste
+names: {fr: "Génie civil", ru: "Строительство", en: "Civil engineering"}
+description:
+  fr: "Structures, béton armé, construction métallique, géotechnique, ouvrages, matériaux de construction."
+  ru: "Строительные конструкции, железобетон, металлоконструкции, геотехника, сооружения, строительные материалы."
+  en: "Structures, reinforced concrete, steel construction, geotechnics, infrastructure, construction materials."
+keywords:
+  fr: ["béton armé", "béton précontraint", "charpente*", "poutre*", "poteau*", "fondation*", "géotechnique", "eurocode*", "descente de charges", "dalle*", "ouvrage* d'art", "ferraillage", "armature*", "maçonnerie", "terrassement", "chantier*", "état limite ultime", "état limite de service", "sol* de fondation"]
+  ru: ["железобетон*", "предварительно напряжённ*", "строительн* конструкц*", "балк*", "колонн*", "фундамент*", "геотехник*", "свод* правил", "сбор нагрузок", "плит* перекрытия", "армирован*", "арматур*", "кладк*", "земляные работы", "строительн* площадк*", "предельн* состояни*", "основани* фундамент*", "снип"]
+  en: ["reinforced concrete", "prestressed concrete", "beam*", "column*", "foundation*", "geotechnical", "eurocode*", "load path", "slab*", "bridge*", "reinforcement", "masonry", "earthworks", "construction site", "ultimate limit state", "serviceability limit state", "soil mechanics"]
+terminology:
+  - {id: uls, fr: "état limite ultime (ELU)", ru: "предельное состояние первой группы", en: "ultimate limit state (ULS)"}
+  - {id: sls, fr: "état limite de service (ELS)", ru: "предельное состояние второй группы", en: "serviceability limit state (SLS)"}
+  - {id: reinforcement, fr: "armatures (ferraillage)", ru: "арматура (армирование)", en: "reinforcement"}
+  - {id: load_combination, fr: "combinaison de charges", ru: "сочетание нагрузок", en: "load combination"}
+  - {id: bearing_capacity, fr: "capacité portante", ru: "несущая способность", en: "bearing capacity"}
+  - {id: characteristic_value, fr: "valeur caractéristique", ru: "нормативное значение", en: "characteristic value"}
+  - {id: design_value, fr: "valeur de calcul", ru: "расчётное значение", en: "design value"}
+validation_rules:
+  - {id: partial_factors, severity: error, description: {fr: "Coefficients partiels et combinaisons conformes à la norme citée (Eurocode, SP).", ru: "Коэффициенты надёжности и сочетания нагрузок соответствуют указанному своду правил.", en: "Partial factors and combinations comply with the cited code."}}
+  - {id: regulatory_validation, severity: warning, description: {fr: "Un calcul de structure réel doit être validé par un ingénieur habilité.", ru: "Реальный расчёт конструкций должен проверяться аттестованным инженером.", en: "Real structural designs must be checked by a licensed engineer."}}
+calculations:
+  - {id: structural, tools: [sympy, units], description: {fr: "Efforts internes, flèches, vérifications ELU/ELS", ru: "Внутренние усилия, прогибы, проверки по предельным состояниям", en: "Internal forces, deflections, ULS/SLS checks"}}
+  - {id: loads, tools: [units], description: {fr: "Descente de charges", ru: "Сбор нагрузок", en: "Load take-down"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["ISO 690"], intl: ["ASCE", "APA 7"]}
+standards:
+  - {code: "СП 20.13330", convention: ru, title: {fr: "Charges et actions", ru: "Нагрузки и воздействия", en: "Loads and actions"}}
+  - {code: "СП 63.13330", convention: ru, title: {fr: "Structures en béton et béton armé", ru: "Бетонные и железобетонные конструкции", en: "Concrete and reinforced concrete structures"}}
+  - {code: "СП 16.13330", convention: ru, title: {fr: "Structures en acier", ru: "Стальные конструкции", en: "Steel structures"}}
+  - {code: "ГОСТ Р 21.101-2020", convention: ru, title: {fr: "SPDS : exigences de base des documents de projet", ru: "СПДС. Основные требования к проектной и рабочей документации", en: "Design documentation: basic requirements"}}
+  - {code: "NF EN 1990", convention: fr, title: {fr: "Eurocode 0 : bases de calcul des structures", ru: "Еврокод 0: основы проектирования", en: "Eurocode 0: basis of structural design"}}
+  - {code: "NF EN 1991", convention: fr, title: {fr: "Eurocode 1 : actions sur les structures", ru: "Еврокод 1: воздействия", en: "Eurocode 1: actions on structures"}}
+  - {code: "NF EN 1992", convention: fr, title: {fr: "Eurocode 2 : structures en béton", ru: "Еврокод 2: бетонные конструкции", en: "Eurocode 2: concrete structures"}}
+  - {code: "NF EN 1993", convention: fr, title: {fr: "Eurocode 3 : structures en acier", ru: "Еврокод 3: стальные конструкции", en: "Eurocode 3: steel structures"}}
+  - {code: "NF EN 1997", convention: fr, title: {fr: "Eurocode 7 : calcul géotechnique", ru: "Еврокод 7: геотехническое проектирование", en: "Eurocode 7: geotechnical design"}}
+  - {code: "ISO 2394", convention: intl, title: {fr: "Principes généraux de fiabilité des constructions", ru: "Общие принципы надёжности конструкций", en: "General principles on reliability for structures"}}

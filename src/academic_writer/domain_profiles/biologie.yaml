@@ -1,0 +1,29 @@
+id: biologie
+parent: generaliste
+names: {fr: "Biologie", ru: "Биология", en: "Biology"}
+description:
+  fr: "Biologie cellulaire et moléculaire, génétique, écologie, microbiologie, physiologie."
+  ru: "Клеточная и молекулярная биология, генетика, экология, микробиология, физиология."
+  en: "Cell and molecular biology, genetics, ecology, microbiology, physiology."
+keywords:
+  fr: ["cellule*", "protéine*", "adn", "arn", "gène*", "génétique", "génome*", "enzyme*", "espèce*", "écosystème*", "biodiversité", "microbiologie", "bactérie*", "culture cellulaire", "pcr", "séquençage", "physiologie", "organisme*"]
+  ru: ["клетк*", "клеточн*", "белок", "белка", "белков", "днк", "рнк", "ген", "генов", "генетик*", "геном*", "фермент*", "вид* организмов", "экосистем*", "биоразнообраз*", "микробиолог*", "бактери*", "клеточн* культур*", "пцр", "секвенирован*", "физиолог*"]
+  en: ["cell biology", "cellular", "protein*", "dna", "rna", "gene*", "genetic*", "genome*", "enzyme*", "species", "ecosystem*", "biodiversity", "microbiology", "bacteria", "cell culture", "pcr", "sequencing", "physiology", "organism*"]
+terminology:
+  - {id: species, fr: "espèce", ru: "вид", en: "species", note: {fr: "Noms binominaux en italique : Genre espèce.", ru: "Биноминальные названия курсивом.", en: "Binomial names in italics."}}
+  - {id: gene_expression, fr: "expression génique", ru: "экспрессия генов", en: "gene expression"}
+  - {id: enzyme, fr: "enzyme", ru: "фермент", en: "enzyme"}
+  - {id: replicate, fr: "réplicat (biologique, technique)", ru: "повтор (биологический, технический)", en: "replicate (biological, technical)"}
+validation_rules:
+  - {id: replicates, severity: warning, description: {fr: "Nombre de réplicats et tests statistiques indiqués pour chaque résultat.", ru: "Для каждого результата указаны число повторов и статистические тесты.", en: "Number of replicates and statistical tests stated for each result."}}
+  - {id: nomenclature, severity: info, description: {fr: "Noms d'espèces conformes aux codes de nomenclature, en italique.", ru: "Названия видов по кодексам номенклатуры, курсивом.", en: "Species names per nomenclature codes, in italics."}}
+  - {id: ethics_animals, severity: warning, description: {fr: "Toute expérimentation animale mentionne l'autorisation éthique.", ru: "Эксперименты на животных — с указанием этического одобрения.", en: "Animal experiments state ethical approval."}}
+calculations:
+  - {id: biostatistics, tools: [numpy], description: {fr: "Biostatistiques (tests, intervalles)", ru: "Биостатистика", en: "Biostatistics"}}
+  - {id: dilutions, tools: [units], description: {fr: "Dilutions et concentrations", ru: "Разведения и концентрации", en: "Dilutions and concentrations"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["CSE", "APA 7"], intl: ["CSE", "Vancouver"]}
+standards:
+  - {code: "ICZN", convention: intl, title: {fr: "Code international de nomenclature zoologique", ru: "Международный кодекс зоологической номенклатуры", en: "International Code of Zoological Nomenclature"}}
+  - {code: "ICN", convention: intl, title: {fr: "Code international de nomenclature des algues, champignons et plantes", ru: "Международный кодекс номенклатуры водорослей, грибов и растений", en: "International Code of Nomenclature for algae, fungi, and plants"}}
+  - {code: "ARRIVE", convention: intl, title: {fr: "Recommandations pour rapporter l'expérimentation animale", ru: "Рекомендации по описанию исследований на животных", en: "Animal research reporting guidelines"}}

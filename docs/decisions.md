@@ -75,6 +75,26 @@
 - Toute sortie contenant du texte de document porte un `trust_notice` ; détection d'indices
   d'injection de prompt (fr/en/ru) et de caractères invisibles.
 
+## D-014 — Profils disciplinaires en YAML validés par Pydantic, avec héritage — 2026-11-09
+- 17 profils intégrés (choix utilisateur : tous les domaines), trilingues fr/ru/en.
+- Profils utilisateur dans `<data_dir>/profiles` (remplacent les intégrés de même id).
+- `extra="forbid"` : un champ mal orthographié invalide le profil (signalé, non bloquant).
+- Héritage : listes fusionnées par id ; mots-clés non hérités ; risque élevé transmis.
+- PyYAML en `safe_load` uniquement ; taille de fichier limitée.
+
+## D-015 — Trois conventions de présentation : ru (ГОСТ/ЕСКД), fr (NF/EN), intl (ISO) — 2026-11-09
+- Choix utilisateur : les trois référentiels. Structures de base par famille de documents
+  (11 familles couvrant les 20 types) ; les profils ajoutent leurs sections (`after:`).
+- Convention par défaut déduite de la langue du projet ; modifiable par projet (migration v3).
+- Normes marquées `verify_edition` : jamais présentées comme l'édition en vigueur certaine.
+
+## D-016 — Identification du domaine par score de mots-clés explicable — 2026-11-09
+- Pas de modèle opaque : score = Σ(1 + ln n) par mot-clé trouvé, atténué par la taille de
+  la liste ; préfixes « * » pour les flexions russes et françaises ; casse et accents ignorés.
+- Confiance calculée contre le meilleur concurrent d'une autre famille (un parent ou un enfant
+  n'est pas un concurrent). Toujours une suggestion à confirmer (`requires_confirmation`).
+- Vérifié sur un document réel (ДЗ1 ТММ) : génie mécanique, confiance élevée.
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.

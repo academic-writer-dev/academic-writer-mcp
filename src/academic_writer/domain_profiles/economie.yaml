@@ -1,0 +1,32 @@
+id: economie
+parent: generaliste
+names: {fr: "Économie", ru: "Экономика", en: "Economics"}
+description:
+  fr: "Macroéconomie, microéconomie, économétrie, finance, comptabilité nationale et d'entreprise."
+  ru: "Макро- и микроэкономика, эконометрика, финансы, национальный и бухгалтерский учёт."
+  en: "Macroeconomics, microeconomics, econometrics, finance, national and business accounting."
+keywords:
+  fr: ["pib", "inflation", "croissance économique", "marché*", "offre et demande", "élasticité-prix", "économétri*", "régression", "taux d'intérêt", "politique monétaire", "politique budgétaire", "chômage", "investissement*", "bilan comptable", "compte de résultat", "rentabilité", "chiffre d'affaires", "coût marginal"]
+  ru: ["ввп", "инфляци*", "экономическ* рост*", "рынк*", "спрос* и предложен*", "эластичност*", "эконометрик*", "регресси*", "процентн* ставк*", "денежно-кредитн* политик*", "бюджетн* политик*", "безработиц*", "инвестиц*", "бухгалтерск* баланс*", "отчёт* о финансовых результатах", "рентабельност*", "выручк*", "предельн* издерж*"]
+  en: ["gdp", "inflation", "economic growth", "market*", "supply and demand", "price elasticity", "econometric*", "regression", "interest rate*", "monetary policy", "fiscal policy", "unemployment", "investment*", "balance sheet", "income statement", "profitability", "revenue", "marginal cost"]
+terminology:
+  - {id: gdp, fr: "produit intérieur brut (PIB)", ru: "валовой внутренний продукт (ВВП)", en: "gross domestic product (GDP)"}
+  - {id: real_nominal, fr: "valeur réelle / nominale", ru: "реальная / номинальная величина", en: "real / nominal value"}
+  - {id: elasticity, fr: "élasticité", ru: "эластичность", en: "elasticity"}
+  - {id: revenue, fr: "chiffre d'affaires", ru: "выручка", en: "revenue", avoid: {fr: ["bénéfice (pour le chiffre d'affaires)"], ru: ["прибыль (вместо выручки)"], en: ["profit (for revenue)"]}}
+  - {id: npv, fr: "valeur actuelle nette (VAN)", ru: "чистая приведённая стоимость (NPV)", en: "net present value (NPV)"}
+  - {id: irr, fr: "taux de rendement interne (TRI)", ru: "внутренняя норма доходности (IRR)", en: "internal rate of return (IRR)"}
+validation_rules:
+  - {id: data_source_date, severity: error, description: {fr: "Toute donnée économique indique sa source, sa période, son unité et sa devise.", ru: "Для экономических данных указаны источник, период, единица и валюта.", en: "Every economic figure states source, period, unit and currency."}}
+  - {id: real_vs_nominal, severity: warning, description: {fr: "Préciser prix courants ou constants (année de base).", ru: "Указывать текущие или сопоставимые цены (базовый год).", en: "State current or constant prices (base year)."}}
+calculations:
+  - {id: financial, tools: [sympy], description: {fr: "VAN, TRI, actualisation, amortissements", ru: "NPV, IRR, дисконтирование, амортизация", en: "NPV, IRR, discounting, depreciation"}}
+  - {id: econometrics, tools: [numpy], description: {fr: "Régressions, tests statistiques", ru: "Регрессии, статистические тесты", en: "Regressions, statistical tests"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Harvard"], intl: ["APA 7", "Harvard"]}
+standards:
+  - {code: "IFRS", convention: intl, title: {fr: "Normes internationales d'information financière", ru: "Международные стандарты финансовой отчётности (МСФО)", en: "International Financial Reporting Standards"}}
+  - {code: "SCN 2008 / SNA 2008", convention: intl, title: {fr: "Système de comptabilité nationale", ru: "Система национальных счетов", en: "System of National Accounts"}}
+  - {code: "ISO 4217", convention: intl, title: {fr: "Codes des monnaies", ru: "Коды валют", en: "Currency codes"}}
+  - {code: "Plan comptable général (PCG)", convention: fr, title: {fr: "Plan comptable général (France)", ru: "Общий план счетов (Франция)", en: "French general chart of accounts"}}
+  - {code: "ФСБУ", convention: ru, title: {fr: "Normes fédérales de comptabilité (Russie)", ru: "Федеральные стандарты бухгалтерского учёта", en: "Russian federal accounting standards"}}

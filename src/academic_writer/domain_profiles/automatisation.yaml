@@ -1,0 +1,42 @@
+id: automatisation
+parent: generaliste
+names: {fr: "Automatisation et automatique", ru: "Автоматизация и управление", en: "Automation and control engineering"}
+description:
+  fr: "Automates programmables, systèmes asservis, régulation, supervision, sécurité des machines."
+  ru: "Программируемые контроллеры, системы автоматического регулирования, SCADA, безопасность машин."
+  en: "Programmable controllers, feedback control, process control, supervision, machine safety."
+keywords:
+  fr: ["automate* programmable*", "api", "grafcet", "ladder", "régulation", "régulateur pid", "pid", "asservissement", "boucle fermée", "fonction de transfert", "stabilité", "capteur*", "actionneur*", "supervision", "scada", "variateur*", "entrées/sorties", "consigne", "bus de terrain", "profibus", "modbus"]
+  ru: ["программируем* логическ* контроллер*", "плк", "автоматическ* регулирован*", "регулятор*", "пид-регулятор*", "передаточн* функци*", "обратн* связ*", "устойчивост*", "датчик*", "исполнительн* механизм*", "асу тп", "scada", "диспетчеризац*", "частотн* преобразовател*", "уставк*", "промышленн* сет*"]
+  en: ["programmable logic controller*", "plc", "grafcet", "sequential function chart", "ladder logic", "pid controller*", "feedback control", "closed loop", "transfer function", "stability", "sensor*", "actuator*", "scada", "hmi", "setpoint", "fieldbus", "variable frequency drive*"]
+terminology:
+  - {id: plc, fr: "automate programmable industriel (API)", ru: "программируемый логический контроллер (ПЛК)", en: "programmable logic controller (PLC)"}
+  - {id: transfer_function, fr: "fonction de transfert", ru: "передаточная функция", en: "transfer function"}
+  - {id: closed_loop, fr: "boucle fermée", ru: "замкнутый контур (обратная связь)", en: "closed loop"}
+  - {id: setpoint, fr: "consigne", ru: "уставка (задающее воздействие)", en: "setpoint"}
+  - {id: controller, fr: "correcteur / régulateur", ru: "регулятор", en: "controller"}
+  - {id: overshoot, fr: "dépassement", ru: "перерегулирование", en: "overshoot"}
+  - {id: settling_time, fr: "temps de réponse (à 5 %)", ru: "время регулирования", en: "settling time"}
+  - {id: static_error, fr: "erreur statique", ru: "статическая ошибка", en: "steady-state error"}
+document_sections:
+  projet:
+    - {id: control_architecture, after: design, title: {fr: "Architecture de commande (schémas, E/S)", ru: "Структура системы управления (схемы, входы/выходы)", en: "Control architecture (diagrams, I/O)"}}
+    - {id: safety_analysis, after: calculations, title: {fr: "Analyse de sécurité", ru: "Анализ безопасности", en: "Safety analysis"}}
+validation_rules:
+  - {id: io_list, severity: warning, description: {fr: "Liste des entrées/sorties cohérente avec les schémas et le programme.", ru: "Перечень входов/выходов согласован со схемами и программой.", en: "I/O list consistent with diagrams and program."}}
+  - {id: stability_margins, severity: warning, description: {fr: "Marges de gain et de phase indiquées et justifiées.", ru: "Указаны и обоснованы запасы устойчивости по амплитуде и фазе.", en: "Gain and phase margins stated and justified."}}
+calculations:
+  - {id: control_response, tools: [sympy, numpy], description: {fr: "Réponse temporelle et fréquentielle, stabilité", ru: "Переходные и частотные характеристики, устойчивость", en: "Time and frequency response, stability"}}
+  - {id: pid_tuning, tools: [sympy], description: {fr: "Réglage de correcteurs PID", ru: "Настройка ПИД-регуляторов", en: "PID tuning"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["IEEE"], intl: ["IEEE"]}
+standards:
+  - {code: "ГОСТ Р МЭК 61131-3", convention: ru, title: {fr: "Automates programmables : langages", ru: "Контроллеры программируемые. Языки программирования", en: "Programmable controllers: languages"}}
+  - {code: "ГОСТ 21.208-2013", convention: ru, title: {fr: "Automatisation des procédés : symboles", ru: "СПДС. Автоматизация технологических процессов. Обозначения", en: "Process automation: symbols"}}
+  - {code: "ГОСТ 34.602-2020", convention: ru, title: {fr: "Cahier des charges d'un système automatisé", ru: "Техническое задание на создание автоматизированной системы", en: "Specification for automated systems"}}
+  - {code: "NF EN 60848", convention: fr, title: {fr: "GRAFCET", ru: "GRAFCET", en: "GRAFCET specification language"}}
+  - {code: "NF EN 60204-1", convention: fr, title: {fr: "Sécurité des machines : équipement électrique", ru: "Безопасность машин: электрооборудование", en: "Safety of machinery: electrical equipment"}}
+  - {code: "NF EN ISO 13849-1", convention: fr, title: {fr: "Parties des systèmes de commande relatives à la sécurité", ru: "Части систем управления, связанные с безопасностью", en: "Safety-related parts of control systems"}}
+  - {code: "IEC 61131-3", convention: intl, title: {fr: "Langages des automates", ru: "Языки ПЛК", en: "PLC programming languages"}}
+  - {code: "IEC 62264", convention: intl, title: {fr: "Intégration entreprise-contrôle (ISA-95)", ru: "Интеграция систем управления предприятием (ISA-95)", en: "Enterprise-control system integration (ISA-95)"}}
+  - {code: "IEC 62443", convention: intl, title: {fr: "Cybersécurité des systèmes industriels", ru: "Кибербезопасность промышленных систем", en: "Industrial automation and control systems security"}}

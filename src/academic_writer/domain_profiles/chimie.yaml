@@ -1,0 +1,31 @@
+id: chimie
+parent: generaliste
+names: {fr: "Chimie", ru: "Химия", en: "Chemistry"}
+description:
+  fr: "Chimie générale, organique, analytique, physico-chimie, génie chimique."
+  ru: "Общая, органическая, аналитическая, физическая химия, химическая технология."
+  en: "General, organic, analytical and physical chemistry, chemical engineering."
+keywords:
+  fr: ["réaction* chimique*", "molécule*", "réactif*", "solvant*", "concentration molaire", "titrage", "dosage", "synthèse organique", "catalyseur*", "chromatographie", "spectrométrie", "ph", "oxydoréduction", "équilibre chimique", "stœchiométrie", "rendement de réaction", "composé* organique*", "polymère*"]
+  ru: ["химическ* реакци*", "молекул*", "реагент*", "растворител*", "молярн* концентраци*", "титрован*", "органическ* синтез*", "катализатор*", "хроматограф*", "спектрометр*", "окислительно-восстановительн*", "химическ* равновеси*", "стехиометр*", "выход* реакции", "органическ* соединен*", "полимер*"]
+  en: ["chemical reaction*", "molecule*", "reagent*", "solvent*", "molar concentration", "titration", "organic synthesis", "catalyst*", "chromatography", "spectrometry", "redox", "chemical equilibrium", "stoichiometry", "reaction yield", "organic compound*", "polymer*"]
+terminology:
+  - {id: molar_concentration, fr: "concentration molaire (mol/L)", ru: "молярная концентрация (моль/л)", en: "molar concentration (mol/L)"}
+  - {id: amount_of_substance, fr: "quantité de matière (mol)", ru: "количество вещества (моль)", en: "amount of substance (mol)"}
+  - {id: yield, fr: "rendement", ru: "выход (реакции)", en: "yield"}
+  - {id: titration, fr: "titrage", ru: "титрование", en: "titration"}
+  - {id: catalyst, fr: "catalyseur", ru: "катализатор", en: "catalyst"}
+validation_rules:
+  - {id: iupac_names, severity: warning, description: {fr: "Noms des composés conformes à la nomenclature IUPAC.", ru: "Названия соединений по номенклатуре ИЮПАК.", en: "Compound names follow IUPAC nomenclature."}}
+  - {id: safety_data, severity: warning, description: {fr: "Dangers des produits (SGH/CLP) et précautions mentionnés pour tout protocole.", ru: "Для методик указаны опасности веществ (СГС) и меры предосторожности.", en: "Hazards (GHS/CLP) and precautions stated for any procedure."}}
+  - {id: stoichiometry, severity: warning, description: {fr: "Équations équilibrées ; rendements calculés à partir des quantités réelles.", ru: "Уравнения уравнены; выход рассчитан по фактическим количествам.", en: "Balanced equations; yields computed from actual amounts."}}
+calculations:
+  - {id: stoichiometry, tools: [sympy, units], description: {fr: "Stœchiométrie et rendements", ru: "Стехиометрия и выход", en: "Stoichiometry and yields"}}
+  - {id: equilibrium, tools: [sympy], description: {fr: "Équilibres, pH, constantes", ru: "Равновесия, pH, константы", en: "Equilibria, pH, constants"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["ACS", "ISO 690"], intl: ["ACS", "RSC"]}
+standards:
+  - {code: "Nomenclature IUPAC", convention: intl, title: {fr: "Nomenclature de chimie organique et inorganique (IUPAC)", ru: "Номенклатура ИЮПАК", en: "IUPAC nomenclature"}}
+  - {code: "IUPAC Green Book", convention: intl, title: {fr: "Grandeurs, unités et symboles en chimie physique", ru: "Величины, единицы и обозначения в физической химии", en: "Quantities, units and symbols in physical chemistry"}}
+  - {code: "SGH / GHS (ONU)", convention: intl, title: {fr: "Système général harmonisé de classification et d'étiquetage", ru: "Согласованная на глобальном уровне система классификации и маркировки", en: "Globally Harmonized System of classification and labelling"}}
+  - {code: "Règlement (CE) n° 1272/2008 (CLP)", convention: fr, title: {fr: "Classification, étiquetage et emballage des substances", ru: "Классификация, маркировка и упаковка веществ (ЕС)", en: "Classification, labelling and packaging of substances (EU)"}}
