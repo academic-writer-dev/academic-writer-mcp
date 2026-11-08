@@ -41,8 +41,10 @@ from academic_writer.writing.models import (
     RequirementList,
     SectionBrief,
     SectionRevision,
+    SuggestedInput,
     WriteResult,
 )
+from academic_writer.domains.detection import TextIndex
 from academic_writer.writing.outline import build_sections, coverage_issues
 from academic_writer.writing.requirements import extract_candidates, missing_symbols
 
@@ -108,6 +110,7 @@ class WritingService:
         now = utc_now()
         created: list[str] = []
         texts: list[str] = []
+        action_texts: list[str] = []
         with self.db.read() as conn:
             existing = {(r["kind"], r["text"]) for r in conn.execute(
                 "SELECT kind, text FROM requirements WHERE project_id = ? AND status != 'proposed'", (project_id,))}
@@ -116,6 +119,9 @@ class WritingService:
             warnings.extend(f"{document.original_filename} : {w}" for w in summary.injection_warnings)
             candidates = extract_candidates(result)
             texts.extend(b.text for b in result.blocks)
+            # Grandeurs à fournir : seulement celles des tâches et étapes (pas celles citées dans les questions,
+            # qui désignent souvent des résultats : r, rb, ra, rf…).
+            action_texts.extend(c.text for c in candidates if c.kind in ("task", "step", "objective"))
             if not candidates:
                 warnings.append(f"{document.original_filename} : aucune exigence reconnue automatiquement.")
             with self.db.transaction() as conn:
@@ -143,7 +149,14 @@ class WritingService:
         data_values = " ".join((r.value or "") + " " + r.text for r in active if r.kind == "data")
         computing = [r for r in active if r.kind in ("task", "step") and re.search(
             r"рассчита|вычисл|определ|calcul|détermin|comput|determin", r.text, re.IGNORECASE)]
-        missing = missing_symbols(texts, data_values)
+        suggested = self._suggested_inputs(project_id, texts, data_values)
+        profile_symbols = [s.symbol for s in suggested]
+        missing = [s.symbol for s in suggested if s.status == "missing"]
+        missing += [s for s in missing_symbols(action_texts, data_values) if s not in profile_symbols]
+        defaults = [s for s in suggested if s.status == "default_proposed"]
+        if defaults:
+            warnings.append("Valeurs normalisées proposées par défaut (à confirmer) : "
+                            + ", ".join(f"{s.symbol} = {s.default}{s.unit or ''} ({s.standard})" for s in defaults) + ".")
         if computing and not any(r.kind == "data" for r in active):
             warnings.append("Les consignes demandent des calculs mais ne contiennent aucune valeur numérique : "
                             "les données (variante, paramètres" + (f" : {', '.join(missing[:12])}" if missing else "")
@@ -156,11 +169,36 @@ class WritingService:
             length=lengths[0] if lengths else None,
             norms=sorted({n.strip() for r in active if r.kind == "norm" and r.value for n in r.value.split(",")}),
             deadlines=sorted({r.value for r in active if r.kind == "deadline" and r.value}),
-            missing_data=missing, warnings=warnings, requirements=listing.requirements,
+            missing_data=missing, suggested_inputs=suggested, warnings=warnings, requirements=listing.requirements,
             next_step="Présenter les exigences à l'utilisateur, les faire confirmer ou rejeter (manage_requirement), "
                       "demander les données manquantes (manage_requirement action=add kind=data), puis créer le plan "
                       "(create_academic_outline).",
         )
+
+    def _suggested_inputs(self, project_id: str, texts: list[str], data_values: str) -> list[SuggestedInput]:
+        """Données d'entrée des calculs du profil détectés dans les consignes (déclencheurs par mots-clés)."""
+        project = self.projects.get(project_id)
+        language = project.language.value
+        profile = self.domains.get_domain(project.domain_id or "generaliste")
+        index = TextIndex("\n".join(texts))
+        given = data_values.casefold()
+        result: list[SuggestedInput] = []
+        seen: set[str] = set()
+        for calculation in profile.calculations:
+            keywords = [k for words in calculation.triggers.values() for k in words]
+            if not keywords or not any(index.count(k) for k in keywords):
+                continue
+            for item in calculation.inputs:
+                if item.symbol in seen:
+                    continue
+                seen.add(item.symbol)
+                if re.search(rf"(?<![\w]){re.escape(item.symbol.casefold())}\s*=", given):
+                    continue  # déjà fourni par l'utilisateur ou les consignes
+                result.append(SuggestedInput(
+                    symbol=item.symbol, name=item.name.get(language), unit=item.unit,
+                    calculation=calculation.description.get(language), default=item.default, standard=item.standard,
+                    status="default_proposed" if item.default is not None else "missing"))
+        return result
 
     def list_requirements(self, project_id: str, kind: str | None = None, status: str | None = None) -> RequirementList:
         self.projects.get(project_id)

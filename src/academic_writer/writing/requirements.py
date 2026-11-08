@@ -38,6 +38,9 @@ MANIPULATION = re.compile(
     r"собрать|разобрать|запустить|остановить|спрофилировать|отметить|проверить|подготовить|зафиксировать|"
     r"installer|placer|tourner|régler|brancher|mettre|retirer|monter|démonter|lancer|arrêter|étudier|relever|"
     r"install|set|turn|connect|switch|place|remove|mount|start|stop|study|record|prepare)\b", _I)
+RESULT_WORK = re.compile(r"рассчитанн|вычисленн|полученн\w* (?:значени|величин|результат)|рабоч\w* рисун|чертеж|"
+                         r"график|диаграмм|valeurs calculées|résultats obtenus|dessin|graphique|computed|calculated values|"
+                         r"obtained results|drawing|plot", _I)
 META_TASK = re.compile(r"(?:подготовить|оформить|сдать|защитить)\s+отч[её]т|rédiger le compte[- ]rendu|"
                        r"(?:prepare|write) (?:the|a) report|remettre le rapport", _I)
 HEADERS = (
@@ -148,6 +151,10 @@ def action_kind(text: str, is_list_item: bool, context: str | None) -> str | Non
         return "other"
     numbered = bool(TASK_START.match(stripped))
     if DELIVERABLE.match(stripped):
+        return "task"
+    # Une étape qui exploite des résultats ou produit un dessin est un livrable (« Отметить рассчитанные
+    # величины на рабочем рисунке »), pas une simple manipulation.
+    if (is_list_item or numbered or context == "step") and RESULT_WORK.search(stripped):
         return "task"
     if context == "step" and (is_list_item or numbered):
         return "step"

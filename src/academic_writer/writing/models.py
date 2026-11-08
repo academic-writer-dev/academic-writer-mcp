@@ -36,6 +36,16 @@ class RequirementList(BaseModel):
                    "(manage_requirement). Les consignes originales font foi.")
 
 
+class SuggestedInput(BaseModel):
+    symbol: str
+    name: str
+    unit: str | None = None
+    calculation: str = Field(description="Calcul du profil disciplinaire qui requiert cette donnée.")
+    default: str | None = Field(default=None, description="Valeur normalisée proposée (à confirmer), sinon None.")
+    standard: str | None = None
+    status: Literal["missing", "default_proposed"]
+
+
 class AssignmentAnalysis(BaseModel):
     project_id: str
     analyzed_documents: list[str]
@@ -46,7 +56,10 @@ class AssignmentAnalysis(BaseModel):
     norms: list[str]
     deadlines: list[str]
     missing_data: list[str] = Field(default_factory=list,
-                                    description="Grandeurs utilisées dans les consignes sans valeur numérique fournie.")
+                                    description="Données d'entrée nécessaires sans valeur fournie (à demander).")
+    suggested_inputs: list[SuggestedInput] = Field(
+        default_factory=list, description="Données d'entrée attendues par les calculs détectés, avec les valeurs "
+                                          "normalisées proposées par défaut (à confirmer par l'utilisateur).")
     warnings: list[str]
     requirements: list[Requirement]
     next_step: str

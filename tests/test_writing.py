@@ -72,6 +72,7 @@ def _lr4_document():
                       "завернуть эти винты."),
         ("list_item", "8. Спрофилировать по 2-3 зуба без смещения рейки, с положительным и отрицательным смещением."),
         ("list_item", "9. Рассчитать основные геометрические параметры для трех модификаций зубчатого колеса."),
+        ("list_item", "10. Отметить рассчитанные величины на рабочем рисунке."),
         ("list_item", "11. Подготовить отчет по лабораторной работе."),
         ("paragraph", "Вопросы для защиты лабораторной работы"),
         ("list_item", "1. Что такое зубчатое колесо?"),
@@ -91,12 +92,13 @@ def test_lr4_structural_extraction() -> None:
     assert [c.number for c in by_kind["step"]] == ["1", "2", "3", "7", "8"]  # étapes 2 et 7 présentes
     step7 = next(c for c in by_kind["step"] if c.number == "7")
     assert "Для установки рейки" in step7.text  # paragraphe de continuation rattaché
-    assert [c.number for c in by_kind["task"]] == ["9"]  # seul livrable
+    assert [c.number for c in by_kind["task"]] == ["9", "10"]  # livrables : calcul et rabattement sur le dessin
     assert "Подготовить отчет" in by_kind["other"][0].text
     assert [c.number for c in by_kind["question"]] == ["1", "5", "7"]
     assert all(c.group_label.startswith("Вопросы") for c in by_kind["question"])
     assert by_kind["objective"][0].text.startswith("Ознакомление студентов")
-    assert missing_symbols([b.text for b in _lr4_document().blocks], "") == ["x", "m", "r", "rb", "ra", "rf"]
+    actions = [c.text for c in candidates if c.kind in ("task", "step", "objective")]
+    assert missing_symbols(actions, "") == ["x", "m"]  # r, rb, ra, rf (questions = résultats) exclus
 
 
 def test_lr4_outline_has_no_duplicates(settings) -> None:
@@ -110,13 +112,41 @@ def test_lr4_outline_has_no_duplicates(settings) -> None:
     sections, _, _ = build_sections(template, reqs, "ru", None)
     titles = [s.title for s in sections]
     assert [t for t in titles if t.startswith("Задача")] == [
-        "Задача 1. Рассчитать основные геометрические параметры для трех модификаций зубчатого колеса"]
+        "Задача 1. Рассчитать основные геометрические параметры для трех модификаций зубчатого колеса",
+        "Задача 2. Отметить рассчитанные величины на рабочем рисунке"]
     assert not any("…" in t for t in titles)
     assert titles.count("Ответы на контрольные вопросы") == 1
     procedure = next(s for s in sections if s.section_key == "procedure")
     assert len(procedure.requirement_ids) == 5
     assert "Обработка результатов" in titles and not any("погрешност" in t for t in titles)
     assert not next(s for s in sections if s.section_key == "measurements").required
+
+
+def test_gear_inputs_from_profile(services: Services, inbox: Path) -> None:
+    """z est une donnée d'entrée même absente du texte ; α, ha*, c* proposés par défaut avec leur norme."""
+    project = services.projects.create("ЛР4", DocumentType.RAPPORT_LABORATOIRE, Language.RU)
+    services.domains.assign(project.id, "genie_mecanique", "ru")
+    path = inbox / "lr4.txt"
+    path.write_text("Нарезание эвольвентных зубчатых колес.\n\nПоследовательность выполнения\n\n"
+                    "7. Установить рейку в положение (0, + х · m).\n\n9. Рассчитать параметры колеса.\n\n"
+                    "Вопросы для защиты\n\n5. Дайте определение окружностям: r, rb, ra, rf.", encoding="utf-8")
+    services.documents.import_document(project.id, str(path), DocumentRole.INSTRUCTIONS)
+    analysis = services.writing.analyze_assignment(project.id)
+    assert analysis.missing_data == ["m", "z", "x"]
+    defaults = {s.symbol: (s.default, s.standard) for s in analysis.suggested_inputs if s.status == "default_proposed"}
+    assert defaults["α"][0] == "20" and defaults["ha*"][0] == "1" and defaults["c*"][0] == "0,25"
+    assert all("ГОСТ 13755-2015" in std for _, std in defaults.values())
+    services.writing.manage_requirement(project.id, "add", text="m = 2 мм; z = 20", kind="data", value="m = 2; z = 20")
+    again = services.writing.analyze_assignment(project.id)
+    assert again.missing_data == ["x"]  # m et z fournis par l'utilisateur
+
+
+def test_profile_default_requires_standard() -> None:
+    from pydantic import ValidationError
+
+    from academic_writer.domains.model import CalcInput
+    with pytest.raises(ValidationError):
+        CalcInput(symbol="α", name={"fr": "angle"}, default="20")
 
 
 def test_lr4_analysis_reports_missing_data(services: Services, inbox: Path) -> None:

@@ -66,10 +66,29 @@ class ValidationRule(_Strict):
     check: str | None = Field(default=None, description="Clé d'un contrôle automatique (phases ultérieures).")
 
 
+class CalcInput(_Strict):
+    """Donnée d'entrée d'un calcul ; ``default`` uniquement pour une valeur normalisée, avec sa norme."""
+
+    symbol: str
+    name: Localized
+    unit: str | None = None
+    default: str | None = None
+    standard: str | None = None
+
+    @model_validator(mode="after")
+    def _default_needs_standard(self) -> CalcInput:
+        if self.default is not None and not self.standard:
+            raise ValueError(f"Valeur par défaut de « {self.symbol} » sans norme de référence.")
+        return self
+
+
 class CalculationType(_Strict):
     id: str
     description: Localized
     tools: list[str] = Field(default_factory=list)
+    triggers: dict[Lang, list[str]] = Field(default_factory=dict,
+                                            description="Mots-clés signalant ce calcul dans des consignes.")
+    inputs: list[CalcInput] = Field(default_factory=list)
 
 
 class Standard(_Strict):

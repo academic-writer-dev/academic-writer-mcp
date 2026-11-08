@@ -58,10 +58,27 @@ validation_rules:
   - {id: safety_factor, severity: warning, description: {fr: "Tout coefficient de sécurité est justifié par une source ou une norme.", ru: "Коэффициент запаса обоснован источником или стандартом.", en: "Every safety factor is justified by a source or standard."}}
   - {id: drawing_scales, severity: info, description: {fr: "Les échelles des épures (μl, μV, μa) sont indiquées et cohérentes.", ru: "Масштабные коэффициенты (μl, μV, μa) указаны и согласованы.", en: "Graphical scale factors (μl, μV, μa) are stated and consistent."}}
 calculations:
-  - {id: mobility, tools: [sympy], description: {fr: "Degré de mobilité (Tchebychev / Grübler)", ru: "Степень подвижности (формула Чебышева)", en: "Mobility (Chebyshev–Grübler)"}}
+  - id: mobility
+    tools: [sympy]
+    description: {fr: "Degré de mobilité (Tchebychev / Grübler)", ru: "Степень подвижности (формула Чебышева)", en: "Mobility (Chebyshev–Grübler)"}
+    triggers: {ru: ["степен* подвижност*", "структурн* анализ*"], fr: ["degré* de mobilité", "analyse structurelle"], en: ["mobility", "degrees of freedom"]}
+    inputs:
+      - {symbol: "n", name: {fr: "nombre d'éléments mobiles", ru: "число подвижных звеньев", en: "number of moving links"}}
+      - {symbol: "p5", name: {fr: "nombre de liaisons inférieures (classe 5)", ru: "число низших кинематических пар (p5)", en: "number of lower pairs (p5)"}}
+      - {symbol: "p4", name: {fr: "nombre de liaisons supérieures (classe 4)", ru: "число высших кинематических пар (p4)", en: "number of higher pairs (p4)"}}
   - {id: kinematics, tools: [sympy, units], description: {fr: "Vitesses et accélérations (méthode des plans, analytique)", ru: "Скорости и ускорения (метод планов, аналитический)", en: "Velocities and accelerations (graphical, analytical)"}}
   - {id: strength, tools: [sympy, units], description: {fr: "Contraintes, déformations, coefficient de sécurité", ru: "Напряжения, деформации, коэффициент запаса", en: "Stresses, strains, safety factor"}}
-  - {id: gears, tools: [sympy], description: {fr: "Rapports de transmission, géométrie des engrenages", ru: "Передаточные отношения, геометрия зацепления", en: "Gear ratios and geometry"}}
+  - id: gears
+    tools: [sympy]
+    description: {fr: "Rapports de transmission, géométrie des engrenages", ru: "Передаточные отношения, геометрия зацепления", en: "Gear ratios and geometry"}
+    triggers: {ru: ["зубчат*", "эвольвент*", "зубонарезан*", "нарезани* зубчат*", "инструментальн* рейк*"], fr: ["engrenage*", "denture*", "crémaillère*", "développante*", "taillage"], en: ["gear*", "involute", "rack cutter", "gear cutting"]}
+    inputs:
+      - {symbol: "m", unit: "мм", name: {fr: "module", ru: "модуль", en: "module"}}
+      - {symbol: "z", name: {fr: "nombre de dents", ru: "число зубьев", en: "number of teeth"}}
+      - {symbol: "x", name: {fr: "coefficient de déplacement de profil", ru: "коэффициент смещения", en: "profile shift coefficient"}}
+      - {symbol: "α", unit: "°", default: "20", standard: "ГОСТ 13755-2015 / ISO 53 (исходный контур)", name: {fr: "angle de pression du profil de référence", ru: "угол профиля исходного контура", en: "pressure angle of the basic rack"}}
+      - {symbol: "ha*", default: "1", standard: "ГОСТ 13755-2015 / ISO 53 (исходный контур)", name: {fr: "coefficient de saillie", ru: "коэффициент высоты головки зуба", en: "addendum coefficient"}}
+      - {symbol: "c*", default: "0,25", standard: "ГОСТ 13755-2015 / ISO 53 (исходный контур)", name: {fr: "coefficient de jeu radial", ru: "коэффициент радиального зазора", en: "bottom clearance coefficient"}}
 bibliography:
   preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["ISO 690", "IEEE"], intl: ["IEEE", "ASME"]}
 standards:
@@ -69,6 +86,8 @@ standards:
   - {code: "ГОСТ 2.104", convention: ru, title: {fr: "Cartouches (inscriptions de base)", ru: "ЕСКД. Основные надписи", en: "Title blocks"}}
   - {code: "ГОСТ 2.109", convention: ru, title: {fr: "Exigences de base des dessins", ru: "ЕСКД. Основные требования к чертежам", en: "Basic requirements for drawings"}}
   - {code: "ГОСТ 2.307", convention: ru, title: {fr: "Cotation", ru: "ЕСКД. Нанесение размеров и предельных отклонений", en: "Dimensioning"}}
+  - {code: "ГОСТ 13755-2015", convention: ru, title: {fr: "Engrenages cylindriques à développante : profils de référence", ru: "Передачи зубчатые цилиндрические эвольвентные. Исходные контуры", en: "Cylindrical involute gears: basic rack profiles"}}
+  - {code: "ISO 53", convention: intl, title: {fr: "Engrenages cylindriques : profil de référence normalisé", ru: "Цилиндрические зубчатые колёса: стандартный исходный контур", en: "Cylindrical gears: standard basic rack tooth profile"}}
   - {code: "ГОСТ 25346-2013", convention: ru, title: {fr: "Tolérances et ajustements (ESDP)", ru: "Основные нормы взаимозаменяемости. ЕСДП", en: "Limits and fits"}}
   - {code: "NF EN ISO 1101", convention: fr, title: {fr: "Spécification géométrique des produits : tolérancement géométrique", ru: "Геометрические допуски", en: "GPS: geometrical tolerancing"}}
   - {code: "NF EN ISO 286-1", convention: fr, title: {fr: "Tolérances et ajustements", ru: "Допуски и посадки", en: "Limits and fits"}}
