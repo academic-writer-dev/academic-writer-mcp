@@ -81,6 +81,23 @@ def test_search_reports_unindexed_and_rejects_empty(services: Services, project,
         services.extraction.search(project.id, "  ?! ")
 
 
+def test_search_counts_occurrences_in_chunk(services: Services, project, inbox: Path) -> None:
+    path = inbox / "plans.txt"
+    path.write_text("План скоростей 2ПГ 2-го вида.\n\nПлан ускорений.\n\nПЛАН СКОРОСТЕЙ 2ПГ 3-го вида.",
+                    encoding="utf-8")
+    doc = _import(services, project, path)
+    services.extraction.extract(doc.id)
+    hit = services.extraction.search(project.id, "план скоростей").hits[0]
+    assert hit.occurrences == 2  # un seul passage, mais deux mentions de la phrase
+
+
+def test_count_occurrences_accents_and_prefix() -> None:
+    from academic_writer.core.extraction import count_occurrences
+    assert count_occurrences("Étude, étude et ETUDE.", ["etude"]) == 3
+    assert count_occurrences("accélération, accélérations", ["accél*"]) == 2
+    assert count_occurrences("rien ici", ["absent"]) == 0
+
+
 def test_search_prefix(services: Services, project, inbox: Path) -> None:
     doc = _import(services, project, make_real_docx(inbox / "r.docx"))
     services.extraction.extract(doc.id)

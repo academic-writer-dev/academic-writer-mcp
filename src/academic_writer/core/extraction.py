@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import shutil
+import unicodedata
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -91,8 +92,35 @@ class SearchHit(BaseModel):
     title: str | None
     page: int | None
     heading: str | None
-    snippet: str
+    snippet: str = Field(description="Extrait autour de la première occurrence.")
+    occurrences: int = Field(description="Nombre d'occurrences des mots recherchés dans ce passage.")
     score: float
+
+
+def _fold(text: str) -> str:
+    """Minuscules et sans accents (comme l'index FTS5), pour compter les occurrences."""
+    decomposed = unicodedata.normalize("NFKD", text.casefold())
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+
+
+def count_occurrences(text: str, tokens: list[str]) -> int:
+    """Occurrences de la requête : la phrase entière si elle est présente, sinon le mot le plus rare."""
+    words = re.findall(r"\w+", _fold(text))
+    terms = [_fold(t.rstrip("*")) for t in tokens]
+    prefixes = [t.endswith("*") for t in tokens]
+
+    def matches(word: str, index: int) -> bool:
+        return word.startswith(terms[index]) if prefixes[index] else word == terms[index]
+
+    phrase = sum(
+        1 for i in range(len(words) - len(terms) + 1)
+        if all(matches(words[i + k], k) for k in range(len(terms)))
+    )
+    if phrase:
+        return phrase
+    counts = [sum(1 for w in words if matches(w, i)) for i in range(len(terms))]
+    present = [c for c in counts if c]
+    return min(present) if present else 0
 
 
 class SearchResult(BaseModel):
@@ -316,7 +344,7 @@ class ExtractionService:
         fts_query = (" OR " if match == "any" else " ").join(terms)
         limit = max(1, min(limit, 50))
         sql = (
-            "SELECT c.document_id, c.page, c.heading, d.original_filename, d.title, "
+            "SELECT c.document_id, c.page, c.heading, c.text, d.original_filename, d.title, "
             "snippet(chunks_fts, 0, '«', '»', '…', 16) AS snippet, bm25(chunks_fts) AS score "
             "FROM chunks_fts JOIN chunks c ON c.id = chunks_fts.rowid JOIN documents d ON d.id = c.document_id "
             "WHERE chunks_fts MATCH ? AND c.project_id = ?"
@@ -333,7 +361,8 @@ class ExtractionService:
                 "SELECT original_filename FROM documents d WHERE d.project_id = ? AND NOT EXISTS "
                 "(SELECT 1 FROM extractions e WHERE e.document_id = d.id)", (project_id,))]
         hits = [SearchHit(document_id=r["document_id"], original_filename=r["original_filename"], title=r["title"],
-                          page=r["page"], heading=r["heading"], snippet=r["snippet"], score=round(-r["score"], 4))
+                          page=r["page"], heading=r["heading"], snippet=r["snippet"],
+                          occurrences=count_occurrences(r["text"], tokens), score=round(-r["score"], 4))
                 for r in rows]
         return SearchResult(project_id=project_id, query=query, fts_query=fts_query, count=len(hits),
                             hits=hits, not_indexed=not_indexed)
