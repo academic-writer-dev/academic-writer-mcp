@@ -16,12 +16,14 @@ from academic_writer.providers.base import GenerationRequest, GenerationResult, 
 class OllamaProvider:
     name = "ollama"
 
-    def __init__(self, url: str, model: str, num_ctx: int, think: bool | str, timeout: float) -> None:
+    def __init__(self, url: str, model: str, num_ctx: int, think: bool | str, timeout: float,
+                 keep_alive: str = "30m") -> None:
         self.url = url.rstrip("/")
         self.model = model
         self.num_ctx = num_ctx
         self.think = think
         self.timeout = timeout
+        self.keep_alive = keep_alive
 
     def _post(self, path: str, payload: dict) -> dict:
         request = urllib.request.Request(
@@ -50,6 +52,7 @@ class OllamaProvider:
                          {"role": "user", "content": request.prompt}],
             "stream": False,
             "think": self.think,
+            "keep_alive": self.keep_alive,
             "options": {"num_predict": request.max_output_tokens, "num_ctx": self.num_ctx},
         })
         text = (data.get("message") or {}).get("content", "") or ""

@@ -106,6 +106,7 @@ class Settings(BaseSettings):
     ollama_num_ctx: int = Field(default=8192, ge=2048, le=262144, description="Contexte (limité par la mémoire vidéo).")
     ollama_think: bool | Literal["low", "medium", "high"] = False
     ollama_timeout_seconds: int = Field(default=600, ge=30, le=3600)
+    ollama_keep_alive: str = Field(default="30m", description="Durée de maintien du modèle en mémoire après un appel.")
 
     # --- fournisseurs IA cloud (actifs uniquement en mode 'connected' + consentement par projet) ---
     ai_default_provider: Literal["anthropic", "openai"] = "anthropic"

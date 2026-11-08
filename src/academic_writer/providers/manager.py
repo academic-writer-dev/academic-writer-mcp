@@ -112,7 +112,8 @@ class ProviderManager:
         if provider == "ollama":
             from academic_writer.providers.ollama_provider import OllamaProvider
             return OllamaProvider(self.settings.ollama_url, self.settings.ollama_model, self.settings.ollama_num_ctx,
-                                  self.settings.ollama_think, float(self.settings.ollama_timeout_seconds))
+                                  self.settings.ollama_think, float(self.settings.ollama_timeout_seconds),
+                                  self.settings.ollama_keep_alive)
         key = secrets.get_key(provider)
         if not key:
             raise ProviderError("config", f"Aucune clé API {provider} configurée. Dans PowerShell : "
