@@ -5,9 +5,9 @@ import pytest
 from academic_writer.core.config import Settings
 from academic_writer.core.errors import StorageError
 from academic_writer.storage.db import Database
-from academic_writer.storage.migrations import LATEST_VERSION
+from academic_writer.storage.migrations import LATEST_VERSION, MIGRATIONS
 
-EXPECTED_TABLES = {"projects", "documents", "revisions", "history", "settings"}
+EXPECTED_TABLES = {"projects", "documents", "revisions", "history", "settings", "extractions", "chunks", "chunks_fts"}
 
 
 def _db(settings: Settings) -> Database:
@@ -16,7 +16,7 @@ def _db(settings: Settings) -> Database:
 
 def test_initialize_creates_schema(settings: Settings) -> None:
     db = _db(settings)
-    assert db.initialize() == [LATEST_VERSION]
+    assert db.initialize() == [m.version for m in MIGRATIONS]
     assert db.schema_version() == LATEST_VERSION
     with db.read() as conn:
         tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}

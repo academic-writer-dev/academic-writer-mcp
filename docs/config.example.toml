@@ -25,3 +25,16 @@ allowed_import_dirs = ['C:\Users\<VotreNom>', 'D:\']
 zip_max_uncompressed_mb = 1024
 zip_max_entries = 20000
 zip_max_ratio = 200
+
+# --- Extraction ---
+pdf_backend = 'auto'          # 'auto'/'pdfium' (licences permissives) ou 'pymupdf' (AGPL, uv sync --extra pymupdf)
+extract_max_pages = 2000
+extract_max_images = 300
+
+# --- OCR (Tesseract) ---
+ocr_enabled = true
+# tesseract_cmd = 'C:\Program Files\Tesseract-OCR\tesseract.exe'   # détection automatique si absent
+# tessdata_dir = 'D:\AcademicWriter-Data\tessdata'                  # défaut : <data_dir>\tessdata
+ocr_dpi = 300
+ocr_max_pages = 30            # pages OCR maximum par extraction
+ocr_timeout_seconds = 120

@@ -79,6 +79,26 @@ Fichier `.vscode/mcp.json` dans l'espace de travail :
 }
 ```
 
+## 5. OCR (Tesseract) — facultatif mais recommandé
+
+```powershell
+winget install --id UB-Mannheim.TesseractOCR --exact     # accepter la fenêtre UAC
+$dir = "D:\AcademicWriter-Data\tessdata"                  # = <data_dir>\tessdata
+New-Item -ItemType Directory -Force $dir
+foreach ($l in "fra","rus","eng") {
+  Invoke-WebRequest "https://github.com/tesseract-ocr/tessdata/raw/main/$l.traineddata" -OutFile "$dir\$l.traineddata"
+}
+& "C:\Program Files\Tesseract-OCR\tesseract.exe" --tessdata-dir $dir --list-langs
+```
+
+## 6. Lecteur PDF PyMuPDF (facultatif, licence AGPL)
+
+```powershell
+cd D:\MCP\academic-writer-mcp
+uv sync --extra pymupdf
+```
+puis `pdf_backend = 'pymupdf'` dans `config.toml`.
+
 ## Dépannage
 
 | Symptôme | Cause probable | Solution |

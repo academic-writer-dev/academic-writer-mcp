@@ -71,6 +71,28 @@ class Settings(BaseSettings):
     zip_max_entries: int = Field(default=20_000, ge=1)
     zip_max_ratio: int = Field(default=200, ge=10, description="Taux de compression maximal (anti zip-bomb).")
 
+    # --- extraction (Phase 3) ---
+    pdf_backend: Literal["auto", "pdfium", "pymupdf"] = Field(
+        default="auto",
+        description="'auto' et 'pdfium' : pypdfium2 + pdfplumber (licences permissives). "
+        "'pymupdf' : PyMuPDF (AGPL, option installable à part : uv sync --extra pymupdf).",
+    )
+    extract_max_pages: int = Field(default=2000, ge=1)
+    extract_max_images: int = Field(default=300, ge=0)
+    extract_max_table_rows: int = Field(default=5000, ge=1)
+    extract_max_table_cols: int = Field(default=100, ge=1)
+
+    # --- OCR (Tesseract) ---
+    ocr_enabled: bool = True
+    tesseract_cmd: Path | None = Field(default=None, description="Chemin de tesseract.exe (détection auto si vide).")
+    tessdata_dir: Path | None = Field(default=None, description="Dossier des langues (défaut : <data_dir>/tessdata s'il existe).")
+    ocr_dpi: int = Field(default=300, ge=72, le=600)
+    ocr_max_pages: int = Field(default=30, ge=1, le=1000)
+    ocr_timeout_seconds: int = Field(default=120, ge=5)
+    ocr_min_chars_per_page: int = Field(
+        default=25, ge=0, description="En dessous, une page PDF est considérée comme scannée."
+    )
+
     @field_validator("allowed_extensions")
     @classmethod
     def _normalize_extensions(cls, value: list[str]) -> list[str]:
@@ -123,6 +145,13 @@ class Settings(BaseSettings):
     @property
     def db_path(self) -> Path:
         return self.data_dir / "academic_writer.db"
+
+    @property
+    def effective_tessdata_dir(self) -> Path | None:
+        if self.tessdata_dir is not None:
+            return self.tessdata_dir
+        candidate = self.data_dir / "tessdata"
+        return candidate if candidate.is_dir() else None
 
     @property
     def max_file_size_bytes(self) -> int:

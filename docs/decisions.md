@@ -51,7 +51,30 @@
 - Dossiers d'import autorisés configurables ; import depuis le dossier de données refusé.
 - Doublons détectés par SHA-256 dans un même projet.
 
+## D-011 — Deux lecteurs PDF : permissif par défaut, PyMuPDF en option — 2026-11-09
+- Défaut (`pdf_backend = 'auto'`) : pypdfium2 (BSD-3/Apache-2.0) pour texte, signets, images,
+  rendu OCR + pdfplumber (MIT) pour tableaux et tailles de police → distribution libre.
+- Option : PyMuPDF (AGPL-3.0 ou licence Artifex), extra `pymupdf`, activé par
+  `pdf_backend = 'pymupdf'`. PyMuPDF 2.x tire onnxruntime/numpy : jamais imposé par défaut.
+- Titres PDF : signets (fiables, origine `outline`) sinon heuristique de taille de police
+  (origine `font_heuristic`, signalée comme « titre supposé »). Un titre doit contenir un mot
+  de ≥ 3 lettres (exclut les cotes de dessins techniques).
+
+## D-012 — OCR : Tesseract 5.4 externe, langues dans `<data_dir>/tessdata` — 2026-11-09
+- Installé via winget (UB-Mannheim.TesseractOCR). Langues fra/rus/eng (tessdata standard)
+  téléchargées dans `D:\AcademicWriter-Data\tessdata` : pas de droits administrateur requis.
+- Appel direct par `subprocess` (sans shell, délai maximal, fenêtre masquée) plutôt que pytesseract.
+- OCR automatique des pages PDF sans texte ; limite `ocr_max_pages` (30) pour rester dans les
+  délais des clients MCP.
+
+## D-013 — Extraction mise en cache, index FTS5, contenu marqué non fiable — 2026-11-09
+- Résultat complet en JSON dans `projects/<id>/derived/<doc>/extraction.json`, réutilisé tant
+  que le SHA-256 de la copie ne change pas ; extraction refusée si la copie est altérée.
+- Passages d'environ 1200 caractères indexés dans `chunks` + `chunks_fts`
+  (`unicode61 remove_diacritics 2` : insensible à la casse et aux accents, cyrillique compris).
+- Toute sortie contenant du texte de document porte un `trust_notice` ; détection d'indices
+  d'injection de prompt (fr/en/ru) et de caractères invisibles.
+
 ## Points ouverts
-- **Licence PyMuPDF (AGPL-3.0)** : à trancher avant distribution (licence commerciale Artifex,
-  publication AGPL, ou alternative pypdf/pdfplumber). PyMuPDF sera isolé derrière une interface.
+- **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.

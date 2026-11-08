@@ -4,8 +4,8 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : Phase 2 terminée — projets et import sécurisé de documents.**
-> L'extraction du contenu (PDF, DOCX…) arrive en Phase 3.
+> **Statut : Phase 3 terminée — lecture des documents (DOCX, PDF, TXT, MD, XLSX, PPTX),
+> OCR (fra/rus/eng) et recherche plein texte multilingue.**
 
 ## Principes
 
@@ -22,10 +22,26 @@ techniques et professionnels (FR / RU / EN).
 | Diagnostic | `ping` |
 | Projets | `create_project`, `get_project`, `list_projects`, `update_project`, `archive_project` |
 | Documents | `import_document`, `list_documents`, `get_document_metadata` |
+| Extraction et recherche | `extract_document_content`, `extract_document_tables`, `extract_document_images`, `search_in_documents` |
 
 Ressources : `academic-writer://info`, `academic-writer://projects`,
 `academic-writer://projects/{project_id}`, `academic-writer://document-types`,
 `academic-writer://languages`. Prompt : `academic_analysis`.
+
+## Pile technique
+
+| Élément | Version | Rôle |
+|---|---|---|
+| Python | 3.12 | Langage |
+| `mcp` (SDK officiel) | 2.3.x (`<3`) | Serveur MCP — API `MCPServer` (v2) |
+| Pydantic / pydantic-settings | 2.x | Validation, configuration, sortie structurée |
+| SQLite (WAL, FTS5) | 3.53 | Stockage local et recherche plein texte multilingue |
+| pypdfium2 + pdfplumber | 5.x / 0.11 | PDF, lecteur par défaut (licences BSD/Apache/MIT) |
+| PyMuPDF (option `uv sync --extra pymupdf`) | 2.x | PDF, lecteur alternatif (AGPL) |
+| python-docx, openpyxl, python-pptx | 1.2 / 3.1 / 1.0 | DOCX, XLSX, PPTX (MIT) |
+| charset-normalizer | 3.x | Détection d'encodage TXT/MD |
+| Tesseract OCR (programme externe) | 5.4 | OCR fra/rus/eng (Apache-2.0) |
+| pytest, reportlab (tests) | 9.x / 5.x | Tests et génération de PDF de test |
 
 ## Prérequis
 
@@ -52,6 +68,8 @@ uv run mcp dev src/academic_writer/server/app.py   # MCP Inspector (navigateur)
 <data_dir>/                  (ex. D:\AcademicWriter-Data)
   academic_writer.db         base SQLite (WAL)
   projects/<id>/originals/   copies protégées (lecture seule) des fichiers importés
+  projects/<id>/derived/     résultats d'extraction et images extraites (régénérables)
+  tessdata/                  langues de l'OCR (fra, rus, eng)
   logs/                      journaux (sans contenu de document)
   backups/                   sauvegardes automatiques de la base
 ```
@@ -64,7 +82,7 @@ src/academic_writer/
   core/       config, modèles, erreurs, journalisation, projets, documents, historique
   storage/    SQLite : connexion, transactions, migrations, sauvegardes
   security/   contrôle des chemins, inspection des fichiers
-  document/   lecture et extraction documentaire (Phase 3)
+  document/   lecteurs (docx, pdf_pdfium, pdf_pymupdf, text, xlsx, pptx), OCR, mise en page, rendu
 tests/        tests unitaires, sécurité, intégration MCP
 docs/         documentation technique
 ```

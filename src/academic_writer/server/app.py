@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from academic_writer import __version__
 from academic_writer.core.log_setup import configure_logging
-from academic_writer.server import resources, tools_documents, tools_projects
+from academic_writer.server import resources, tools_documents, tools_extraction, tools_projects
 from academic_writer.server.services import get_services
 
 logger = logging.getLogger("academic_writer")
@@ -75,7 +75,7 @@ def server_info() -> str:
     settings = get_services().settings
     return (
         f"# Academic Writer MCP v{__version__}\n\n"
-        "Phase de développement : 2 (projets et documents).\n\n"
+        "Phase de développement : 3 (lecture des documents, OCR, recherche).\n\n"
         f"- Mode réseau : **{settings.mode}**\n"
         f"- Formats acceptés : {', '.join(settings.allowed_extensions)}\n"
         f"- Taille maximale : {settings.max_file_size_mb} Mo\n\n"
@@ -102,6 +102,7 @@ def academic_analysis(document_type: str, language: str = "fr") -> str:
 
 tools_projects.register(mcp)
 tools_documents.register(mcp)
+tools_extraction.register(mcp)
 resources.register(mcp)
 
 

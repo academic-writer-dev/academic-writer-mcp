@@ -15,6 +15,7 @@ pytestmark = pytest.mark.anyio
 EXPECTED_TOOLS = {
     "ping", "create_project", "get_project", "list_projects", "update_project", "archive_project",
     "import_document", "list_documents", "get_document_metadata",
+    "extract_document_content", "extract_document_tables", "extract_document_images", "search_in_documents",
 }
 
 

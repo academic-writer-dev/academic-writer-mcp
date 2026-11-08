@@ -92,6 +92,54 @@ CREATE TABLE settings (
 );
 """,
     ),
+    Migration(
+        version=2,
+        description="Extractions et recherche plein texte (FTS5)",
+        sql="""
+CREATE TABLE extractions (
+    document_id   TEXT PRIMARY KEY REFERENCES documents(id) ON DELETE RESTRICT,
+    extractor     TEXT NOT NULL,
+    source_sha256 TEXT NOT NULL,
+    page_count    INTEGER,
+    char_count    INTEGER NOT NULL,
+    block_count   INTEGER NOT NULL,
+    table_count   INTEGER NOT NULL,
+    image_count   INTEGER NOT NULL,
+    ocr_pages     INTEGER NOT NULL DEFAULT 0,
+    warnings      TEXT NOT NULL DEFAULT '[]',
+    result_path   TEXT NOT NULL,
+    created_at    TEXT NOT NULL
+);
+
+CREATE TABLE chunks (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE RESTRICT,
+    project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    seq         INTEGER NOT NULL,
+    page        INTEGER,
+    heading     TEXT,
+    text        TEXT NOT NULL,
+    UNIQUE (document_id, seq)
+);
+CREATE INDEX idx_chunks_project ON chunks(project_id);
+
+CREATE VIRTUAL TABLE chunks_fts USING fts5(
+    text, heading,
+    content='chunks', content_rowid='id',
+    tokenize='unicode61 remove_diacritics 2'
+);
+CREATE TRIGGER chunks_ai AFTER INSERT ON chunks BEGIN
+    INSERT INTO chunks_fts(rowid, text, heading) VALUES (new.id, new.text, coalesce(new.heading, ''));
+END;
+CREATE TRIGGER chunks_ad AFTER DELETE ON chunks BEGIN
+    INSERT INTO chunks_fts(chunks_fts, rowid, text, heading) VALUES ('delete', old.id, old.text, coalesce(old.heading, ''));
+END;
+CREATE TRIGGER chunks_au AFTER UPDATE ON chunks BEGIN
+    INSERT INTO chunks_fts(chunks_fts, rowid, text, heading) VALUES ('delete', old.id, old.text, coalesce(old.heading, ''));
+    INSERT INTO chunks_fts(rowid, text, heading) VALUES (new.id, new.text, coalesce(new.heading, ''));
+END;
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version
