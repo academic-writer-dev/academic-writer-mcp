@@ -23,6 +23,7 @@ from academic_writer.server import (
     tools_domains,
     tools_extraction,
     tools_projects,
+    tools_writing,
 )
 from academic_writer.server.services import get_services
 
@@ -112,6 +113,7 @@ tools_documents.register(mcp)
 tools_extraction.register(mcp)
 tools_domains.register(mcp)
 tools_ai.register(mcp)
+tools_writing.register(mcp)
 resources.register(mcp)
 
 

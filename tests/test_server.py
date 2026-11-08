@@ -19,6 +19,10 @@ EXPECTED_TOOLS = {
     "identify_domain", "set_project_domain", "list_domain_profiles", "get_domain_profile",
     "get_document_structure_template", "lookup_terminology", "reload_domain_profiles",
     "get_ai_status", "set_project_ai_consent", "test_ai_provider", "get_writing_engine",
+    "analyze_assignment", "extract_requirements", "manage_requirement", "create_academic_outline",
+    "get_academic_outline", "edit_academic_outline", "validate_outline", "write_academic_section",
+    "rewrite_academic_section", "get_section_brief", "save_section_draft", "get_section_revision",
+    "review_revision", "get_draft_status",
 }
 
 

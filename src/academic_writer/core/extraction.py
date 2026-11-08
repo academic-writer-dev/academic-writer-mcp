@@ -95,6 +95,7 @@ class SearchHit(BaseModel):
     snippet: str = Field(description="Extrait autour de la première occurrence.")
     occurrences: int = Field(description="Nombre d'occurrences des mots recherchés dans ce passage.")
     score: float
+    chunk_id: int | None = Field(default=None, description="Identifiant interne du passage.")
 
 
 def _fold(text: str) -> str:
@@ -344,7 +345,7 @@ class ExtractionService:
         fts_query = (" OR " if match == "any" else " ").join(terms)
         limit = max(1, min(limit, 50))
         sql = (
-            "SELECT c.document_id, c.page, c.heading, c.text, d.original_filename, d.title, "
+            "SELECT c.id AS chunk_id, c.document_id, c.page, c.heading, c.text, d.original_filename, d.title, "
             "snippet(chunks_fts, 0, '«', '»', '…', 16) AS snippet, bm25(chunks_fts) AS score "
             "FROM chunks_fts JOIN chunks c ON c.id = chunks_fts.rowid JOIN documents d ON d.id = c.document_id "
             "WHERE chunks_fts MATCH ? AND c.project_id = ?"
@@ -362,7 +363,8 @@ class ExtractionService:
                 "(SELECT 1 FROM extractions e WHERE e.document_id = d.id)", (project_id,))]
         hits = [SearchHit(document_id=r["document_id"], original_filename=r["original_filename"], title=r["title"],
                           page=r["page"], heading=r["heading"], snippet=r["snippet"],
-                          occurrences=count_occurrences(r["text"], tokens), score=round(-r["score"], 4))
+                          occurrences=count_occurrences(r["text"], tokens), score=round(-r["score"], 4),
+                          chunk_id=r["chunk_id"])
                 for r in rows]
         return SearchResult(project_id=project_id, query=query, fts_query=fts_query, count=len(hits),
                             hits=hits, not_indexed=not_indexed)

@@ -180,6 +180,82 @@ CREATE TABLE ai_usage (
 CREATE INDEX idx_ai_usage_created ON ai_usage(created_at);
 """,
     ),
+    Migration(
+        version=5,
+        description="Rédaction encadrée : exigences, plans, sections, révisions de sections",
+        sql="""
+CREATE TABLE requirements (
+    id                 TEXT PRIMARY KEY,
+    project_id         TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    source_document_id TEXT REFERENCES documents(id) ON DELETE RESTRICT,
+    page               INTEGER,
+    kind               TEXT NOT NULL CHECK (kind IN ('task', 'length', 'structure', 'format', 'norm',
+                                                     'deadline', 'variant', 'data', 'other')),
+    text               TEXT NOT NULL,
+    value              TEXT,
+    status             TEXT NOT NULL DEFAULT 'proposed' CHECK (status IN ('proposed', 'confirmed', 'rejected')),
+    origin             TEXT NOT NULL CHECK (origin IN ('extracted', 'user')),
+    position           INTEGER NOT NULL DEFAULT 0,
+    created_at         TEXT NOT NULL,
+    updated_at         TEXT NOT NULL
+);
+CREATE INDEX idx_requirements_project ON requirements(project_id, kind);
+
+CREATE TABLE outlines (
+    id           TEXT PRIMARY KEY,
+    project_id   TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    version      INTEGER NOT NULL,
+    status       TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'approved', 'superseded')),
+    language     TEXT NOT NULL,
+    convention   TEXT NOT NULL,
+    domain_id    TEXT NOT NULL,
+    target_words INTEGER,
+    global_requirement_ids TEXT NOT NULL DEFAULT '[]',
+    note         TEXT NOT NULL DEFAULT '',
+    created_at   TEXT NOT NULL,
+    approved_at  TEXT,
+    UNIQUE (project_id, version)
+);
+
+CREATE TABLE outline_sections (
+    id              TEXT PRIMARY KEY,
+    outline_id      TEXT NOT NULL REFERENCES outlines(id) ON DELETE RESTRICT,
+    position        INTEGER NOT NULL,
+    section_key     TEXT,
+    title           TEXT NOT NULL,
+    level           INTEGER NOT NULL DEFAULT 1 CHECK (level BETWEEN 1 AND 4),
+    required        INTEGER NOT NULL DEFAULT 1,
+    guidance        TEXT,
+    target_words    INTEGER,
+    requirement_ids TEXT NOT NULL DEFAULT '[]',
+    status          TEXT NOT NULL DEFAULT 'planned' CHECK (status IN ('planned', 'drafted', 'validated')),
+    origin          TEXT NOT NULL DEFAULT 'template'
+);
+CREATE INDEX idx_outline_sections ON outline_sections(outline_id, position);
+
+CREATE TABLE section_revisions (
+    id                 TEXT PRIMARY KEY,
+    project_id         TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    section_id         TEXT NOT NULL REFERENCES outline_sections(id) ON DELETE RESTRICT,
+    version            INTEGER NOT NULL,
+    kind               TEXT NOT NULL CHECK (kind IN ('draft', 'rewrite', 'translation', 'correction')),
+    engine             TEXT NOT NULL,
+    model              TEXT,
+    language           TEXT NOT NULL,
+    text               TEXT NOT NULL,
+    word_count         INTEGER NOT NULL,
+    checks             TEXT NOT NULL DEFAULT '[]',
+    status             TEXT NOT NULL DEFAULT 'proposed'
+                       CHECK (status IN ('proposed', 'accepted', 'rejected', 'superseded')),
+    parent_revision_id TEXT REFERENCES section_revisions(id) ON DELETE RESTRICT,
+    note               TEXT NOT NULL DEFAULT '',
+    created_at         TEXT NOT NULL,
+    decided_at         TEXT,
+    UNIQUE (section_id, version)
+);
+CREATE INDEX idx_section_revisions ON section_revisions(section_id, status);
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version
