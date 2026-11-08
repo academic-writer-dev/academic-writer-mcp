@@ -29,7 +29,22 @@ claude mcp list
 
 ## 3. Claude Desktop
 
-Fichier : `%APPDATA%\Claude\claude_desktop_config.json` (le créer s'il n'existe pas) :
+**Attention, l'emplacement dépend de la version installée.** Pour trouver le bon fichier,
+ouvrir `%LOCALAPPDATA%\Claude\logs\main.log` et chercher la ligne
+`Reading claude_desktop_config.json from ...`, ou utiliser le menu
+*Paramètres → Développeur → Modifier la configuration*.
+
+| Installation | Emplacement |
+|---|---|
+| Microsoft Store, versions récentes (données hors paquet) | `%LOCALAPPDATA%\Claude-Data\claude_<id>\claude_desktop_config.json` |
+| Microsoft Store, versions anciennes | `%LOCALAPPDATA%\Packages\Claude_<id>\LocalCache\Roaming\Claude\claude_desktop_config.json` |
+| Installateur classique | `%APPDATA%\Claude\claude_desktop_config.json` |
+
+Sur le poste de développement : `C:\Users\OSA Gaming\AppData\Local\Claude-Data\claude_pzs8sxrjxfjjc\claude_desktop_config.json`.
+Ce fichier contient aussi les préférences de l'application : n'ajouter que l'entrée
+`academic-writer` dans `mcpServers`, sans toucher au reste, et faire une sauvegarde avant.
+
+Entrée à ajouter dans `mcpServers` :
 
 ```json
 {
