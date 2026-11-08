@@ -28,7 +28,7 @@ from academic_writer.providers.base import GenerationRequest
 from academic_writer.providers.manager import ProviderManager
 from academic_writer.storage.db import Database
 from academic_writer.writing import briefs
-from academic_writer.writing.checks import check_draft, check_fidelity, word_count
+from academic_writer.writing.checks import check_draft, check_fidelity, translation_checks, word_count
 from academic_writer.writing.models import (
     AssignmentAnalysis,
     Check,
@@ -505,7 +505,7 @@ class WritingService:
 
     def save_section_draft(self, project_id: str, section_id: str, text: str, *, kind: str = "draft",
                            parent_revision_id: str | None = None, note: str = "", engine: str = "assistant",
-                           model: str | None = None) -> SectionRevision:
+                           model: str | None = None, language: str | None = None) -> SectionRevision:
         self._active_project(project_id)
         outline, section = self._section(project_id, section_id)
         if outline.status != "approved":
@@ -517,20 +517,32 @@ class WritingService:
         parent = self.get_revision(parent_revision_id) if parent_revision_id else None
         if parent is not None and parent.section_id != section_id:
             raise ValidationFailed("La révision parente n'appartient pas à cette section.")
+        if language is not None and language not in ("fr", "ru", "en"):
+            raise ValidationFailed("Langue inconnue : fr, ru ou en.")
+        extra: list[Check] = []
+        if kind == "translation" and parent is not None:
+            extra = translation_checks(parent.text, text, self.domains.get_domain(
+                self._section(project_id, section_id)[0].domain_id), parent.language, language or parent.language)
         return self._store_revision(project_id, section_id, briefs.clean_output(text, section.title), kind=kind,
-                                    engine=engine, model=model, parent=parent, note=note)
+                                    engine=engine, model=model, parent=parent, note=note, language=language,
+                                    extra_checks=extra)
 
     def _store_revision(self, project_id: str, section_id: str, text: str, *, kind: str, engine: str,
                         model: str | None, parent: SectionRevision | None, truncated: bool = False,
-                        note: str = "") -> SectionRevision:
+                        note: str = "", language: str | None = None,
+                        extra_checks: list[Check] | None = None) -> SectionRevision:
         project = self.projects.get(project_id)
         outline, section = self._section(project_id, section_id)
-        language = project.language.value
+        language = language or project.language.value
         profile = self.domains.get_domain(outline.domain_id)
-        checks: list[Check] = check_draft(text, language=language, target_words=section.target_words,
-                                          sources_text=self._sources_text(project_id), profile=profile,
-                                          truncated=truncated, is_references_section=section.section_key == "references")
+        checks: list[Check] = list(extra_checks or [])
+        sources = self._sources_text(project_id)
         if parent is not None:
+            sources += "\n" + parent.text  # une correction ou une réécriture reprend les valeurs de sa version de départ
+        checks += check_draft(text, language=language, target_words=section.target_words if kind != "translation" else None,
+                              sources_text=sources, profile=profile,
+                              truncated=truncated, is_references_section=section.section_key == "references")
+        if parent is not None and kind != "translation":
             checks += check_fidelity(parent.text, text, profile, language)
         revision_id = new_id()
         now = utc_now()
@@ -567,12 +579,26 @@ class WritingService:
             status=row["status"], parent_revision_id=row["parent_revision_id"], note=row["note"],
             created_at=row["created_at"], decided_at=row["decided_at"])
 
-    def _latest_revision(self, section_id: str) -> SectionRevision | None:
+    def _latest_revision(self, section_id: str, language: str | None = None) -> SectionRevision | None:
+        """Version acceptée, sinon dernière proposée (dans la langue donnée, par défaut celle du projet)."""
         with self.db.read() as conn:
-            row = conn.execute("SELECT id FROM section_revisions WHERE section_id = ? AND status IN ('accepted', 'proposed') "
+            if language is None:
+                row = conn.execute("SELECT p.language FROM outline_sections s JOIN outlines o ON o.id = s.outline_id "
+                                   "JOIN projects p ON p.id = o.project_id WHERE s.id = ?", (section_id,)).fetchone()
+                language = row["language"] if row else None
+            row = conn.execute("SELECT id FROM section_revisions WHERE section_id = ? AND language = ? "
+                               "AND status IN ('accepted', 'proposed') "
                                "ORDER BY CASE status WHEN 'accepted' THEN 0 ELSE 1 END, version DESC LIMIT 1",
-                               (section_id,)).fetchone()
+                               (section_id, language)).fetchone()
         return self.get_revision(row["id"]) if row else None
+
+    def base_revision(self, section_id: str, revision_id: str | None) -> SectionRevision:
+        revision = self.get_revision(revision_id) if revision_id else self._latest_revision(section_id)
+        if revision is None:
+            raise ValidationFailed("Aucune version de cette section : rédigez-la d'abord.")
+        if revision.section_id != section_id:
+            raise ValidationFailed("Cette révision n'appartient pas à la section indiquée.")
+        return revision
 
     def review_revision(self, revision_id: str, decision: str, note: str = "") -> SectionRevision:
         revision = self.get_revision(revision_id)
@@ -584,8 +610,10 @@ class WritingService:
         now = utc_now()
         with self.db.transaction() as conn:
             if decision == "accept":
+                # Une traduction acceptée ne remplace que la version acceptée de SA langue.
                 conn.execute("UPDATE section_revisions SET status = 'superseded', decided_at = coalesce(decided_at, ?) "
-                             "WHERE section_id = ? AND status = 'accepted'", (now, revision.section_id))
+                             "WHERE section_id = ? AND status = 'accepted' AND language = ?",
+                             (now, revision.section_id, revision.language))
                 conn.execute("UPDATE outline_sections SET status = 'validated' WHERE id = ?", (revision.section_id,))
             conn.execute("UPDATE section_revisions SET status = ?, decided_at = ?, note = CASE WHEN ? = '' THEN note "
                          "ELSE note || ' | ' || ? END WHERE id = ?",
@@ -605,7 +633,7 @@ class WritingService:
         with self.db.read() as conn:
             for section in outline.sections:
                 rows = conn.execute("SELECT id, status, word_count FROM section_revisions WHERE section_id = ? "
-                                    "ORDER BY version", (section.id,)).fetchall()
+                                    "AND language = ? ORDER BY version", (section.id, outline.language)).fetchall()
                 accepted = next((r for r in reversed(rows) if r["status"] == "accepted"), None)
                 total += accepted["word_count"] if accepted else 0
                 statuses.append(DraftSectionStatus(

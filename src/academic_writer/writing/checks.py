@@ -174,6 +174,55 @@ def check_draft(text: str, *, language: str, target_words: int | None, sources_t
     return checks
 
 
+def _term_variants(value: str | None) -> list[str]:
+    return [v.strip() for v in re.split(r"[/(),;]", value or "") if len(v.strip()) >= 3]
+
+
+def term_present(term: str, folded_text: str) -> bool:
+    """Chaque mot du terme doit apparaître en DÉBUT de mot, avec un radical tolérant les flexions
+    (« кривошип » ↔ « кривошипа » ; mais « предел » n'est pas trouvé dans « определяется »)."""
+    words = [w for w in _WORD.findall(_fold(term)) if len(w) >= 3]
+    if not words:
+        return False
+    for word in words:
+        stem = word if len(word) <= 4 else word[: max(4, len(word) - 3)]
+        if not re.search(rf"(?<!\w){re.escape(stem)}", folded_text):
+            return False
+    return True
+
+
+def glossary_for(text: str, profile: DomainProfile, source: str, target: str) -> list[tuple[str, str]]:
+    """Termes du profil présents dans le texte source, avec leur équivalent dans la langue cible."""
+    folded = _fold(text)
+    pairs: list[tuple[str, str]] = []
+    for term in profile.terminology:
+        src, tgt = getattr(term, source), getattr(term, target)
+        if not src or not tgt:
+            continue
+        if any(term_present(v, folded) for v in _term_variants(src)):
+            pairs.append((src, tgt))
+    return pairs
+
+
+def translation_checks(original: str, translated: str, profile: DomainProfile, source: str, target: str) -> list[Check]:
+    """Traduction : valeurs chiffrées identiques et termes du glossaire rendus par leur équivalent."""
+    checks: list[Check] = []
+    before, after = numbers_in(original), numbers_in(translated)
+    if before != after:
+        details = [f"absent de la traduction : {n}" for n in sorted(before - after)[:15]]
+        details += [f"ajouté par la traduction : {n}" for n in sorted(after - before)[:15]]
+        checks.append(Check(code="translation_numbers", severity="error",
+                            message="Les valeurs chiffrées diffèrent entre l'original et la traduction.", details=details))
+    folded = _fold(translated)
+    missing = [f"{src} → {tgt}" for src, tgt in glossary_for(original, profile, source, target)
+               if not any(term_present(v, folded) for v in _term_variants(tgt))]
+    if missing:
+        checks.append(Check(code="translation_terms", severity="warning",
+                            message="Termes du glossaire disciplinaire non retrouvés dans la traduction.",
+                            details=missing[:20]))
+    return checks
+
+
 def check_fidelity(original: str, revised: str, profile: DomainProfile, language: str) -> list[Check]:
     """Compare deux versions : chiffres et termes techniques supprimés, ajoutés ou modifiés."""
     checks: list[Check] = []

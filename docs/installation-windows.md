@@ -99,6 +99,32 @@ uv sync --extra pymupdf
 ```
 puis `pdf_backend = 'pymupdf'` dans `config.toml`.
 
+## 7. Modèle local Ollama (rédaction sans envoi externe)
+
+```powershell
+# Modèles sur D: (le disque C: peut être presque plein)
+[Environment]::SetEnvironmentVariable("OLLAMA_MODELS", "D:\AcademicWriter-Data\ollama\models", "User")
+winget install --id Ollama.Ollama --exact
+ollama pull qwen3.5:4b
+```
+
+## 8. LanguageTool local (correction fr/ru/en)
+
+```powershell
+winget install --id Microsoft.OpenJDK.21 --exact     # accepter la fenêtre UAC
+# Télécharger https://languagetool.org/download/LanguageTool-stable.zip
+# et l'extraire dans D:\AcademicWriter-Data\languagetool\
+```
+Le serveur LanguageTool démarre automatiquement à la première vérification (outil `manage_languagetool`).
+
+## 9. Fournisseurs cloud (facultatif)
+
+Disponibles seulement dans les pays pris en charge par Anthropic / OpenAI. Clé saisie de façon masquée :
+```powershell
+uv run academic-writer secrets set anthropic     # ou openai ; « secrets status » pour vérifier
+```
+Puis `mode = 'connected'` dans `config.toml` et consentement par projet (phrase « J'autorise l'envoi externe »).
+
 ## Dépannage
 
 | Symptôme | Cause probable | Solution |

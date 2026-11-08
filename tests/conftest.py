@@ -39,7 +39,9 @@ def inbox(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def settings(tmp_path: Path, inbox: Path) -> Settings:
-    s = Settings(data_dir=tmp_path / "data", allowed_import_dirs=[inbox])
+    # Port inutilisé : les tests ne doivent jamais utiliser un vrai LanguageTool ou Ollama local.
+    s = Settings(data_dir=tmp_path / "data", allowed_import_dirs=[inbox], languagetool_url="http://127.0.0.1:9",
+                 ollama_url="http://127.0.0.1:9")
     s.ensure_dirs()
     return s
 

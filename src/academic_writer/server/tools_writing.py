@@ -151,12 +151,15 @@ def register(mcp: MCPServer) -> None:
         kind: Literal["draft", "rewrite", "translation", "correction"] = "draft",
         parent_revision_id: str | None = None,
         note: str = "",
+        language: Annotated[Literal["fr", "ru", "en"] | None, Field(
+            description="Langue du texte (obligatoire pour une traduction) ; par défaut celle du projet.")] = None,
     ) -> SectionRevision:
         """Enregistre un texte rédigé par l'assistant (ou fourni par l'utilisateur) comme révision PROPOSÉE,
         après contrôles automatiques. Rien n'est écrasé."""
         with user_errors():
             return get_services().writing.save_section_draft(project_id, section_id, text, kind=kind,
-                                                             parent_revision_id=parent_revision_id, note=note)
+                                                             parent_revision_id=parent_revision_id, note=note,
+                                                             language=language)
 
     @mcp.tool(title="Consulter une révision", annotations=_READ)
     def get_section_revision(revision_id: str) -> SectionRevision:

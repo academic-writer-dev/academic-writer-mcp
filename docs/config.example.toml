@@ -38,3 +38,27 @@ ocr_enabled = true
 ocr_dpi = 300
 ocr_max_pages = 30            # pages OCR maximum par extraction
 ocr_timeout_seconds = 120
+
+# --- Moteur de rédaction ---
+writing_engine = 'auto'       # auto | assistant | ollama | anthropic | openai
+
+# --- Modèle local (Ollama) : aucun envoi externe ---
+ollama_url = 'http://localhost:11434'
+ollama_model = 'qwen3.5:4b'   # qwen3:8b possible avec ≥ 8 Go de mémoire vidéo
+ollama_num_ctx = 8192
+ollama_keep_alive = '30m'
+
+# --- Fournisseurs cloud : uniquement si mode = 'connected' + clé + consentement du projet ---
+ai_default_provider = 'anthropic'
+anthropic_model = 'claude-opus-5-5'
+anthropic_effort = 'high'     # low | medium | high | xhigh | max
+openai_model = 'gpt-5.5'
+ai_max_output_tokens = 16000
+# ai_monthly_token_budget = 2000000
+# Tarifs (USD par million de tokens) : à saisir vous-même, vérifiez-les sur le site du fournisseur.
+# ai_prices_per_million = { 'claude-opus-5-5' = { input = 4.0, output = 20.0 } }
+
+# --- LanguageTool LOCAL (l'API publique interdit l'usage automatisé) ---
+languagetool_url = 'http://localhost:8081'
+# languagetool_dir = 'D:\AcademicWriter-Data\languagetool'
+# java_cmd = 'C:\Program Files\Microsoft\jdk-21.0.13.21-hotspot\bin\java.exe'

@@ -12,6 +12,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 from academic_writer.core.config import Settings
 from academic_writer.core.documents import DocumentService
 from academic_writer.core.domains import DomainService
+from academic_writer.core.editing import EditingService
 from academic_writer.core.errors import AcademicWriterError
 from academic_writer.core.extraction import ExtractionService
 from academic_writer.core.projects import ProjectService
@@ -30,6 +31,7 @@ class Services:
     domains: DomainService
     ai: ProviderManager
     writing: WritingService
+    editing: EditingService
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -43,8 +45,9 @@ def build_services(settings: Settings | None = None) -> Services:
     domains = DomainService(db, settings, projects, extraction)
     ai = ProviderManager(db, settings, projects)
     writing = WritingService(db, settings, projects, documents, extraction, domains, ai)
+    editing = EditingService(settings, projects, writing, domains, ai)
     return Services(settings=settings, db=db, projects=projects, documents=documents, extraction=extraction,
-                    domains=domains, ai=ai, writing=writing)
+                    domains=domains, ai=ai, writing=writing, editing=editing)
 
 
 _services: Services | None = None

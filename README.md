@@ -4,15 +4,19 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : Phase 4 terminée — 17 profils disciplinaires trilingues, identification du domaine,
-> gabarits de structure ГОСТ / NF-EN / ISO.** Phases 1 à 3 : projets, import sécurisé,
-> lecture des documents (DOCX, PDF, TXT, MD, XLSX, PPTX), OCR, recherche plein texte.
+> **Statut : Phase 5 terminée (v0.5.0) — rédaction encadrée, correction, style et traduction**,
+> avec un moteur universel : fournisseur cloud autorisé (Anthropic/OpenAI), modèle local (Ollama)
+> ou assistant MCP. Phases 1 à 4 : projets, import sécurisé, lecture des documents, OCR,
+> recherche, 17 profils disciplinaires, gabarits ГОСТ / NF-EN / ISO.
 
 ## Principes
 
 - Traitement **local par défaut** ; aucun envoi externe sans consentement explicite.
-- Le serveur fournit des **outils** ; c'est l'assistant IA (Claude, ChatGPT, modèle local…)
-  qui raisonne et rédige. Le serveur n'appelle pas lui-même de modèle IA dans le MVP.
+- **Moteur de rédaction universel** (`writing_engine = auto`) : fournisseur cloud seulement en mode
+  connecté + clé + consentement du projet ; sinon modèle local Ollama (aucun envoi) ; sinon l'assistant
+  MCP rédige à partir du dossier préparé par le serveur.
+- Chaque texte produit est une **révision proposée** avec contrôles automatiques (chiffres et noms
+  absents des sources, bibliographie inventée, fidélité) ; l'utilisateur accepte ou refuse.
 - L'**original n'est jamais modifié** : copie vérifiée (SHA-256) en lecture seule.
 - Aucune donnée, citation ou référence inventée ; toute incertitude est signalée.
 
@@ -24,6 +28,9 @@ techniques et professionnels (FR / RU / EN).
 | Projets | `create_project`, `get_project`, `list_projects`, `update_project`, `archive_project` |
 | Documents | `import_document`, `list_documents`, `get_document_metadata` |
 | Extraction et recherche | `extract_document_content`, `extract_document_tables`, `extract_document_images`, `search_in_documents` |
+| IA et moteurs | `get_ai_status`, `set_project_ai_consent`, `test_ai_provider`, `get_writing_engine` |
+| Rédaction | `analyze_assignment`, `extract_requirements`, `manage_requirement`, `create_academic_outline`, `get_academic_outline`, `edit_academic_outline`, `validate_outline`, `write_academic_section`, `rewrite_academic_section`, `get_section_brief`, `save_section_draft`, `get_section_revision`, `review_revision`, `get_draft_status` |
+| Correction et traduction | `check_language`, `correct_academic_section`, `improve_academic_style`, `translate_academic_section`, `manage_languagetool` |
 | Disciplines | `identify_domain`, `set_project_domain`, `list_domain_profiles`, `get_domain_profile`, `get_document_structure_template`, `lookup_terminology`, `reload_domain_profiles` |
 
 Ressources : `academic-writer://info`, `academic-writer://projects`,
@@ -45,6 +52,10 @@ Profils disciplinaires : [docs/profils-disciplinaires.md](docs/profils-disciplin
 | python-docx, openpyxl, python-pptx | 1.2 / 3.1 / 1.0 | DOCX, XLSX, PPTX (MIT) |
 | charset-normalizer | 3.x | Détection d'encodage TXT/MD |
 | Tesseract OCR (programme externe) | 5.4 | OCR fra/rus/eng (Apache-2.0) |
+| anthropic, openai (SDK officiels) | 2.x / 3.x | Fournisseurs cloud (optionnels, consentement requis) |
+| keyring | 25.x | Clés API dans le Gestionnaire d'identification Windows |
+| Ollama (programme externe) | 0.40 | Modèle local `qwen3.5:4b` (aucun envoi externe) |
+| LanguageTool 6.6 + Java 21 (externes) | — | Correction fr/ru/en, serveur LOCAL uniquement |
 | pytest, reportlab (tests) | 9.x / 5.x | Tests et génération de PDF de test |
 
 ## Prérequis
@@ -88,6 +99,8 @@ src/academic_writer/
   security/   contrôle des chemins, inspection des fichiers
   document/   lecteurs (docx, pdf_pdfium, pdf_pymupdf, text, xlsx, pptx), OCR, mise en page, rendu
   domains/    schéma des profils, chargement/héritage, détection, gabarits de structure
+  providers/  fournisseurs IA : Anthropic, OpenAI, Ollama, simulé ; secrets ; consentement ; usage
+  writing/    exigences, plan, dossiers, contrôles, style, LanguageTool local
   domain_profiles/  17 profils YAML + _document_structures.yaml (3 conventions × 11 familles)
 tests/        tests unitaires, sécurité, intégration MCP
 docs/         documentation technique

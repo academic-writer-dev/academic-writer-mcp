@@ -95,6 +95,35 @@
   n'est pas un concurrent). Toujours une suggestion à confirmer (`requires_confirmation`).
 - Vérifié sur un document réel (ДЗ1 ТММ) : génie mécanique, confiance élevée.
 
+## D-017 — Le serveur peut appeler une IA (choix utilisateur, révise D-002) — 2026-11-09
+- Fournisseurs : Anthropic (`claude-opus-5-5`, effort explicite, repli serveur en cas de refus)
+  et OpenAI (`gpt-5.5`, API Responses, `store=False`), SDK officiels.
+- Garde-fous : mode `connected` réglé par l'utilisateur ; consentement par projet avec phrase
+  tapée par l'utilisateur ; budget mensuel ; clés dans le coffre Windows (keyring) ; journal
+  d'usage sans contenu ; coût calculé seulement si l'utilisateur saisit les tarifs.
+- Anthropic et OpenAI ne prennent pas en charge la Russie (pays d'usage de l'utilisateur, vérifié
+  le 2026-11-09) : aucun contournement n'est proposé.
+
+## D-018 — Moteur de rédaction universel — 2026-11-09
+- `writing_engine = auto` : cloud autorisé > Ollama local > assistant MCP (toujours disponible).
+- Ollama 0.40 + `qwen3.5:4b` (RTX 2060 6 Go) ; modèles sur D: (C: presque plein) ; contexte 8192 ;
+  modèle maintenu 30 min en mémoire. Aucun consentement requis : rien ne quitte l'ordinateur.
+
+## D-019 — Correction : LanguageTool LOCAL + IA filtrée — 2026-11-09
+- L'API publique LanguageTool interdit l'usage automatisé (« Do not send automated requests ») :
+  serveur local uniquement (Java 21 + LanguageTool 6.6, démarrage automatique, URL limitée à localhost).
+- Requêtes en UTF-8 via Python : la ligne de commande Windows corrompait le cyrillique.
+- Corrections appliquées seulement si sûres (écart ≤ 2 caractères, hors formule, mot absent des
+  sources/terminologie : « кориолиса » n'est pas changé en « кореопсиса »).
+- Correction IA écartée automatiquement si elle modifie un chiffre ou ajoute un nom propre.
+
+## D-020 — Contrôles issus d'essais réels avec le modèle local — 2026-11-09
+- Erreurs observées : attribution inventée (« уравнение Григорьяна »), méthode inventée
+  (« методом Планшера »), mots anglais, bibliographie inventée, hypothèse incohérente.
+- Réponses : définitions de référence du profil dans le dossier ; contrôles `unsourced_names`,
+  `mixed_language`, `generated_bibliography` (erreur), `unsourced_numbers`, fidélité des réécritures.
+- La relecture humaine reste indispensable (vérification des calculs prévue en Phase 8).
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.
