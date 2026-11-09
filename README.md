@@ -4,7 +4,10 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : Phase 9 terminée (v0.9.0) — mise en forme et export** : DOCX selon ГОСТ 7.32-2017,
+> **Statut : version 1.0.0 — Phase 10 terminée (maintenance)** : diagnostic complet de l'installation
+> (`academic-writer doctor` / `system_check`), sauvegarde complète (.zip) et restauration vérifiée,
+> déclaration automatique dans Claude Desktop, parcours guidés (prompts).
+> Phase 9 : mise en forme et export : DOCX selon ГОСТ 7.32-2017,
 > usage francophone, APA 7 ou IEEE (page de titre, sommaire, titres numérotés, citations et bibliographie),
 > PDF via Microsoft Word ; contrôle et correction de la mise en forme d'un .docx existant (copie).
 > Phase 8 : contrôle qualité : recalcul des calculs écrits (unités
@@ -31,7 +34,7 @@ techniques et professionnels (FR / RU / EN).
 
 | Catégorie | Outils |
 |---|---|
-| Diagnostic | `ping` |
+| Diagnostic et maintenance | `ping`, `system_check`, `create_backup`, `list_backups` |
 | Projets | `create_project`, `get_project`, `list_projects`, `update_project`, `archive_project` |
 | Documents | `import_document`, `list_documents`, `get_document_metadata` |
 | Extraction et recherche | `extract_document_content`, `extract_document_tables`, `extract_document_images`, `search_in_documents` |
@@ -48,7 +51,8 @@ techniques et professionnels (FR / RU / EN).
 Ressources : `academic-writer://info`, `academic-writer://projects`,
 `academic-writer://projects/{project_id}`, `academic-writer://document-types`,
 `academic-writer://languages`, `academic-writer://domains`, `academic-writer://domains/{domain_id}`,
-`academic-writer://conventions`. Prompt : `academic_analysis`.
+`academic-writer://conventions`. Prompts : `academic_analysis`, `rediger_rapport`,
+`verifier_avant_remise`, `trouver_sources`.
 Profils disciplinaires : [docs/profils-disciplinaires.md](docs/profils-disciplinaires.md).
 
 ## Pile technique
@@ -85,6 +89,18 @@ uv run python -m academic_writer          # lance le serveur en stdio (Ctrl+C po
 uv run mcp dev src/academic_writer/server/app.py   # MCP Inspector (navigateur)
 ```
 
+## Maintenance (PowerShell)
+
+```powershell
+uv run academic-writer doctor                  # état de chaque composant + correction à faire
+uv run academic-writer backup                  # sauvegarde complète (.zip) ; --db-only : base seule
+uv run academic-writer backups                 # liste des sauvegardes
+uv run academic-writer restore <fichier.zip> --yes   # Claude fermé ; sauvegarde de sécurité faite avant
+uv run academic-writer setup-desktop [--apply] # déclarer le serveur dans Claude Desktop
+```
+
+Les clés API (coffre Windows) ne sont jamais incluses dans les sauvegardes.
+
 - Configuration : [docs/config.example.toml](docs/config.example.toml) → `%APPDATA%\AcademicWriter\config.toml`.
 - Clients MCP : [docs/installation-windows.md](docs/installation-windows.md).
 - Décisions techniques : [docs/decisions.md](docs/decisions.md).
@@ -98,7 +114,7 @@ uv run mcp dev src/academic_writer/server/app.py   # MCP Inspector (navigateur)
   projects/<id>/derived/     résultats d'extraction et images extraites (régénérables)
   tessdata/                  langues de l'OCR (fra, rus, eng)
   logs/                      journaux (sans contenu de document)
-  backups/                   sauvegardes automatiques de la base
+  backups/                   sauvegardes de la base (.db) et complètes (.zip)
 ```
 
 ## Structure du code

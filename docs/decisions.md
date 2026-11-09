@@ -186,6 +186,19 @@
 - apply_formatting travaille sur une copie ; l'original protégé n'est jamais ouvert en écriture.
 - Essai réel avec Word 16 : sommaire avec numéros de page, PDF de 6 pages en 6 à 16 s.
 
+## D-027 — Maintenance : diagnostic, sauvegarde, restauration — 2026-11-09
+- `doctor` / `system_check` : chaque composant (base, disque, OCR, LanguageTool, moteurs IA, clés, Word,
+  Claude Desktop, ancienneté des sauvegardes) avec la correction à faire ; « prêt » = composants
+  indispensables seulement (Python, dossier de données, base).
+- Sauvegarde complète = .zip (manifeste, copie SQLite cohérente, dossiers des projets, config.toml) ; les
+  clés API ne sont jamais incluses.
+- Restauration en ligne de commande seulement (`--yes` obligatoire, Claude fermé) : manifeste et chemins
+  vérifiés (zip-slip), intégrité SQLite contrôlée, schéma plus récent refusé, sauvegarde de sécurité de
+  l'état actuel avant remplacement, migrations appliquées ensuite. Pas d'outil MCP de restauration.
+- `setup-desktop` : vérification par défaut, écriture avec `--apply` (copie .bak, autres serveurs conservés),
+  prise en charge de Claude Desktop version Microsoft Store (`%LOCALAPPDATA%\Claude-Data`).
+- Sortie console : `errors="replace"` pour ne pas planter sur une console redirigée en cp1251.
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.
