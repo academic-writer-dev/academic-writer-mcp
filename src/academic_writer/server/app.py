@@ -19,6 +19,7 @@ from academic_writer.core.log_setup import configure_logging
 from academic_writer.server import (
     resources,
     tools_ai,
+    tools_audit,
     tools_documents,
     tools_domains,
     tools_editing,
@@ -85,7 +86,7 @@ def server_info() -> str:
     settings = get_services().settings
     return (
         f"# Academic Writer MCP v{__version__}\n\n"
-        "Phase de développement : 6 (sources et bibliographie).\n\n"
+        "Phase de développement : 7 (audit documentaire, indices IA).\n\n"
         f"- Mode réseau : **{settings.mode}**\n"
         f"- Formats acceptés : {', '.join(settings.allowed_extensions)}\n"
         f"- Taille maximale : {settings.max_file_size_mb} Mo\n\n"
@@ -118,6 +119,7 @@ tools_ai.register(mcp)
 tools_writing.register(mcp)
 tools_editing.register(mcp)
 tools_sources.register(mcp)
+tools_audit.register(mcp)
 resources.register(mcp)
 
 

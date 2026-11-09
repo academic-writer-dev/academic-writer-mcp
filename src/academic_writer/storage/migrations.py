@@ -352,6 +352,33 @@ ALTER TABLE sources_v8 RENAME TO sources;
 CREATE INDEX idx_sources_project ON sources(project_id);
 """,
     ),
+    Migration(
+        version=9,
+        description="Audits documentaires et constats",
+        sql="""
+CREATE TABLE audits (
+    id          TEXT PRIMARY KEY,
+    project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    document_id TEXT REFERENCES documents(id) ON DELETE RESTRICT,
+    kind        TEXT NOT NULL,
+    conclusion  TEXT NOT NULL,
+    summary     TEXT NOT NULL DEFAULT '{}',
+    report_path TEXT,
+    created_at  TEXT NOT NULL
+);
+CREATE INDEX idx_audits_document ON audits(document_id);
+
+CREATE TABLE findings (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    audit_id    TEXT NOT NULL REFERENCES audits(id) ON DELETE RESTRICT,
+    category    TEXT NOT NULL,
+    severity    TEXT NOT NULL,
+    observation TEXT NOT NULL,
+    evidence    TEXT NOT NULL DEFAULT '[]'
+);
+CREATE INDEX idx_findings_audit ON findings(audit_id);
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

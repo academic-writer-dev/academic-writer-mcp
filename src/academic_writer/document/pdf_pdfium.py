@@ -24,6 +24,26 @@ from academic_writer.document.ocr import OcrError
 logger = logging.getLogger("academic_writer.pdf")
 
 
+def decode_pdf_string(value: str) -> str:
+    """Décode une chaîne PDF restée en hexadécimal (« <4D6963…> ») : UTF-16 si BOM, sinon Windows-1251
+    (fréquent pour les PDF russes produits par Word / Acrobat), puis Latin-1 en dernier recours."""
+    stripped = value.strip()
+    if not (stripped.startswith("<") and stripped.endswith(">")):
+        return value
+    hex_part = stripped[1:-1].replace(" ", "")
+    if not hex_part or len(hex_part) % 2 or any(c not in "0123456789abcdefABCDEF" for c in hex_part):
+        return value
+    raw = bytes.fromhex(hex_part)
+    if raw.startswith((b"\xfe\xff", b"\xff\xfe")):
+        return raw.decode("utf-16", errors="replace")
+    for encoding in ("utf-8", "cp1251", "latin-1"):
+        try:
+            return raw.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    return value
+
+
 class PdfiumExtractor:
     name = "pypdfium2+pdfplumber"
 
@@ -43,7 +63,7 @@ class PdfiumExtractor:
             limit = min(page_count, settings.extract_max_pages)
             if page_count > limit:
                 warnings.append(f"Seules les {limit} premières pages sur {page_count} ont été lues.")
-            metadata = {k.lower(): str(v) for k, v in pdf.get_metadata_dict().items() if v}
+            metadata = {k.lower(): decode_pdf_string(str(v)) for k, v in pdf.get_metadata_dict().items() if v}
             for bookmark in pdf.get_toc():
                 dest = bookmark.get_dest()
                 title = (bookmark.get_title() or "").strip()

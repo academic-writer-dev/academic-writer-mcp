@@ -50,7 +50,24 @@ def main(argv: list[str] | None = None) -> int:
     sec = sub.add_parser("secrets", help="Gérer les clés API (IA : anthropic, openai ; sources : google_books, openalex)")
     sec.add_argument("action", choices=["set", "status", "delete"])
     sec.add_argument("provider", nargs="?", choices=list(secrets.ALL_SERVICES))
+    ev = sub.add_parser("evaluate-indicators", help="Mesurer les indices IA sur un corpus annoté (humain/ et ia/)")
+    ev.add_argument("folder")
+    ev.add_argument("--language", choices=["fr", "ru", "en"], default="ru")
     args = parser.parse_args(argv)
     if args.command == "secrets":
         return _secrets(args)
+    if args.command == "evaluate-indicators":
+        from pathlib import Path
+
+        from academic_writer.ai_detection.evaluation import evaluate
+
+        result = evaluate(Path(args.folder), args.language)
+        print(f"Corpus : {result.human_texts} textes humains, {result.ai_texts} textes IA "
+              f"({result.skipped_short} trop courts ignorés), langue {result.language}")
+        print(f"{'Indice':28} {'humains':>8} {'IA':>8}")
+        for item in result.rates:
+            print(f"{item.indicator:28} {item.human_rate:>8.1%} {item.ai_rate:>8.1%}")
+        print(f"{'au moins un indice':28} {result.any_indicator_human_rate:>8.1%} {result.any_indicator_ai_rate:>8.1%}")
+        print(result.warning)
+        return 0
     return 2

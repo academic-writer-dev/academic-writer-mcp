@@ -25,7 +25,9 @@ EXPECTED_TOOLS = {
     "review_revision", "get_draft_status", "check_language", "correct_academic_section", "improve_academic_style",
     "translate_academic_section", "manage_languagetool", "register_source", "list_sources", "update_source",
     "verify_source_metadata", "insert_citation", "generate_bibliography", "audit_references",
-    "find_uncited_references", "search_sources", "import_sources_file", "confirm_source_verification", "find_works_by_topic", "download_open_access", "export_references",
+    "find_uncited_references", "search_sources", "import_sources_file", "confirm_source_verification", "find_works_by_topic", "download_open_access", "export_references", "detect_ai_indicators", "analyze_writing_patterns",
+    "analyze_document_metadata", "inspect_revision_history", "inspect_document_provenance",
+    "verify_content_credentials", "audit_document_integrity", "generate_ai_audit_report",
 }
 
 

@@ -180,3 +180,11 @@ def test_chunks_keep_heading_and_page(settings: Settings, tmp_path: Path) -> Non
     chunks = build_chunks(result)
     assert any(c.heading == "2. Кинематический анализ" and "методом планов" in c.text for c in chunks)
     assert any("ω1 | 10 | rad/s" in c.text for c in chunks)  # tableaux indexés
+
+
+def test_pdf_hex_metadata_decoded() -> None:
+    """Titre réel du PDF de la ЛР4 : chaîne hexadécimale en Windows-1251."""
+    from academic_writer.document.pdf_pdfium import decode_pdf_string
+    raw = "<4D6963726F736F667420576F7264202D20CBE0E1EEF0E0F2EEF0EDE0FF20F0E0E1EEF2E020B9342E646F63>"
+    assert decode_pdf_string(raw) == "Microsoft Word - Лабораторная работа №4.doc"
+    assert decode_pdf_string("<FEFF0410>") == "А" and decode_pdf_string("Titre normal") == "Titre normal"

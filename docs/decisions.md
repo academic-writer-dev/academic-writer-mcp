@@ -144,6 +144,22 @@
 - Styles : ГОСТ Р 7.0.100-2018 / 7.0.5-2008, APA 7, IEEE, Chicago auteur-date, Vancouver
   (éléments principaux ; à relire selon l'établissement).
 
+## D-023 — Recherche d'ouvrages par thème dans des bases légales — 2026-11-09
+- Internet Archive (manuels russes/soviétiques numérisés), DOAJ, arXiv, Crossref, Open Library ;
+  aucune bibliothèque pirate. Téléchargement seulement en libre accès légal, licence revérifiée par
+  le serveur à partir de l'identifiant (jamais d'URL fournie de l'extérieur).
+- КиберЛенинка exclue de tout accès automatisé (règlement, art. 6.2) ; liens manuels seulement.
+- Certificats Windows via truststore (le Python d'uv refusait archive.org et arxiv.org).
+
+## D-024 — Indices de rédaction par IA : jamais de verdict stylistique — 2026-11-09
+- Conclusion « indéterminée » par défaut ; autre catégorie seulement sur déclaration technique
+  explicite (C2PA, IPTC trainedAlgorithmicMedia, outil nommé dans métadonnées / modifications suivies).
+- « Rédaction entièrement humaine » jamais conclue automatiquement ; aucun pourcentage ; confiance
+  « non calibrée » ; chaque constat accompagné d'explications légitimes possibles.
+- Signature C2PA non vérifiée localement (signalé comme tel).
+- Commande `academic-writer evaluate-indicators <dossier>` : taux réels sur corpus humain/ia.
+- Essai réel sur les documents de l'utilisateur : aucune fausse alerte.
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.

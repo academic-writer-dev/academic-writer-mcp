@@ -9,6 +9,7 @@ from dataclasses import dataclass
 
 from mcp.server.mcpserver.exceptions import ToolError
 
+from academic_writer.core.audit import AuditService
 from academic_writer.core.config import Settings
 from academic_writer.core.documents import DocumentService
 from academic_writer.core.domains import DomainService
@@ -34,6 +35,7 @@ class Services:
     writing: WritingService
     editing: EditingService
     sources: SourceService
+    audit: AuditService
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -49,8 +51,9 @@ def build_services(settings: Settings | None = None) -> Services:
     writing = WritingService(db, settings, projects, documents, extraction, domains, ai)
     editing = EditingService(settings, projects, writing, domains, ai)
     sources = SourceService(db, settings, projects, documents, extraction, writing)
+    audit = AuditService(db, settings, projects, documents, extraction)
     return Services(settings=settings, db=db, projects=projects, documents=documents, extraction=extraction,
-                    domains=domains, ai=ai, writing=writing, editing=editing, sources=sources)
+                    domains=domains, ai=ai, writing=writing, editing=editing, sources=sources, audit=audit)
 
 
 _services: Services | None = None
