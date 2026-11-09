@@ -102,7 +102,7 @@ uv run academic-writer setup-desktop [--apply] # déclarer le serveur dans Claud
 Les clés API (coffre Windows) ne sont jamais incluses dans les sauvegardes.
 
 - Configuration : [docs/config.example.toml](docs/config.example.toml) → `%APPDATA%\AcademicWriter\config.toml`.
-- Clients MCP : [docs/installation-windows.md](docs/installation-windows.md).
+- Installation sur un nouveau PC et clients MCP : [docs/installation-windows.md](docs/installation-windows.md).
 - Décisions techniques : [docs/decisions.md](docs/decisions.md).
 
 ## Données locales
@@ -136,3 +136,8 @@ src/academic_writer/
 tests/        tests unitaires, sécurité, intégration MCP
 docs/         documentation technique
 ```
+
+## Licence
+
+Tous droits réservés — voir [LICENSE](LICENSE). Le code est consultable publiquement, mais aucune
+réutilisation n'est autorisée sans accord écrit. Les dépendances tierces gardent leurs propres licences.

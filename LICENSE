@@ -1,0 +1,12 @@
+Copyright (c) 2026 ACADEMIC WRITER. Tous droits réservés. / All rights reserved.
+
+Le code source de ce dépôt est rendu visible publiquement à titre de consultation uniquement.
+Aucune licence n'est accordée : toute copie, modification, redistribution ou utilisation, en tout
+ou en partie, est interdite sans l'autorisation écrite préalable du titulaire des droits.
+
+The source code in this repository is publicly visible for reference only. No license is granted:
+copying, modifying, redistributing or using it, in whole or in part, is prohibited without the
+prior written permission of the copyright holder.
+
+Les bibliothèques et programmes tiers utilisés (voir pyproject.toml et uv.lock) restent soumis à
+leurs propres licences. / Third-party libraries and programs remain under their own licenses.

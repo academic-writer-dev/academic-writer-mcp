@@ -1,7 +1,27 @@
 # Installation et connexion des clients MCP (Windows 11)
 
-Chemin du projet utilisé ci-dessous : `D:\MCP\academic-writer-mcp`.
-Chemin de uv : `C:\Users\OSA Gaming\.local\bin\uv.exe` (vérifier avec `(Get-Command uv).Source`).
+Chemin du projet utilisé dans les exemples : `D:\MCP\academic-writer-mcp` (à adapter).
+Chemin de uv : en général `C:\Users\<utilisateur>\.local\bin\uv.exe` (vérifier avec `(Get-Command uv).Source`).
+
+## 0. Installation sur un nouveau PC
+
+```powershell
+winget install --id astral-sh.uv --exact
+winget install --id Git.Git --exact
+git clone <URL du dépôt> D:\MCP\academic-writer-mcp
+cd D:\MCP\academic-writer-mcp
+uv python install 3.12
+uv sync                                        # dépendances verrouillées (uv.lock)
+uv run academic-writer doctor                  # état de l'installation
+uv run academic-writer setup-desktop --apply   # déclarer le serveur dans Claude Desktop
+```
+
+Les données (base, projets, sauvegardes) vont par défaut dans `%LOCALAPPDATA%\AcademicWriter` ;
+pour un autre emplacement, définir `data_dir` dans `%APPDATA%\AcademicWriter\config.toml`
+(modèle : [config.example.toml](config.example.toml)). Pour transférer les données d'un autre PC :
+`uv run academic-writer backup` sur l'ancien, puis `uv run academic-writer restore <fichier.zip> --yes`
+sur le nouveau (Claude fermé). Les clés API ne sont pas transférées : les ressaisir avec
+`uv run academic-writer secrets set <service>`.
 
 Le serveur utilise le transport **stdio** : le client lance lui-même le processus.
 Commande de lancement commune :
@@ -44,7 +64,7 @@ ouvrir `%LOCALAPPDATA%\Claude\logs\main.log` et chercher la ligne
 | Microsoft Store, versions anciennes | `%LOCALAPPDATA%\Packages\Claude_<id>\LocalCache\Roaming\Claude\claude_desktop_config.json` |
 | Installateur classique | `%APPDATA%\Claude\claude_desktop_config.json` |
 
-Sur le poste de développement : `C:\Users\OSA Gaming\AppData\Local\Claude-Data\claude_pzs8sxrjxfjjc\claude_desktop_config.json`.
+La commande `uv run academic-writer setup-desktop` trouve ce fichier automatiquement.
 Ce fichier contient aussi les préférences de l'application : n'ajouter que l'entrée
 `academic-writer` dans `mcpServers`, sans toucher au reste, et faire une sauvegarde avant.
 
@@ -54,7 +74,7 @@ Entrée à ajouter dans `mcpServers` :
 {
   "mcpServers": {
     "academic-writer": {
-      "command": "C:\\Users\\OSA Gaming\\.local\\bin\\uv.exe",
+      "command": "C:\\Users\\<utilisateur>\\.local\\bin\\uv.exe",
       "args": ["--directory", "D:\\MCP\\academic-writer-mcp", "run", "--no-sync", "python", "-m", "academic_writer"]
     }
   }
@@ -72,7 +92,7 @@ Fichier `.vscode/mcp.json` dans l'espace de travail :
   "servers": {
     "academic-writer": {
       "type": "stdio",
-      "command": "C:\\Users\\OSA Gaming\\.local\\bin\\uv.exe",
+      "command": "C:\\Users\\<utilisateur>\\.local\\bin\\uv.exe",
       "args": ["--directory", "D:\\MCP\\academic-writer-mcp", "run", "--no-sync", "python", "-m", "academic_writer"]
     }
   }

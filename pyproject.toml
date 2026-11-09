@@ -3,6 +3,8 @@ name = "academic-writer"
 version = "1.0.0"
 description = "Serveur MCP local d'assistance à la rédaction, vérification et mise en forme de documents académiques et techniques."
 readme = "README.md"
+license = "LicenseRef-Proprietary"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=1.0",
