@@ -216,7 +216,7 @@
 - Fournisseurs IA payants conservés mais désactivés par défaut (règle : ne supprimer aucune fonctionnalité).
 
 ## Points ouverts
-- Recherche en ligne des nouvelles bases : testée avec des réponses simulées seulement (mode local) ;
-  essai réel à faire en mode connecté avec l'accord de l'utilisateur.
+- Semantic Scholar sans clé : quota public partagé souvent saturé (HTTP 429) ; nouvelles tentatives
+  espacées ; clé gratuite transmise en en-tête x-api-key (secrets set semantic_scholar).
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.

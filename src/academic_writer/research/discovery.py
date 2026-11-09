@@ -240,7 +240,16 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                       + q(f"all:{query}"), parse_arxiv))
         if not open_access_only:
             plans.append(("crossref", f"https://api.crossref.org/works?rows={per}&query=" + q(query), parse_crossref))
-        plans.append(("semantic_scholar", osc.semantic_scholar_url(query, per), osc.parse_semantic_scholar))
+        s2_key = keys.get("semantic_scholar")
+        if s2_key and getattr(fetch, "__name__", "") == "http_text":
+            from academic_writer.research.fulltext import http_text as _http
+
+            def s2(_text, query, _key=s2_key):  # clé transmise en en-tête x-api-key
+                return osc.parse_semantic_scholar(_http(osc.semantic_scholar_url(query, per),
+                                                        headers={"x-api-key": _key}), query)
+            plans.append(("semantic_scholar", "", s2))
+        else:
+            plans.append(("semantic_scholar", osc.semantic_scholar_url(query, per), osc.parse_semantic_scholar))
         plans.append(("europe_pmc", osc.europe_pmc_url(query, per), osc.parse_europe_pmc))
         plans.append(("hal", osc.hal_url(query, per), osc.parse_hal))
         plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))

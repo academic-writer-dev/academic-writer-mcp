@@ -25,15 +25,24 @@ class DownloadRefused(ValueError):
     """Téléchargement refusé (licence, service, format) : message destiné à l'utilisateur."""
 
 
-def http_text(url: str) -> str | None:
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 (URL https construite)
-            return response.read().decode("utf-8", "replace")
-    except urllib.error.HTTPError as exc:
-        if exc.code == 404:
-            return None
-        raise OSError(f"HTTP {exc.code}") from exc
+def http_text(url: str, retries: int = 2, headers: dict[str, str] | None = None) -> str | None:
+    """GET texte ; 404 → None ; 429 (quota) → nouvelles tentatives espacées, puis OSError."""
+    import time
+
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, **(headers or {})})
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 (URL https construite)
+                return response.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return None
+            if exc.code == 429 and attempt < retries:
+                time.sleep(2 * (attempt + 1))  # quota partagé (Semantic Scholar sans clé)
+                continue
+            raise OSError(f"HTTP {exc.code}" + (" (quota dépassé : réessayer plus tard ou ajouter une clé gratuite)"
+                                                if exc.code == 429 else "")) from exc
+    return None
 
 
 def http_bytes(url: str, max_bytes: int) -> bytes:

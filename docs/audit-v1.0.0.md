@@ -223,7 +223,7 @@ faisaient pas partie des phases 1 à 10.
 | C-03 Faux négatifs de calcul | CORRIGÉ | `b770cf0` | cas B, C, russe, « avec … : », m = 2 мм ; 6 tests |
 | E-01 Calcul formel | CORRIGÉ | `14ef516` | 17 calculs à résultat connu vérifiés, 7 injections de code bloquées |
 | E-02 Graphiques | CORRIGÉ | `f844788` | 9 types, aperçus inspectés, insertion DOCX ; 11 tests |
-| E-03 Bases ouvertes | CORRIGÉ (hors ligne) | `e4f41f5` | réponses d'API simulées ; **essai réel à faire en mode connecté** |
+| E-03 Bases ouvertes | CORRIGÉ, essai réel fait | `e4f41f5` + suivant | 2026-11-10 en mode connecté : DOAJ, arXiv, Crossref, Europe PMC, PubMed, HAL, Zenodo, DataCite répondent ; PDF PMC et HAL résolus ; téléchargement HAL réel lu ; Semantic Scholar : quota public saturé (HTTP 429) → clé gratuite nécessaire |
 | E-04 Disciplines et types | CORRIGÉ | `78888f6` | 35 profils, détection réelle 12/12, 6 types × 3 langues |
 | E-05 Logiciels | CORRIGÉ | `af43c95` | détection réelle sur le poste : SolidWorks, Inventor, TIA Portal, T-FLEX, Office |
 | M-01 à M-05 | CORRIGÉS | `b770cf0`, `14ef516` | tests dédiés |
