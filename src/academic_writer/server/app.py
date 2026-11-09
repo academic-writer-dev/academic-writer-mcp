@@ -24,6 +24,7 @@ from academic_writer.server import (
     tools_domains,
     tools_editing,
     tools_extraction,
+    tools_formatting,
     tools_projects,
     tools_quality,
     tools_sources,
@@ -87,7 +88,7 @@ def server_info() -> str:
     settings = get_services().settings
     return (
         f"# Academic Writer MCP v{__version__}\n\n"
-        "Phase de développement : 8 (contrôle qualité).\n\n"
+        "Phase de développement : 9 (mise en forme et export DOCX / PDF).\n\n"
         f"- Mode réseau : **{settings.mode}**\n"
         f"- Formats acceptés : {', '.join(settings.allowed_extensions)}\n"
         f"- Taille maximale : {settings.max_file_size_mb} Mo\n\n"
@@ -122,6 +123,7 @@ tools_editing.register(mcp)
 tools_sources.register(mcp)
 tools_audit.register(mcp)
 tools_quality.register(mcp)
+tools_formatting.register(mcp)
 resources.register(mcp)
 
 

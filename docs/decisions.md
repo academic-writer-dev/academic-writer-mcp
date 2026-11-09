@@ -173,6 +173,19 @@
 - Essai réel (ДЗ1, ЛР4) : formule de Tchebychev vérifiée, aucune fausse alerte après réglages
   (symboles de vecteurs ≠ abréviations, numéros de pièces ≠ chiffres à sourcer).
 
+## D-026 — Export DOCX/PDF : python-docx + Microsoft Word — 2026-11-09
+- DOCX produit par python-docx (styles « Normal » et « Titre 1-3 » reconfigurés : police explicite, polices
+  du thème supprimées, interligne, retrait, marges, numéros de page, page de titre non numérotée,
+  sommaire = champ TOC). Gabarits indicatifs : ГОСТ 7.32-2017 (14 / 12 pt), usage francophone, APA 7, IEEE.
+- PDF et mise à jour du sommaire par automatisation COM de Microsoft Word (déjà installé chez
+  l'utilisateur) via PowerShell, chemins passés en variables d'environnement. Sans Word : DOCX seul, sommaire
+  mis à jour à l'ouverture (updateFields). Aucune dépendance ajoutée (pas de LibreOffice nécessaire).
+- Seules les sections ACCEPTÉES sont exportées (brouillons sur demande explicite, signalés) ; sections
+  manquantes marquées « [Раздел не написан] » ; page de titre uniquement avec les informations fournies
+  (mémorisées dans title_page.json du projet), champs requis manquants laissés en blanc.
+- apply_formatting travaille sur une copie ; l'original protégé n'est jamais ouvert en écriture.
+- Essai réel avec Word 16 : sommaire avec numéros de page, PDF de 6 pages en 6 à 16 s.
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.
