@@ -415,3 +415,31 @@ def test_metadata_service_keys_accepted() -> None:
     assert "google_books" in secrets.ALL_SERVICES and "google_books" not in secrets.PROVIDERS
     with pytest.raises(ValueError):
         secrets.set_key("openalex", "court")
+
+
+# --- vérification manuelle (sans compte) ------------------------------------------------------
+
+def test_manual_links_cover_russian_catalogues() -> None:
+    from academic_writer.research.manual import manual_links
+    links = manual_links(BOOK)
+    assert any(url.startswith("https://search.rsl.ru/") for url in links.values())  # РГБ
+    assert any("site%3Aelibrary.ru" in url for url in links.values())  # eLIBRARY via Яндекс
+    assert any(url.startswith("https://cyberleninka.ru/search") for url in links.values())
+    assert "РГБ — catalogue (ISBN)" in links and "9780306406157" in links["РГБ — catalogue (ISBN)"]
+    assert "DOI (page de l'éditeur)" in manual_links(ARTICLE)
+
+
+def test_confirm_manual_verification(services: Services, project, section) -> None:
+    source = services.sources.register(project.id, "book", BOOK.model_copy(update={"isbn": None}))
+    assert source.manual_links  # liens fournis avec chaque fiche
+    confirmed = services.sources.confirm_manual(source.id, "РГБ", "notice trouvée")
+    assert confirmed.verification_status == "verified_manual" and "РГБ" in confirmed.verification_details[-1].message
+    again = services.sources.verify(source.id)  # mode local : la vérification humaine est conservée
+    assert again.source.verification_status == "verified_manual"
+    cited = services.sources.insert_citation(project.id, section.id, source.key, "Механизм плоский.")
+    assert "Attention" not in cited.message
+    with pytest.raises(ValidationFailed):
+        services.sources.confirm_manual(source.id, "  ")
+    bad = services.sources.register(project.id, "book", BOOK.model_copy(update={"year": 2999, "title": "X"}), key="bad")
+    with pytest.raises(ValidationFailed):
+        services.sources.confirm_manual(bad.id, "РГБ")

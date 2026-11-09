@@ -7,8 +7,9 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 SourceType = Literal["book", "article", "chapter", "conference", "thesis", "standard", "web", "report", "patent", "other"]
-VerificationStatus = Literal["unverified", "incomplete", "well_formed", "verified_online", "mismatch", "not_found",
-                             "suspicious"]
+VerificationStatus = Literal["unverified", "incomplete", "well_formed", "verified_online", "verified_manual",
+                             "mismatch", "not_found", "suspicious"]
+TRUSTED_STATUSES = ("verified_online", "verified_manual", "well_formed")
 Style = Literal["gost", "apa", "ieee", "chicago", "vancouver"]
 
 STATUS_LABELS = {
@@ -16,6 +17,7 @@ STATUS_LABELS = {
     "incomplete": "incomplète (champs obligatoires manquants)",
     "well_formed": "bien formée localement — NON vérifiée en ligne",
     "verified_online": "vérifiée en ligne (métadonnées concordantes)",
+    "verified_manual": "vérifiée manuellement par l'utilisateur (catalogue consulté)",
     "mismatch": "divergente : les métadonnées en ligne ne correspondent pas",
     "not_found": "introuvable en ligne (identifiant inconnu)",
     "suspicious": "suspecte (identifiant invalide, date impossible…)",
@@ -71,6 +73,8 @@ class Source(BaseModel):
     verification_details: list[Finding]
     verified_at: str | None = None
     citation_count: int = 0
+    manual_links: dict[str, str] = Field(default_factory=dict,
+                                         description="Liens de vérification à ouvrir par l'utilisateur dans son navigateur.")
 
 
 class SourceList(BaseModel):

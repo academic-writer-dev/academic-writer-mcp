@@ -53,7 +53,8 @@ def register(mcp: MCPServer) -> None:
 
     @mcp.tool(title="Lister les sources", annotations=_READ)
     def list_sources(project_id: str, status: Literal["unverified", "incomplete", "well_formed", "verified_online",
-                                                      "mismatch", "not_found", "suspicious"] | None = None) -> SourceList:
+                                                      "verified_manual", "mismatch", "not_found", "suspicious"]
+                     | None = None) -> SourceList:
         """Liste les sources du projet avec leur statut de vérification et leur nombre de citations."""
         with user_errors():
             return get_services().sources.list(project_id, status)
@@ -81,6 +82,18 @@ def register(mcp: MCPServer) -> None:
         ISBN via Open Library, recherche par titre). Signale les références divergentes ou introuvables."""
         with user_errors():
             return get_services().sources.verify(source_id, online)
+
+    @mcp.tool(title="Confirmer une vérification manuelle", annotations=_WRITE)
+    def confirm_source_verification(
+        source_id: str,
+        where: Annotated[str, Field(description="Où l'UTILISATEUR a trouvé la source : « РГБ », « eLIBRARY », "
+                                                "« bibliothèque СТАНКИН », « exemplaire papier »…")],
+        note: str = "",
+    ) -> Source:
+        """Marque une source « vérifiée manuellement » après que l'utilisateur l'a trouvée lui-même (par exemple via
+        les liens manual_links de la fiche). N'appeler QUE sur confirmation explicite de l'utilisateur."""
+        with user_errors():
+            return get_services().sources.confirm_manual(source_id, where, note)
 
     @mcp.tool(title="Insérer une citation", annotations=_WRITE)
     def insert_citation(

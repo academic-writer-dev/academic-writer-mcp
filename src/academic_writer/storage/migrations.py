@@ -323,6 +323,35 @@ CREATE TABLE citations (
 CREATE INDEX idx_citations_source ON citations(source_id);
 """,
     ),
+    Migration(
+        version=8,
+        description="Sources : statut « vérifiée manuellement par l'utilisateur »",
+        sql="""
+CREATE TABLE sources_v8 (
+    id                   TEXT PRIMARY KEY,
+    project_id           TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    key                  TEXT NOT NULL,
+    source_type          TEXT NOT NULL CHECK (source_type IN ('book', 'article', 'chapter', 'conference', 'thesis',
+                                                             'standard', 'web', 'report', 'patent', 'other')),
+    data                 TEXT NOT NULL,
+    document_id          TEXT REFERENCES documents(id) ON DELETE RESTRICT,
+    origin               TEXT NOT NULL CHECK (origin IN ('user', 'document', 'online')),
+    verification_status  TEXT NOT NULL DEFAULT 'unverified'
+                         CHECK (verification_status IN ('unverified', 'incomplete', 'well_formed', 'verified_online',
+                                                        'verified_manual', 'mismatch', 'not_found', 'suspicious')),
+    verification_details TEXT NOT NULL DEFAULT '[]',
+    verified_at          TEXT,
+    created_at           TEXT NOT NULL,
+    updated_at           TEXT NOT NULL,
+    UNIQUE (project_id, key)
+);
+INSERT INTO sources_v8 SELECT id, project_id, key, source_type, data, document_id, origin, verification_status,
+                              verification_details, verified_at, created_at, updated_at FROM sources;
+DROP TABLE sources;
+ALTER TABLE sources_v8 RENAME TO sources;
+CREATE INDEX idx_sources_project ON sources(project_id);
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

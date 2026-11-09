@@ -23,6 +23,7 @@ from academic_writer.core.writing import WritingService
 from academic_writer.research import styles
 from academic_writer.research.models import (
     STATUS_LABELS,
+    TRUSTED_STATUSES,
     AuditIssue,
     Bibliography,
     BibliographyEntry,
@@ -41,6 +42,7 @@ from academic_writer.research.models import (
 from academic_writer.document.text_reader import decode_text
 from academic_writer.providers import secrets
 from academic_writer.research.importers import parse_file
+from academic_writer.research.manual import manual_links
 from academic_writer.research.online import Fetcher, http_fetch, search_online, similarity, verify_online
 from academic_writer.research.validation import check_source, make_key, normalize_doi
 from academic_writer.security.paths import ensure_within, resolve_user_file
@@ -54,12 +56,13 @@ _RAW_CITATION = re.compile(r"\[\d+(?:[,–-]\s*\d+)*\]|\([A-ZА-ЯЁ][\w\-]+(?: 
 
 def _row_to_source(row: sqlite3.Row, citations: int = 0) -> Source:
     status = row["verification_status"]
+    data = SourceData.model_validate_json(row["data"])
     return Source(
         id=row["id"], project_id=row["project_id"], key=row["key"], source_type=row["source_type"],
-        data=SourceData.model_validate_json(row["data"]), document_id=row["document_id"], origin=row["origin"],
+        data=data, document_id=row["document_id"], origin=row["origin"],
         verification_status=status, status_label=STATUS_LABELS[status],
         verification_details=[Finding(**f) for f in json.loads(row["verification_details"])],
-        verified_at=row["verified_at"], citation_count=citations,
+        verified_at=row["verified_at"], citation_count=citations, manual_links=manual_links(data),
     )
 
 
@@ -230,9 +233,32 @@ class SourceService:
         return self.get(source_id)
 
     # --- vérification -------------------------------------------------------------------
+    def confirm_manual(self, source_id: str, where: str, note: str = "") -> Source:
+        """L'utilisateur déclare avoir trouvé la source dans un catalogue (РГБ, eLIBRARY, bibliothèque…)."""
+        source = self.get(source_id)
+        self.writing._active_project(source.project_id)
+        if not where or not where.strip():
+            raise ValidationFailed("Indiquez où la source a été vérifiée (ex. « РГБ », « eLIBRARY », « bibliothèque »).")
+        status, findings = check_source(source.source_type, source.data)
+        if status == "suspicious":
+            raise ValidationFailed("Fiche suspecte (identifiant invalide ou date impossible) : corrigez-la d'abord.")
+        now = utc_now()
+        findings.append(Finding(severity="info", message=f"Vérifiée manuellement par l'utilisateur dans « {where.strip()} » "
+                                                         f"le {now[:10]}" + (f" : {note.strip()}" if note.strip() else ".")))
+        with self.db.transaction() as conn:
+            conn.execute("UPDATE sources SET verification_status = 'verified_manual', verification_details = ?, "
+                         "verified_at = ?, updated_at = ? WHERE id = ?",
+                         (json.dumps([f.model_dump() for f in findings], ensure_ascii=False), now, now, source_id))
+            record_event(conn, project_id=source.project_id, entity_type="source", entity_id=source_id,
+                         action="verified_manual", details={"where": where.strip()[:100]})
+        return self.get(source_id)
+
     def verify(self, source_id: str, online: bool = True) -> VerificationResult:
         source = self.get(source_id)
         status, findings = check_source(source.source_type, source.data)
+        if source.verification_status == "verified_manual" and status == "well_formed":
+            status = "verified_manual"  # une vérification humaine n'est pas effacée par un résultat non concluant
+            findings += [f for f in source.verification_details if "manuellement" in f.message]
         notice, candidates, checked = None, [], False
         if online and status != "suspicious":
             if self.settings.mode != "connected":
@@ -244,8 +270,9 @@ class SourceService:
                     checked = True
                     findings += outcome.findings
                     candidates = outcome.candidates
-                    if outcome.status and status != "incomplete" or outcome.status in ("not_found", "mismatch"):
-                        status = outcome.status or status
+                    if outcome.status in ("not_found", "mismatch") or (
+                            outcome.status == "verified_online" and status != "incomplete"):
+                        status = outcome.status
                 except OSError as exc:
                     notice = f"Vérification en ligne impossible (réseau) : {exc}"
         with self.db.transaction() as conn:
@@ -344,7 +371,7 @@ class SourceService:
             conn.execute("INSERT INTO citations (id, project_id, source_id, section_id, revision_id, locator, claim, "
                          "created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                          (new_id(), project_id, source.id, section_id, revision.id, locator, claim, utc_now()))
-        warning = "" if source.verification_status in ("verified_online", "well_formed") else \
+        warning = "" if source.verification_status in TRUSTED_STATUSES else \
             f" Attention : source {STATUS_LABELS[source.verification_status]}."
         return CitationResult(marker=marker, source=source, revision_id=revision.id,
                               message="Révision proposée avec la citation : à accepter par l'utilisateur." + warning)
@@ -391,7 +418,7 @@ class SourceService:
             warnings.append(f"{len(uncited)} source(s) enregistrée(s) jamais citée(s), exclue(s) : {', '.join(uncited)}.")
         if ordering == "alphabetical":
             keys.sort(key=lambda k: styles.sort_key(sources[k].data))
-        doubtful = [k for k in keys if sources[k].verification_status not in ("verified_online", "well_formed")]
+        doubtful = [k for k in keys if sources[k].verification_status not in TRUSTED_STATUSES]
         if doubtful:
             warnings.append("Sources non vérifiées ou problématiques : " + ", ".join(
                 f"{k} ({STATUS_LABELS[sources[k].verification_status]})" for k in doubtful))
