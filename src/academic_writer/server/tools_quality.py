@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
+from pydantic import Field
 
 from academic_writer.core.quality import FinalAudit
 from academic_writer.quality.calculations import CalculationReport, ConversionResult, FormulaResult
 from academic_writer.quality.claims import ClaimsReport
 from academic_writer.quality.consistency import ConsistencyReport
 from academic_writer.quality.structure import StructureReport
+from academic_writer.quality.symbolic import MatrixOperation, Operation, SymbolicResult
 from academic_writer.server.services import get_services, user_errors
 
 _READ = ToolAnnotations(read_only_hint=True, open_world_hint=False, idempotent_hint=True)
@@ -32,6 +36,34 @@ def register(mcp: MCPServer) -> None:
         Écrire les multiplications explicitement (m*z). Fonctions : sin, cos, tg, sqrt, ln, lg, exp ; constante π."""
         with user_errors():
             return get_services().quality.evaluate_formula(formula, values, target_unit)
+
+    @mcp.tool(title="Calcul formel", annotations=_READ)
+    def solve_math(
+        operation: Annotated[Operation, Field(description=(
+            "simplify, expand, factor, evaluate ; derivative (variable, order) ; integral (variable, bornes "
+            "lower/upper facultatives) ; limit (variable, point, direction) ; solve (équations séparées par « ; », "
+            "unknowns) ; dsolve (ex. « diff(y(t), t, 2) + 4*y(t) = 0 ») ; series (point, order) ; extrema (bornes "
+            "facultatives) ; matrix (matrix_operation, vector)."))],
+        expression: Annotated[str, Field(description="Ex. « x^3*sin(x) », « x^2 - 5x + 6 = 0 », "
+                                                     "« Matrix([[2, 1], [1, 3]]) ». Puissance : ^ ou **.")],
+        variable: str | None = None,
+        lower: str | None = None,
+        upper: str | None = None,
+        point: str | None = None,
+        direction: Annotated[str, Field(description="Limite : « + », « - » ou « +- » (des deux côtés).")] = "+-",
+        order: Annotated[int, Field(ge=1, le=20)] = 1,
+        unknowns: list[str] | None = None,
+        matrix_operation: MatrixOperation | None = None,
+        vector: Annotated[list[str] | None, Field(description="Second membre b pour matrix_operation=solve_linear.")] = None,
+    ) -> SymbolicResult:
+        """Calcul formel exact (SymPy) : dérivées, intégrales, limites, équations et systèmes, équations
+        différentielles, développements limités, extremums, matrices. Chaque résultat est VÉRIFIÉ indépendamment
+        (dérivation de la primitive, réinjection des solutions, checkodesol, A·A⁻¹ = I…) ; le champ verified le dit.
+        Le calcul est fait par SymPy : ne jamais l'attribuer à un autre logiciel (MATLAB, Mathematica…)."""
+        with user_errors():
+            return get_services().quality.solve_math(
+                operation, expression, variable=variable, lower=lower, upper=upper, point=point, direction=direction,
+                order=order, unknowns=unknowns, matrix_operation=matrix_operation, vector=vector)
 
     @mcp.tool(title="Convertir une grandeur", annotations=_READ)
     def convert_units(value: str, target_unit: str) -> ConversionResult:

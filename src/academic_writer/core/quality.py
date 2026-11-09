@@ -27,6 +27,7 @@ from academic_writer.core.writing import WritingService
 from academic_writer.domains.model import DomainProfile
 from academic_writer.domains.structures import StructureTemplate
 from academic_writer.quality import calculations as calc
+from academic_writer.quality import symbolic
 from academic_writer.quality.claims import ClaimsReport, analyze_claims, claim_issues
 from academic_writer.quality.consistency import ConsistencyReport, check_consistency
 from academic_writer.quality.models import QualityIssue, Segment, Target, sort_issues
@@ -225,9 +226,21 @@ class QualityService:
         return check_structure(target.label, target.segments, templates, target.language)
 
     def evaluate_formula(self, formula: str, values: dict[str, str], target_unit: str | None = None) -> calc.FormulaResult:
+        operation = re.search(r"\b(integrate|integral|diff|derivative|limit|lim|solve|dsolve|series|det|inverse|"
+                              r"Matrix|matrix|Integral|Derivative|Limit)\s*\(", formula)
+        if operation:
+            raise ValidationFailed(f"« {operation.group(1)}(…) » n'est pas pris en charge par evaluate_formula (formule à "
+                                   "valeurs numériques). Utiliser solve_math (intégrales, dérivées, limites, équations, "
+                                   "équations différentielles, matrices).")
         try:
             return calc.evaluate_formula(formula, values, target_unit)
         except ValueError as exc:
+            raise ValidationFailed(str(exc)) from exc
+
+    def solve_math(self, operation: str, expression: str, **options) -> symbolic.SymbolicResult:
+        try:
+            return symbolic.compute(operation, expression, **options)
+        except symbolic.SymbolicError as exc:
             raise ValidationFailed(str(exc)) from exc
 
     def convert(self, value: str, target_unit: str) -> calc.ConversionResult:

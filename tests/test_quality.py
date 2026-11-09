@@ -216,3 +216,43 @@ def test_symbols_defined_in_running_text(text: str, checked: int, errors: int) -
     report = check_calculations("t", [Segment(text, "paragraph")])
     assert (report.calculations_checked, report.mismatches) == (checked, errors)
     assert all(d.symbol != "m" or d.value == "2 мм" for d in report.definitions)
+
+
+# --- calcul formel (audit E-01, M-02) --------------------------------------------------------------
+
+@pytest.mark.parametrize(("operation", "expression", "options", "expected"), [
+    ("derivative", "x^3*sin(x)", {}, "x**3*cos(x) + 3*x**2*sin(x)"),
+    ("integral", "x^2", {}, "x**3/3"),
+    ("integral", "exp(-x^2)", {"lower": "-oo", "upper": "oo"}, "sqrt(pi)"),
+    ("limit", "sin(x)/x", {"point": "0"}, "1"),
+    ("solve", "x^2 - 5x + 6 = 0", {}, "[{x: 2}, {x: 3}]"),
+    ("solve", "2x + y = 5; x - y = 1", {"unknowns": ["x", "y"]}, "[{x: 2, y: 1}]"),
+    ("dsolve", "diff(y(t), t, 2) + 4*y(t) = 0", {}, "Eq(y(t), C1*sin(2*t) + C2*cos(2*t))"),
+    ("matrix", "Matrix([[2, 1], [1, 3]])", {"matrix_operation": "inverse"}, "Matrix([[3/5, -1/5], [-1/5, 2/5]])"),
+    ("matrix", "Matrix([[2, 1], [1, -1]])", {"matrix_operation": "solve_linear", "vector": ["5", "1"]},
+     "Matrix([[2], [1]])"),
+    ("extrema", "x^3 - 3x", {"lower": "-2", "upper": "2"}, None),
+])
+def test_solve_math_known_results(services: Services, operation, expression, options, expected) -> None:
+    result = services.quality.solve_math(operation, expression, **options)
+    assert result.verified is True and result.engine == "SymPy"
+    if expected:
+        assert result.result == expected
+    else:
+        assert "maximum local, f = 2" in result.result and "minimum local, f = -2" in result.result
+
+
+@pytest.mark.parametrize("payload", ["__import__('os').system('dir')", "x.__class__", "exec(1)", "open(x)",
+                                     "lambda x: x", "getattr(x, y)", "().__class__.__bases__"])
+def test_solve_math_rejects_code(services: Services, payload: str) -> None:
+    from academic_writer.core.errors import ValidationFailed
+
+    with pytest.raises(ValidationFailed):
+        services.quality.solve_math("simplify", payload)
+
+
+def test_evaluate_formula_points_to_solve_math(services: Services) -> None:
+    from academic_writer.core.errors import ValidationFailed
+
+    with pytest.raises(ValidationFailed, match="solve_math"):
+        services.quality.evaluate_formula("y = integrate(x**2, x)", {})
