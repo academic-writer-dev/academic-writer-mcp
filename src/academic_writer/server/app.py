@@ -30,6 +30,7 @@ from academic_writer.server import (
     tools_maintenance,
     tools_projects,
     tools_quality,
+    tools_software,
     tools_sources,
     tools_writing,
 )
@@ -129,6 +130,7 @@ tools_quality.register(mcp)
 tools_formatting.register(mcp)
 tools_course.register(mcp)
 tools_charts.register(mcp)
+tools_software.register(mcp)
 tools_maintenance.register(mcp)
 resources.register(mcp)
 
