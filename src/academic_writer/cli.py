@@ -50,9 +50,21 @@ def _secrets(args: argparse.Namespace) -> int:
         return 2
     if args.action == "set":
         if getattr(args, "clipboard", False):
+            # On lit le presse-papiers APRÈS l'appui sur Entrée : l'utilisateur a souvent copié la commande
+            # elle-même juste avant de la lancer.
+            print("1. Allez dans Google Cloud / le site du service et cliquez sur « Copier » à côté de la clé.")
+            print("2. Revenez ici SANS rien coller, puis appuyez simplement sur Entrée.")
+            try:
+                input("   Appuyez sur Entrée quand la clé est copiée... ")
+            except EOFError:
+                pass
             key = read_clipboard()
             if not key:
-                print("Presse-papiers vide ou illisible : copiez d'abord la clé (Ctrl+C).", file=sys.stderr)
+                print("Presse-papiers vide ou illisible : copiez d'abord la clé (bouton « Copier »).", file=sys.stderr)
+                return 1
+            if " " in key or "academic-writer" in key or len(key) > 200:
+                print("Le presse-papiers contient autre chose qu'une clé (sans doute la commande). "
+                      "Relancez la commande, copiez la clé seulement à l'étape 1, puis Entrée.", file=sys.stderr)
                 return 1
         else:
             key = getpass.getpass(f"Collez la clé API {args.provider} (saisie masquée), puis Entrée : ")
