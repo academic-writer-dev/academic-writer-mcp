@@ -30,6 +30,7 @@ def test_toml_file_is_read(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
         encoding="utf-8",
     )
     monkeypatch.setenv(CONFIG_ENV_VAR, str(config))
+    monkeypatch.delenv("ACADEMIC_WRITER_DATA_DIR")  # sinon prioritaire sur le fichier (filet de conftest)
     s = Settings()
     assert s.data_dir == data
     assert s.mode == "connected"

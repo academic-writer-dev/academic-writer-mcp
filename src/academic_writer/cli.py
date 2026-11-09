@@ -103,6 +103,10 @@ def _maintenance(args: argparse.Namespace) -> int:
         print("\nClaude Code (VS Code), commande équivalente :")
         print("  " + maintenance.claude_code_command())
         return 0 if result.status != "introuvable" else 1
+    if args.command == "restore" and not args.yes:  # refus avant toute création de dossier ou de base
+        print("La restauration REMPLACE la base et les dossiers des projets actuels (une sauvegarde de "
+              "sécurité est faite avant).\nFermez Claude Desktop et VS Code, puis relancez avec --yes.")
+        return 2
     from academic_writer.server.services import build_services
 
     services = build_services()
@@ -126,10 +130,6 @@ def _maintenance(args: argparse.Namespace) -> int:
                 print(f"  {item.created_at}  {item.kind:9} {item.size_mb:>8} Mo  {Path(item.path).name}")
             return 0
         if args.command == "restore":
-            if not args.yes:
-                print("La restauration REMPLACE la base et les dossiers des projets actuels (une sauvegarde de "
-                      "sécurité est faite avant).\nFermez Claude Desktop et VS Code, puis relancez avec --yes.")
-                return 2
             result = maintenance.restore_backup(services.settings, services.db, Path(args.archive))
             print(f"Restauré depuis {result.restored_from} : {result.projects_restored} projet(s), "
                   f"schéma v{result.schema_version}.")

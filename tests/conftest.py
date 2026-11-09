@@ -27,6 +27,8 @@ def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         if key.startswith(ENV_PREFIX):
             monkeypatch.delenv(key)
     monkeypatch.setenv(CONFIG_ENV_VAR, str(tmp_path / "config-absent.toml"))
+    # filet de sécurité : un Settings() construit sans argument ne touche jamais au vrai dossier de données
+    monkeypatch.setenv(f"{ENV_PREFIX}DATA_DIR", str(tmp_path / "default-data"))
 
 
 @pytest.fixture
