@@ -379,6 +379,54 @@ CREATE TABLE findings (
 CREATE INDEX idx_findings_audit ON findings(audit_id);
 """,
     ),
+    Migration(
+        version=10,
+        description="Profils d'enseignants, politique de sources, exigences de type contrainte",
+        sql="""
+CREATE TABLE teacher_profiles (
+    id            TEXT PRIMARY KEY,
+    name          TEXT NOT NULL CHECK (length(trim(name)) > 0),
+    subject       TEXT,
+    course        TEXT,
+    institution   TEXT,
+    source_policy TEXT NOT NULL DEFAULT 'course_only'
+                  CHECK (source_policy IN ('course_only', 'project_sources', 'external_allowed')),
+    notations     TEXT NOT NULL DEFAULT '[]',
+    methods       TEXT NOT NULL DEFAULT '',
+    expectations  TEXT NOT NULL DEFAULT '',
+    created_at    TEXT NOT NULL,
+    updated_at    TEXT NOT NULL
+);
+
+ALTER TABLE projects ADD COLUMN source_policy TEXT NOT NULL DEFAULT 'project_sources'
+    CHECK (source_policy IN ('course_only', 'project_sources', 'external_allowed'));
+ALTER TABLE projects ADD COLUMN teacher_profile_id TEXT REFERENCES teacher_profiles(id) ON DELETE SET NULL;
+
+CREATE TABLE requirements_v10 (
+    id                 TEXT PRIMARY KEY,
+    project_id         TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    source_document_id TEXT REFERENCES documents(id) ON DELETE RESTRICT,
+    page               INTEGER,
+    kind               TEXT NOT NULL CHECK (kind IN ('task', 'step', 'question', 'objective', 'length', 'structure',
+                                                     'format', 'norm', 'deadline', 'variant', 'data', 'constraint',
+                                                     'other')),
+    text               TEXT NOT NULL,
+    value              TEXT,
+    status             TEXT NOT NULL DEFAULT 'proposed' CHECK (status IN ('proposed', 'confirmed', 'rejected')),
+    origin             TEXT NOT NULL CHECK (origin IN ('extracted', 'user')),
+    position           INTEGER NOT NULL DEFAULT 0,
+    created_at         TEXT NOT NULL,
+    updated_at         TEXT NOT NULL,
+    number             TEXT,
+    group_label        TEXT
+);
+INSERT INTO requirements_v10 SELECT id, project_id, source_document_id, page, kind, text, value, status, origin,
+                                    position, created_at, updated_at, number, group_label FROM requirements;
+DROP TABLE requirements;
+ALTER TABLE requirements_v10 RENAME TO requirements;
+CREATE INDEX idx_requirements_project ON requirements(project_id, kind);
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

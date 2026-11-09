@@ -51,7 +51,7 @@ def build_brief(*, project_name: str, project_description: str, section_title: s
                 target_words: int | None, outline_titles: list[str], requirements: list[str],
                 global_requirements: list[str], excerpts: list[tuple[str, str]], terminology: list[str],
                 previous_sections: list[tuple[str, str]], instructions: str | None, base_text: str | None,
-                budget_chars: int, sources: list[str] | None = None) -> str:
+                budget_chars: int, sources: list[str] | None = None, conventions: list[str] | None = None) -> str:
     """Assemble le dossier en respectant un budget de caractères (contexte limité des modèles locaux)."""
     parts: list[str] = [f"# Projet : {project_name}"]
     if project_description:
@@ -69,6 +69,9 @@ def build_brief(*, project_name: str, project_description: str, section_title: s
         parts.append(f"## Instructions de l'utilisateur\n{_clip(instructions, 2000)}")
     if base_text:
         parts.append(f"## Texte actuel à réécrire\n{base_text}")
+    if conventions:
+        parts.append("## Conventions de l'enseignant (notations, méthodes, attentes : à respecter)\n"
+                     + "\n".join(f"- {c}" for c in conventions[:50]))
     if sources:
         parts.append("## Sources citables du projet (clé — description — statut de vérification)\n"
                      + "\n".join(f"- {s}" for s in sources[:40]))

@@ -55,6 +55,8 @@ def _row_to_project(row: sqlite3.Row) -> Project:
         domain_id=row["domain_id"],
         domain_confirmed_at=row["domain_confirmed_at"],
         convention=row["convention"],
+        source_policy=row["source_policy"] if "source_policy" in row.keys() else "project_sources",
+        teacher_profile_id=row["teacher_profile_id"] if "teacher_profile_id" in row.keys() else None,
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )

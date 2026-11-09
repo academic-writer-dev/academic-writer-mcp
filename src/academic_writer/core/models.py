@@ -5,6 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -90,7 +91,20 @@ class DocumentRole(StrEnum):
     DRAFT = "draft"  # document de l'utilisateur à analyser / améliorer
     DATA = "data"  # données (mesures, tableaux...)
     TEMPLATE = "template"  # modèle institutionnel
+    COURSE = "course"  # support de cours, notes, transcription des explications de l'enseignant
+    RUBRIC = "rubric"  # barème, grille d'évaluation
+    EXAMPLE = "example"  # exemple de travail fourni par l'enseignant
     OTHER = "other"
+
+
+SourcePolicy = Literal["course_only", "project_sources", "external_allowed"]
+SOURCE_POLICY_LABELS: dict[str, str] = {
+    "course_only": "Uniquement les documents de l'enseignant (consignes, cours, barème, modèles, exemples, données)",
+    "project_sources": "Documents et sources enregistrées du projet (par défaut)",
+    "external_allowed": "Sources externes autorisées, toujours signalées comme telles",
+}
+# Rôles des documents fournis par l'enseignant : seuls autorisés quand la politique est « course_only ».
+TEACHER_ROLES: tuple[str, ...] = ("instructions", "course", "rubric", "template", "example", "data")
 
 
 class Project(BaseModel):
@@ -104,6 +118,8 @@ class Project(BaseModel):
     domain_id: str | None = Field(default=None, description="Profil disciplinaire confirmé par l'utilisateur.")
     domain_confirmed_at: str | None = None
     convention: str | None = Field(default=None, description="Convention de présentation : ru, fr ou intl.")
+    source_policy: SourcePolicy = Field(default="project_sources", description="Sources autorisées pour la rédaction.")
+    teacher_profile_id: str | None = Field(default=None, description="Profil d'enseignant rattaché.")
     created_at: str
     updated_at: str
 

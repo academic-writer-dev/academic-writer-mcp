@@ -162,6 +162,7 @@ class SourceService:
 
     def register(self, project_id: str, source_type: str, data: SourceData, key: str | None = None,
                  document_id: str | None = None, allow_duplicate: bool = False) -> Source:
+        self._require_external_sources(project_id, "Enregistrer une source bibliographique")
         self.writing._active_project(project_id)
         if document_id:
             document = self.documents.get(document_id)
@@ -196,6 +197,7 @@ class SourceService:
 
     def register_from_document(self, project_id: str, document_id: str, source_type: str = "other") -> Source:
         """Pré-remplit une fiche avec les métadonnées d'un document importé (à compléter par l'utilisateur)."""
+        self._require_external_sources(project_id, "Enregistrer un document comme source")
         result, _ = self.extraction.extract(document_id)
         meta = result.metadata
         title = meta.get("title") or next((b.text for b in result.blocks if b.type == "heading"), None)
@@ -313,6 +315,14 @@ class SourceService:
                        "register_source (data = candidat.data).")
         return SourceSearch(query=query or isbn or "", services=services, candidates=candidates, notices=notices)
 
+    def _require_external_sources(self, project_id: str, what: str) -> None:
+        """Politique « course_only » : l'enseignant exige de répondre uniquement à partir du cours."""
+        if self.projects.get(project_id).source_policy == "course_only":
+            raise ValidationFailed(
+                f"{what} : refusé. Ce projet suit la consigne de l'enseignant « uniquement à partir du cours » "
+                "(politique course_only). Pour autoriser des sources externes, l'utilisateur doit changer la "
+                "politique (set_project_teaching source_policy=project_sources ou external_allowed).")
+
     def _require_connected(self, what: str) -> None:
         if self.settings.mode != "connected":
             raise ValidationFailed(f"Mode local : {what} est désactivé(e). Seuls les termes de recherche ou "
@@ -327,6 +337,7 @@ class SourceService:
                              max(1, min(limit, 25)))
 
     def download_open_access(self, project_id: str, item_id: str) -> OpenAccessDownload:
+        self._require_external_sources(project_id, "Télécharger un texte externe")
         self.writing._active_project(project_id)
         self._require_connected("le téléchargement en libre accès")
         try:
@@ -378,6 +389,7 @@ class SourceService:
                                content=content[:20000])
 
     def import_file(self, project_id: str, file_path: str) -> SourceImport:
+        self._require_external_sources(project_id, "Importer des références")
         self.writing._active_project(project_id)
         path = resolve_user_file(file_path)
         ensure_within(path, self.settings.allowed_import_dirs)
@@ -418,6 +430,7 @@ class SourceService:
     # --- citations ------------------------------------------------------------------------
     def insert_citation(self, project_id: str, section_id: str, source_key: str, anchor_text: str,
                         locator: str | None = None, claim: str | None = None, force: bool = False) -> CitationResult:
+        self._require_external_sources(project_id, "Insérer une citation")
         self.writing._active_project(project_id)
         source = self.by_key(project_id, source_key)
         if source.verification_status in DOUBTFUL and not force:

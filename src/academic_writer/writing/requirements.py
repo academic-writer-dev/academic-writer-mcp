@@ -18,6 +18,7 @@ import re
 from dataclasses import dataclass
 
 from academic_writer.document.model import ExtractedDocument
+from academic_writer.writing.constraints import source_constraint
 
 _I = re.IGNORECASE
 
@@ -125,6 +126,9 @@ def classify_secondary(sentence: str) -> list[tuple[str, str | None]]:
     match = VARIANT.search(sentence)
     if match:
         found.append(("variant", match.group(1)))
+    constraint = source_constraint(sentence)
+    if constraint:
+        found.append(("constraint", constraint))
     norms = {" ".join(m.group(1).split()) for m in NORM.finditer(sentence)}
     if norms:
         found.append(("norm", ", ".join(sorted(norms))))

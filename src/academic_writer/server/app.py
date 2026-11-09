@@ -20,6 +20,7 @@ from academic_writer.server import (
     resources,
     tools_ai,
     tools_audit,
+    tools_course,
     tools_documents,
     tools_domains,
     tools_editing,
@@ -125,6 +126,7 @@ tools_sources.register(mcp)
 tools_audit.register(mcp)
 tools_quality.register(mcp)
 tools_formatting.register(mcp)
+tools_course.register(mcp)
 tools_maintenance.register(mcp)
 resources.register(mcp)
 

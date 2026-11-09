@@ -336,7 +336,7 @@ class ExtractionService:
         )
 
     def search(self, project_id: str, query: str, *, limit: int = 10, document_id: str | None = None,
-               match: str = "all") -> SearchResult:
+               match: str = "all", roles: tuple[str, ...] | None = None) -> SearchResult:
         self.projects.get(project_id)
         tokens = _TOKEN.findall(query or "")[:12]
         if not tokens:
@@ -354,6 +354,9 @@ class ExtractionService:
         if document_id:
             sql += " AND c.document_id = ?"
             params.append(document_id)
+        if roles:
+            sql += f" AND d.role IN ({', '.join('?' * len(roles))})"
+            params.extend(roles)
         sql += " ORDER BY score LIMIT ?"
         params.append(limit)
         with self.db.read() as conn:

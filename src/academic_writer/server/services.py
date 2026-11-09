@@ -11,6 +11,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 
 from academic_writer.core.audit import AuditService
 from academic_writer.core.config import Settings
+from academic_writer.core.course import CourseService
 from academic_writer.core.documents import DocumentService
 from academic_writer.core.domains import DomainService
 from academic_writer.core.editing import EditingService
@@ -40,6 +41,7 @@ class Services:
     audit: AuditService
     quality: QualityService
     formatting: FormattingService
+    course: CourseService
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -60,7 +62,8 @@ def build_services(settings: Settings | None = None) -> Services:
     return Services(settings=settings, db=db, projects=projects, documents=documents, extraction=extraction,
                     domains=domains, ai=ai, writing=writing, editing=editing, sources=sources, audit=audit,
                     quality=quality,
-                    formatting=FormattingService(db, settings, projects, documents, domains, writing, sources))
+                    formatting=FormattingService(db, settings, projects, documents, domains, writing, sources),
+                    course=CourseService(db, projects, documents, extraction, writing))
 
 
 _services: Services | None = None

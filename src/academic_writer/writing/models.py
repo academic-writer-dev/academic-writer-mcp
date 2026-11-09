@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-RequirementKind = Literal["task", "step", "question", "objective", "length", "structure", "format", "norm",
+RequirementKind = Literal["task", "step", "question", "objective", "length", "structure", "format", "norm", "constraint",
                           "deadline", "variant", "data", "other"]
 RequirementStatus = Literal["proposed", "confirmed", "rejected"]
 

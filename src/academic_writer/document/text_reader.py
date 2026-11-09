@@ -51,16 +51,47 @@ class TextExtractor:
         )
 
 
+def _is_title_line(lines: list[str], index: int) -> bool:
+    """Ligne courte sans ponctuation finale, en tête de bloc ou juste avant une liste : intertitre."""
+    line = lines[index]
+    if (len(line) >= 60 or line[-1] in ".,;:!?…" or BULLET_RE.match(line) or index + 1 >= len(lines)
+            or lines[index + 1][:1].islower()):  # « Premier paragraphe / sur deux lignes » : phrase coupée
+        return False
+    return index == 0 or bool(BULLET_RE.match(lines[index + 1]))
+
+
 def _parse_plain(text: str) -> list[Block]:
+    """Paragraphes séparés par une ligne vide ; dans un bloc, chaque élément numéroté ou à puce (« 1. », « – »)
+    et chaque intertitre court sont isolés, même sans ligne vide (consignes saisies ligne par ligne)."""
     blocks: list[Block] = []
     for chunk in re.split(r"\n\s*\n", text):
         lines = [line.strip() for line in chunk.splitlines() if line.strip()]
-        if not lines:
-            continue
-        if all(BULLET_RE.match(line) for line in lines):
-            blocks.extend(Block(type="list_item", text=line) for line in lines)
-        else:
-            blocks.append(Block(type="paragraph", text=" ".join(lines)))
+        current: list[str] = []
+        kind = "paragraph"
+
+        def flush() -> None:
+            if current:
+                blocks.append(Block(type=kind, text=" ".join(current)))
+                current.clear()
+
+        for index, line in enumerate(lines):
+            if BULLET_RE.match(line):
+                flush()
+                kind = "list_item"
+                current.append(line)
+            elif _is_title_line(lines, index):
+                flush()
+                kind = "paragraph"
+                current.append(line)
+                flush()
+            elif kind == "list_item" and current and line[:1].islower():
+                current.append(line)  # suite d'un élément de liste coupé en plusieurs lignes
+            else:
+                if kind == "list_item":
+                    flush()
+                    kind = "paragraph"
+                current.append(line)
+        flush()
     return blocks
 
 

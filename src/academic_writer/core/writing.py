@@ -23,6 +23,7 @@ from academic_writer.core.errors import NotFoundError, ValidationFailed
 from academic_writer.core.extraction import TRUST_NOTICE, ExtractionService
 from academic_writer.core.history import record_event
 from academic_writer.core.models import DOCUMENT_TYPE_LABELS, DocumentRole, ProjectStatus, new_id, utc_now
+from academic_writer.core.teaching import allowed_roles, load_profile, policy_rules
 from academic_writer.core.projects import ProjectService
 from academic_writer.providers.base import GenerationRequest
 from academic_writer.providers.manager import ProviderManager
@@ -52,7 +53,7 @@ logger = logging.getLogger("academic_writer.writing")
 
 _BUDGET = {"ollama": 9000, "anthropic": 40000, "openai": 40000, "assistant": 40000}
 _KINDS = ("task", "step", "question", "objective", "length", "structure", "format", "norm", "deadline", "variant",
-          "data", "other")
+          "data", "constraint", "other")
 
 
 class OutlineOperation(BaseModel):
@@ -163,6 +164,7 @@ class WritingService:
                             + ") devront être fournies par l'utilisateur.")
         elif missing:
             warnings.append(f"Grandeurs citées sans valeur dans les consignes : {', '.join(missing[:12])}.")
+        warnings.extend(self._apply_source_constraint(project_id, active))
         return AssignmentAnalysis(
             project_id=project_id, analyzed_documents=[d.original_filename for d in documents], extracted=len(created),
             by_kind=listing.by_kind, variant=variants[0] if len(variants) == 1 else None,
@@ -174,6 +176,29 @@ class WritingService:
                       "demander les données manquantes (manage_requirement action=add kind=data), puis créer le plan "
                       "(create_academic_outline).",
         )
+
+    def _apply_source_constraint(self, project_id: str, active: list[Requirement]) -> list[str]:
+        """Consigne de l'enseignant sur les sources : appliquée si le projet suit encore la politique par défaut."""
+        values = {r.value for r in active if r.kind == "constraint" and r.value}
+        if not values:
+            return []
+        wanted = "course_only" if "course_only" in values else "external_allowed"
+        project = self.projects.get(project_id)
+        quote = next(r.text for r in active if r.kind == "constraint" and r.value == wanted)
+        if project.source_policy == wanted:
+            return [f"Consigne sur les sources respectée (politique {wanted}) : « {quote[:200]} »."]
+        if project.source_policy != "project_sources":
+            return [f"Les consignes indiquent « {quote[:200]} » ({wanted}) mais le projet suit la politique "
+                    f"{project.source_policy} choisie par l'utilisateur : vérifier avec lui (set_project_teaching)."]
+        with self.db.transaction() as conn:
+            conn.execute("UPDATE projects SET source_policy = ?, updated_at = ? WHERE id = ?",
+                         (wanted, utc_now(), project_id))
+            record_event(conn, project_id=project_id, entity_type="project", entity_id=project_id,
+                         action="source_policy_from_instructions", details={"policy": wanted, "quote": quote[:300]})
+        effect = ("rédaction limitée aux documents de l'enseignant, sources externes refusées, questions non "
+                  "traitées signalées" if wanted == "course_only" else "sources externes permises mais signalées")
+        return [f"Consigne de l'enseignant détectée : « {quote[:200]} ». Politique appliquée : {wanted} ({effect}). "
+                "Modifiable par l'utilisateur avec set_project_teaching."]
 
     def _suggested_inputs(self, project_id: str, texts: list[str], data_values: str) -> list[SuggestedInput]:
         """Données d'entrée des calculs du profil détectés dans les consignes (déclencheurs par mots-clés)."""
@@ -428,11 +453,14 @@ class WritingService:
             raise NotFoundError(f"Section introuvable dans le plan actuel : {section_id}")
         return outline, section
 
-    def _sources_text(self, project_id: str, limit: int = 300_000) -> str:
+    def _sources_text(self, project_id: str, limit: int = 300_000, roles: tuple[str, ...] | None = None) -> str:
         parts: list[str] = []
         size = 0
+        role_filter = f" AND d.role IN ({', '.join('?' * len(roles))})" if roles else ""
         with self.db.read() as conn:
-            for row in conn.execute("SELECT text FROM chunks WHERE project_id = ? ORDER BY document_id, seq", (project_id,)):
+            for row in conn.execute("SELECT c.text FROM chunks c JOIN documents d ON d.id = c.document_id "
+                                    f"WHERE c.project_id = ?{role_filter} ORDER BY c.document_id, c.seq",
+                                    (project_id, *(roles or ()))):
                 parts.append(row["text"])
                 size += len(row["text"])
                 if size > limit:
@@ -456,12 +484,14 @@ class WritingService:
                        if i in requirements and requirements[i].status != "rejected"]
 
         self.extraction.index_project(project_id)
+        policy = project.source_policy
         words = re.findall(r"\w{5,}", " ".join([section.title, section.guidance or ""] + [r.text for r in linked]))
         query = " ".join(dict.fromkeys(words))[:400]
         excerpts: list[tuple[str, str]] = []
         if query:
             try:
-                hits = self.extraction.search(project_id, query, limit=6, match="any").hits
+                hits = self.extraction.search(project_id, query, limit=6, match="any",
+                                              roles=allowed_roles(policy)).hits
             except ValidationFailed:
                 hits = []
             with self.db.read() as conn:
@@ -492,7 +522,19 @@ class WritingService:
                 "WHERE v.project_id = ? AND v.status = 'accepted' AND s.outline_id = ? ORDER BY s.position",
                 (project_id, outline.id))]
 
-        citable = self._citable_sources(project_id)
+        citable = [] if policy == "course_only" else self._citable_sources(project_id)
+        with self.db.read() as conn:
+            teacher = load_profile(conn, project.teacher_profile_id)
+        conventions: list[str] = []
+        if teacher:
+            conventions.append(f"Enseignant : {teacher.name}" + "".join(
+                f" — {x}" for x in (teacher.subject, teacher.course) if x))
+            conventions += [f"Notation : {n.symbol} = {n.meaning}" + (f" [{n.unit}]" if n.unit else "")
+                            for n in teacher.notations[:40]]
+            if teacher.methods:
+                conventions.append(f"Méthodes imposées : {teacher.methods[:1500]}")
+            if teacher.expectations:
+                conventions.append(f"Attentes de l'enseignant : {teacher.expectations[:1500]}")
 
         def describe(req: Requirement) -> str:
             source = f" [{req.source_filename}" + (f", p. {req.page}" if req.page else "") + "]" if req.source_filename else ""
@@ -505,11 +547,11 @@ class WritingService:
             requirements=[describe(r) for r in linked] + [describe(r) for r in data_reqs if r not in linked][:10],
             global_requirements=[describe(r) for r in global_reqs], excerpts=excerpts, terminology=terms,
             previous_sections=previous, instructions=instructions, base_text=base_text,
-            budget_chars=_BUDGET.get(engine, 20000), sources=citable)
+            budget_chars=_BUDGET.get(engine, 20000), sources=citable, conventions=conventions)
         system = briefs.system_prompt(
             language=language, document_type=DOCUMENT_TYPE_LABELS[project.document_type],
             domain_name=profile.names.get(language), convention_label=template.convention_label,
-            rules=template.validation_rules,
+            rules=policy_rules(policy, language) + template.validation_rules,
             risk_notice=profile.risk_notice.get(language) if profile.risk_level == "high" and profile.risk_notice else None,
             mode="rewrite" if base_text else "draft")
         return SectionBrief(project_id=project_id, section_id=section_id, section_title=section.title, language=language,
@@ -610,12 +652,18 @@ class WritingService:
         language = language or project.language.value
         profile = self.domains.get_domain(outline.domain_id)
         checks: list[Check] = list(extra_checks or [])
-        sources = self._sources_text(project_id)
+        sources = self._sources_text(project_id, roles=allowed_roles(project.source_policy))
         if parent is not None:
             sources += "\n" + parent.text  # une correction ou une réécriture reprend les valeurs de sa version de départ
+        course_only = project.source_policy == "course_only"
         checks += check_draft(text, language=language, target_words=section.target_words if kind != "translation" else None,
-                              sources_text=sources, profile=profile, known_keys=self._source_keys(project_id),
+                              sources_text=sources, profile=profile,
+                              known_keys=set() if course_only else self._source_keys(project_id),
                               truncated=truncated, is_references_section=section.section_key == "references")
+        if course_only and re.search(r"\[@[^\]]+\]", text):
+            checks.append(Check(code="external_source_forbidden", severity="error",
+                                message="Citation d'une source bibliographique alors que l'enseignant exige de "
+                                        "répondre uniquement à partir du cours (politique « course_only »)."))
         if parent is not None and kind != "translation":
             checks += check_fidelity(parent.text, text, profile, language)
         revision_id = new_id()
