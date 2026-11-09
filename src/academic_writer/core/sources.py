@@ -30,13 +30,20 @@ from academic_writer.research.models import (
     Finding,
     Person,
     ReferenceAudit,
+    ImportedSource,
     Source,
     SourceData,
+    SourceImport,
     SourceList,
+    SourceSearch,
     VerificationResult,
 )
-from academic_writer.research.online import Fetcher, http_fetch, similarity, verify_online
+from academic_writer.document.text_reader import decode_text
+from academic_writer.providers import secrets
+from academic_writer.research.importers import parse_file
+from academic_writer.research.online import Fetcher, http_fetch, search_online, similarity, verify_online
 from academic_writer.research.validation import check_source, make_key, normalize_doi
+from academic_writer.security.paths import ensure_within, resolve_user_file
 from academic_writer.storage.db import Database
 
 logger = logging.getLogger("academic_writer.sources")
@@ -68,6 +75,20 @@ def person_from_text(text: str) -> Person:
     if re.search(r"[А-Яа-яЁё]", text) or re.fullmatch(r"(?:[A-ZА-Я]\.\s?){1,3}", " ".join(parts[1:])):
         return Person(family=parts[0], given=" ".join(parts[1:]))
     return Person(family=parts[-1], given=" ".join(parts[:-1]))
+
+
+def same_work(a: SourceData, b: SourceData) -> bool:
+    """Même ouvrage : DOI ou ISBN identiques, ou même année + titres très proches (ou proches et même
+    premier auteur : « Теория механизмов и машин : учебник » = « Теория механизмов и машин »)."""
+    if a.doi and b.doi and normalize_doi(a.doi).casefold() == normalize_doi(b.doi).casefold():
+        return True
+    if a.isbn and b.isbn and re.sub(r"[^0-9Xx]", "", a.isbn) == re.sub(r"[^0-9Xx]", "", b.isbn):
+        return True
+    if not (a.title and b.title) or a.year is None or a.year != b.year:
+        return False
+    score = similarity(a.title, b.title)
+    same_author = bool(a.authors and b.authors and a.authors[0].family.casefold() == b.authors[0].family.casefold())
+    return score >= 0.85 or (score >= 0.6 and same_author)
 
 
 class SourceService:
@@ -126,14 +147,7 @@ class SourceService:
     # --- enregistrement ------------------------------------------------------------
     def _duplicate_of(self, project_id: str, data: SourceData, exclude: str | None = None) -> str | None:
         for source in self.list(project_id).sources:
-            if source.id == exclude:
-                continue
-            other = source.data
-            if data.doi and other.doi and normalize_doi(data.doi).casefold() == normalize_doi(other.doi).casefold():
-                return source.key
-            if data.isbn and other.isbn and re.sub(r"\D", "", data.isbn) == re.sub(r"\D", "", other.isbn):
-                return source.key
-            if data.title and other.title and similarity(data.title, other.title) >= 0.85 and data.year == other.year:
+            if source.id != exclude and same_work(data, source.data):
                 return source.key
         return None
 
@@ -226,7 +240,7 @@ class SourceService:
                           "des métadonnées (DOI, ISBN, titre) ; activable avec mode = 'connected'.")
             else:
                 try:
-                    outcome = verify_online(source.data, self.fetcher)
+                    outcome = verify_online(source.data, self.fetcher, self._service_keys())
                     checked = True
                     findings += outcome.findings
                     candidates = outcome.candidates
@@ -243,6 +257,66 @@ class SourceService:
                          action="verified", details={"status": status, "online": checked})
         return VerificationResult(source=self.get(source_id), online_checked=checked, online_notice=notice,
                                   candidates=candidates)
+
+    def _service_keys(self) -> dict[str, str]:
+        keys = {}
+        for name in secrets.METADATA_SERVICES:
+            key = secrets.get_key(name)
+            if key:
+                keys[name] = key
+        return keys
+
+    # --- recherche et import ----------------------------------------------------------------
+    def search(self, query: str, author: str | None = None, isbn: str | None = None,
+               kind: str = "all", limit: int = 5) -> SourceSearch:
+        if not (query and query.strip()) and not isbn:
+            raise ValidationFailed("Indiquez un titre (query) ou un ISBN.")
+        if self.settings.mode != "connected":
+            raise ValidationFailed("Mode local : la recherche en ligne (Google Books, OpenAlex, Crossref) est désactivée. "
+                                   "Elle n'envoie que les termes de recherche ; activable avec mode = 'connected'.")
+        candidates, services, notices = search_online(query or "", author, self.fetcher, self._service_keys(),
+                                                      kind=kind, isbn=isbn, limit=max(1, min(limit, 10)))
+        notices.append("Fiches proposées à partir de catalogues : les faire CONFIRMER par l'utilisateur avant "
+                       "register_source (data = candidat.data).")
+        return SourceSearch(query=query or isbn or "", services=services, candidates=candidates, notices=notices)
+
+    def import_file(self, project_id: str, file_path: str) -> SourceImport:
+        self.writing._active_project(project_id)
+        path = resolve_user_file(file_path)
+        ensure_within(path, self.settings.allowed_import_dirs)
+        extension = path.suffix.lower()
+        if extension not in (".ris", ".bib", ".txt"):
+            raise ValidationFailed("Format accepté : .ris, .bib (ou .txt contenant du RIS / BibTeX).")
+        if path.stat().st_size > 5 * 1024 * 1024:
+            raise ValidationFailed("Fichier de notices trop volumineux (5 Mo maximum).")
+        text, _ = decode_text(path.read_bytes())
+        entries = parse_file(text, extension)
+        if not entries:
+            raise ValidationFailed("Aucune notice RIS ou BibTeX reconnue dans ce fichier.")
+        imported: list[ImportedSource] = []
+        duplicates: list[str] = []
+        errors: list[str] = []
+        existing = self.keys(project_id)
+        for entry in entries:
+            label = (entry.data.title or "(sans titre)")[:80]
+            key = entry.key if entry.key and entry.key not in existing else None
+            try:
+                source = self.register(project_id, entry.source_type, entry.data, key=key)
+            except ConflictError:
+                duplicates.append(label)
+                continue
+            except (ValidationFailed, ValueError) as exc:
+                errors.append(f"{label} : {exc}")
+                continue
+            existing.add(source.key)
+            imported.append(ImportedSource(key=source.key, title=source.data.title, source_type=source.source_type,
+                                           status=source.verification_status))
+        fmt = "BibTeX" if extension == ".bib" or text.lstrip().startswith("@") else "RIS"
+        problems = sum(1 for s in imported if s.status in ("incomplete", "suspicious"))
+        message = (f"{len(imported)} source(s) importée(s), {len(duplicates)} doublon(s) ignoré(s), "
+                   f"{len(errors)} erreur(s)." + (f" {problems} fiche(s) à compléter ou à vérifier." if problems else ""))
+        return SourceImport(project_id=project_id, file=path.name, format=fmt, found=len(entries), imported=imported,
+                            duplicates=duplicates, errors=errors, message=message)
 
     # --- citations ------------------------------------------------------------------------
     def insert_citation(self, project_id: str, section_id: str, source_key: str, anchor_text: str,
@@ -384,9 +458,7 @@ class SourceService:
         keys = list(sources)
         for i, a in enumerate(keys):
             for b in keys[i + 1:]:
-                da, db = sources[a].data, sources[b].data
-                if (da.doi and db.doi and da.doi.casefold() == db.doi.casefold()) or (
-                        da.title and db.title and similarity(da.title, db.title) >= 0.85 and da.year == db.year):
+                if same_work(sources[a].data, sources[b].data):
                     issues.append(AuditIssue(severity="warning", code="duplicate", source_key=b,
                                              message=f"Sources « {a} » et « {b} » probablement identiques."))
         errors = sum(i.severity == "error" for i in issues)

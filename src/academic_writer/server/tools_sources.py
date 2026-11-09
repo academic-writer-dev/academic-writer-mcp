@@ -14,7 +14,9 @@ from academic_writer.research.models import (
     ReferenceAudit,
     Source,
     SourceData,
+    SourceImport,
     SourceList,
+    SourceSearch,
     SourceType,
     VerificationResult,
 )
@@ -109,6 +111,33 @@ def register(mcp: MCPServer) -> None:
         citations des sections acceptées, avec la forme des appels dans le texte. Signale les sources non vérifiées."""
         with user_errors():
             return get_services().sources.generate_bibliography(project_id, style, ordering, include_uncited, save)
+
+    @mcp.tool(title="Rechercher des livres et articles",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
+    def search_sources(
+        query: Annotated[str, Field(description="Titre ou mots du titre (russe, français, anglais).")] = "",
+        author: Annotated[str | None, Field(description="Nom de famille d'un auteur (facultatif).")] = None,
+        isbn: str | None = None,
+        kind: Annotated[Literal["books", "articles", "all"], Field(
+            description="books : Google Books ; articles : OpenAlex + Crossref ; all : tous.")] = "all",
+        limit: Annotated[int, Field(ge=1, le=10)] = 5,
+    ) -> SourceSearch:
+        """Cherche des ouvrages et articles RÉELS dans Google Books (livres, dont russes), OpenAlex et Crossref.
+        Renvoie des fiches pré-remplies à présenter à l'utilisateur ; n'enregistrer (register_source) que celles
+        qu'il confirme. Mode connecté uniquement ; seuls les termes de recherche sont envoyés."""
+        with user_errors():
+            return get_services().sources.search(query, author, isbn, kind, limit)
+
+    @mcp.tool(title="Importer des notices (RIS / BibTeX)", annotations=_WRITE)
+    def import_sources_file(
+        project_id: str,
+        file_path: Annotated[str, Field(description="Chemin absolu d'un fichier .ris ou .bib exporté depuis un catalogue "
+                                                    "(Zotero, Google Scholar, eLIBRARY, РГБ, bibliothèque…).")],
+    ) -> SourceImport:
+        """Importe en une fois les notices d'un fichier RIS ou BibTeX : chaque source est enregistrée et vérifiée
+        localement ; les doublons sont ignorés."""
+        with user_errors():
+            return get_services().sources.import_file(project_id, file_path)
 
     @mcp.tool(title="Auditer les références", annotations=_READ)
     def audit_references(project_id: str) -> ReferenceAudit:

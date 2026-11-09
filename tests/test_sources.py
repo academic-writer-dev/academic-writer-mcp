@@ -252,3 +252,166 @@ async def test_mcp_source_tools(services: Services, project, section) -> None:
         assert bibliography.structured_content["text"].startswith("[1] I. I. Ivanov and P. P. Petrov")
         audit = await client.call_tool("audit_references", {"project_id": project.id})
         assert audit.structured_content["cited_sources"] == 1
+
+
+# --- livres russes : Google Books, OpenAlex, import RIS / BibTeX -------------------------------
+
+GOOGLE_ITEM = {"volumeInfo": {"title": "Теория механизмов и машин", "subtitle": "учебник для вузов",
+                              "authors": ["Артоболевский Иван Иванович"], "publisher": "Наука",
+                              "publishedDate": "1988", "pageCount": 640, "language": "ru",
+                              "industryIdentifiers": [{"type": "ISBN_10", "identifier": "5020139940"}]}}
+RIS = """TY  - BOOK
+AU  - Артоболевский, И. И.
+TI  - Теория механизмов и машин
+PB  - Наука
+CY  - Москва
+PY  - 1988
+SP  - 640
+LA  - ru
+ER  - 
+
+TY  - JOUR
+AU  - Сидоров, С. С.
+AU  - Petrov, P.
+TI  - Нарезание зубчатых колес
+T2  - Вестник МГТУ «Станкин»
+PY  - 2021
+VL  - 3
+IS  - 2
+SP  - 10
+EP  - 20
+DO  - 10.1234/xyz
+ER  - 
+"""
+BIB = r"""@book{artobolevsky1988,
+  author    = {Артоболевский, Иван Иванович},
+  title     = {Теория механизмов и машин: {учебник}},
+  publisher = {Наука},
+  address   = {Москва},
+  year      = {1988},
+}
+@article{ivanov2021,
+  author  = {Иванов, И. И. and Petrov, Petr},
+  title   = "Gear cutting by the {Generating} method",
+  journal = {Journal of Mechanisms},
+  year    = 2021, volume = {5}, number = {3}, pages = {10--20},
+  doi     = {10.1234/abc}
+}
+@comment{ignoré}
+"""
+
+
+def test_google_books_isbn_verification_uses_key() -> None:
+    urls: list[str] = []
+
+    def fetch(url):
+        urls.append(url)
+        return {"items": [GOOGLE_ITEM]}
+
+    book = SourceData(authors=[Person(family="Артоболевский", given="И. И.")], title="Теория механизмов и машин",
+                      publisher="Наука", year=1988, isbn="5-02-013994-0")
+    outcome = verify_online(book, fetch, {"google_books": "CLE-TEST-123"})
+    assert outcome.status == "verified_online" and "Google Books" in outcome.findings[0].message
+    assert "isbn:5020139940" in urls[0] and "&key=CLE-TEST-123" in urls[0]
+    no_key = verify_online(book, lambda url: urls.append(url) or None)
+    assert no_key.status is None and "openlibrary" in urls[-1]  # sans clé : Open Library seulement
+
+
+def test_doi_falls_back_to_openalex() -> None:
+    work = {"display_name": "Нарезание зубчатых колес", "publication_year": 2021, "type": "article",
+            "authorships": [{"author": {"display_name": "С. С. Сидоров"}}],
+            "primary_location": {"source": {"display_name": "Вестник МГТУ «Станкин»"}}, "doi": "https://doi.org/10.1/x"}
+    article = SourceData(authors=[Person(family="Сидоров")], title="Нарезание зубчатых колес",
+                         container="Вестник", year=2021, pages="1–2", doi="10.1/x")
+    fetch = lambda url: None if "crossref" in url else work  # noqa: E731
+    outcome = verify_online(article, fetch)
+    assert outcome.status == "verified_online" and "OpenAlex" in outcome.findings[0].message
+
+
+def test_search_online_books_and_articles() -> None:
+    from academic_writer.research.online import search_online
+    candidates, services, notices = search_online("Теория механизмов и машин", "Артоболевский",
+                                                  lambda url: {"items": [GOOGLE_ITEM]}, {"google_books": "k"},
+                                                  kind="books")
+    assert services == ["google_books"] and candidates[0].isbn == "5020139940"
+    assert candidates[0].data.publisher == "Наука" and candidates[0].data.authors[0].family == "Артоболевский"
+    assert candidates[0].source_type == "book" and candidates[0].score >= 0.8
+    _, _, notices = search_online("Теория", None, lambda url: {}, {}, kind="books")
+    assert any("aucune clé" in n for n in notices)
+
+
+def test_http_fetch_quota_message(monkeypatch: pytest.MonkeyPatch) -> None:
+    import io
+    import urllib.error
+    import urllib.request
+
+    from academic_writer.research.online import http_fetch
+
+    def too_many(*args, **kwargs):
+        raise urllib.error.HTTPError("https://x", 429, "Too Many Requests", {}, io.BytesIO(b""))
+
+    monkeypatch.setattr(urllib.request, "urlopen", too_many)
+    with pytest.raises(OSError, match="clé gratuite"):
+        http_fetch("https://www.googleapis.com/books/v1/volumes?q=x")
+
+
+def test_parse_ris_cyrillic() -> None:
+    from academic_writer.research.importers import parse_ris
+    book, article = parse_ris(RIS)
+    assert book.source_type == "book" and book.data.authors[0] == Person(family="Артоболевский", given="И. И.")
+    assert book.data.place == "Москва" and book.data.year == 1988
+    assert article.source_type == "article" and article.data.pages == "10–20" and article.data.doi == "10.1234/xyz"
+    assert article.data.container == "Вестник МГТУ «Станкин»" and len(article.data.authors) == 2
+
+
+def test_parse_bibtex_nested_braces() -> None:
+    from academic_writer.research.importers import parse_bibtex
+    book, article = parse_bibtex(BIB)
+    assert book.key == "artobolevsky1988" and book.data.title == "Теория механизмов и машин: учебник"
+    assert book.data.authors[0] == Person(family="Артоболевский", given="Иван Иванович")
+    assert article.data.title == "Gear cutting by the Generating method" and article.data.pages == "10–20"
+    assert [p.family for p in article.data.authors] == ["Иванов", "Petrov"] and article.data.issue == "3"
+
+
+def test_import_file_with_duplicates_and_security(services: Services, project, inbox: Path, tmp_path: Path) -> None:
+    from academic_writer.core.errors import SecurityViolation
+    path = inbox / "export.bib"
+    path.write_text(BIB, encoding="utf-8")
+    first = services.sources.import_file(project.id, str(path))
+    assert first.found == 2 and [s.key for s in first.imported] == ["artobolevsky1988", "ivanov2021"]
+    assert first.format == "BibTeX"
+    ris = inbox / "export.ris"
+    ris.write_text(RIS, encoding="cp1251")  # export Windows-1251 : encodage détecté
+    second = services.sources.import_file(project.id, str(ris))
+    assert len(second.duplicates) == 1 and len(second.imported) == 1  # Артоболевский déjà présent
+    outside = tmp_path / "ailleurs.bib"
+    outside.write_text(BIB, encoding="utf-8")
+    with pytest.raises(SecurityViolation):
+        services.sources.import_file(project.id, str(outside))
+    wrong = inbox / "notes.docx"
+    wrong.write_text("x", encoding="utf-8")
+    with pytest.raises(ValidationFailed):
+        services.sources.import_file(project.id, str(wrong))
+
+
+def test_search_requires_connected_mode(services: Services) -> None:
+    with pytest.raises(ValidationFailed, match="Mode local"):
+        services.sources.search("Теория механизмов")
+    services.settings.mode = "connected"
+    services.sources.fetcher = lambda url: {"items": [GOOGLE_ITEM]}
+    from academic_writer.providers import secrets
+    original = secrets.get_key
+    secrets.get_key = lambda name: "k" if name == "google_books" else None
+    try:
+        result = services.sources.search("Теория механизмов и машин", kind="books")
+    finally:
+        secrets.get_key = original
+    assert result.candidates[0].data.title == "Теория механизмов и машин"
+    assert any("CONFIRMER" in n for n in result.notices)
+
+
+def test_metadata_service_keys_accepted() -> None:
+    from academic_writer.providers import secrets
+    assert "google_books" in secrets.ALL_SERVICES and "google_books" not in secrets.PROVIDERS
+    with pytest.raises(ValueError):
+        secrets.set_key("openalex", "court")

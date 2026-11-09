@@ -13,19 +13,23 @@ import keyring
 from keyring.errors import KeyringError, PasswordDeleteError
 
 SERVICE = "academic-writer"
-ENV_VARS = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY"}
-PROVIDERS = tuple(ENV_VARS)
+ENV_VARS = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY",
+            "google_books": "GOOGLE_BOOKS_API_KEY", "openalex": "OPENALEX_API_KEY"}
+PROVIDERS = ("anthropic", "openai")  # fournisseurs d'IA
+METADATA_SERVICES = ("google_books", "openalex")  # services bibliographiques (métadonnées uniquement)
+ALL_SERVICES = PROVIDERS + METADATA_SERVICES
+_MIN_LENGTH = {"openalex": 8}
 
 
 def _check(provider: str) -> None:
     if provider not in ENV_VARS:
-        raise ValueError(f"Fournisseur inconnu : {provider} (attendu : {', '.join(PROVIDERS)})")
+        raise ValueError(f"Service inconnu : {provider} (attendu : {', '.join(ALL_SERVICES)})")
 
 
 def set_key(provider: str, key: str) -> None:
     _check(provider)
     key = key.strip()
-    if len(key) < 20 or any(ch.isspace() for ch in key):
+    if len(key) < _MIN_LENGTH.get(provider, 20) or any(ch.isspace() for ch in key):
         raise ValueError("Clé API manifestement invalide (trop courte ou contenant des espaces).")
     keyring.set_password(SERVICE, provider, key)
 

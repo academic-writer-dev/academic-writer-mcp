@@ -17,12 +17,12 @@ from academic_writer.providers import secrets
 
 def _secrets(args: argparse.Namespace) -> int:
     if args.action == "status":
-        for provider in secrets.PROVIDERS:
+        for provider in secrets.ALL_SERVICES:
             source = secrets.key_source(provider)
             print(f"{provider:10} : {'configurée (' + source + ')' if source else 'non configurée'}")
         return 0
     if args.provider is None:
-        print("Précisez le fournisseur : anthropic ou openai", file=sys.stderr)
+        print("Précisez le service : anthropic, openai, google_books ou openalex", file=sys.stderr)
         return 2
     if args.action == "set":
         key = getpass.getpass(f"Collez la clé API {args.provider} (saisie masquée), puis Entrée : ")
@@ -47,9 +47,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     parser = argparse.ArgumentParser(prog="academic-writer", description="Academic Writer MCP")
     sub = parser.add_subparsers(dest="command", required=True)
-    sec = sub.add_parser("secrets", help="Gérer les clés API des fournisseurs d'IA")
+    sec = sub.add_parser("secrets", help="Gérer les clés API (IA : anthropic, openai ; sources : google_books, openalex)")
     sec.add_argument("action", choices=["set", "status", "delete"])
-    sec.add_argument("provider", nargs="?", choices=list(secrets.PROVIDERS))
+    sec.add_argument("provider", nargs="?", choices=list(secrets.ALL_SERVICES))
     args = parser.parse_args(argv)
     if args.command == "secrets":
         return _secrets(args)

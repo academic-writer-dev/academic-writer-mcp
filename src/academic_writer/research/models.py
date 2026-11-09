@@ -81,12 +81,24 @@ class SourceList(BaseModel):
 
 
 class OnlineCandidate(BaseModel):
+    service: str = Field(default="crossref", description="crossref, openalex, google_books ou openlibrary")
     title: str | None
     authors: list[str]
     year: int | None
     container: str | None
     doi: str | None
-    score: float
+    isbn: str | None = None
+    publisher: str | None = None
+    score: float = Field(description="Similarité de titre avec la recherche (0 à 1).")
+    source_type: str | None = Field(default=None, description="Type de source proposé pour l'enregistrement.")
+    data: SourceData | None = Field(default=None, description="Fiche pré-remplie à confirmer avant register_source.")
+
+
+class SourceSearch(BaseModel):
+    query: str
+    services: list[str] = Field(description="Services interrogés.")
+    candidates: list[OnlineCandidate]
+    notices: list[str]
 
 
 class VerificationResult(BaseModel):
@@ -122,6 +134,24 @@ class Bibliography(BaseModel):
     text: str = Field(description="Bibliographie mise en forme (Markdown).")
     warnings: list[str]
     revision_id: str | None = Field(default=None, description="Révision proposée de la section bibliographie.")
+
+
+class ImportedSource(BaseModel):
+    key: str
+    title: str | None
+    source_type: str
+    status: str
+
+
+class SourceImport(BaseModel):
+    project_id: str
+    file: str
+    format: str
+    found: int
+    imported: list[ImportedSource]
+    duplicates: list[str] = Field(description="Notices déjà présentes dans le projet (non réimportées).")
+    errors: list[str]
+    message: str
 
 
 class AuditIssue(BaseModel):
