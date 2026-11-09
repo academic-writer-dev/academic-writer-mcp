@@ -52,11 +52,27 @@ def http_bytes(url: str, max_bytes: int) -> bytes:
     return data
 
 
-def resolve_pdf(item_id: str, fetch_text=http_text) -> tuple[str, str, str]:
+def resolve_pdf(item_id: str, fetch_text=http_text, keys: dict[str, str] | None = None,
+                unpaywall_email: str | None = None) -> tuple[str, str, str]:
     """(adresse du PDF, licence, nom de fichier) pour un identifiant de résultat en libre accès."""
+    from academic_writer.research import openscience
+
     service, _, identifier = item_id.partition(":")
     if not identifier or not re.fullmatch(r"[\w.\-/:]{1,200}", identifier):
         raise DownloadRefused("Identifiant de résultat invalide.")
+    if service == "unpaywall":
+        if not unpaywall_email:
+            raise DownloadRefused("Unpaywall nécessite une adresse e-mail (unpaywall_email dans config.toml).")
+        url, license_name = openscience.unpaywall_location(identifier, unpaywall_email, fetch_text)
+        if not url or not openscience._open_license(license_name) or not url.lower().startswith("https://"):
+            raise DownloadRefused("Unpaywall ne localise pas de version HTTPS sous licence libre : téléchargement refusé.")
+        return url, f"{license_name} (Unpaywall)", f"{identifier.replace('/', '_')[:60]}.pdf"
+    try:
+        resolved = openscience.resolve(service, identifier, fetch_text, keys)
+    except ValueError as exc:
+        raise DownloadRefused(str(exc)) from exc
+    if resolved:
+        return resolved
     if service == "arxiv":
         return f"https://arxiv.org/pdf/{identifier}", "arXiv (libre accès)", f"arxiv-{identifier.replace('/', '_')}.pdf"
     if service == "ia":

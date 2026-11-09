@@ -1,6 +1,7 @@
 """Recherche d'ouvrages et d'articles PAR THÈME dans des bases légales et ouvertes.
 
-Bases interrogées (accès automatisé autorisé, sans compte) :
+Bases interrogées (accès automatisé autorisé ; voir aussi research/openscience.py : Semantic Scholar,
+Europe PMC, PubMed, HAL, Zenodo, DataCite, CORE avec clé gratuite, Unpaywall avec adresse e-mail) :
 - Internet Archive (livres et manuels numérisés, dont russes et soviétiques) ;
 - DOAJ (revues en libre accès) ;
 - arXiv (prépublications) ;
@@ -213,7 +214,11 @@ def archive_query(query: str) -> str:
 
 
 def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access_only: bool = False,
-                  language: str | None = None, limit: int = 10) -> DiscoveryResult:
+                  language: str | None = None, limit: int = 10, keys: dict[str, str] | None = None,
+                  unpaywall_email: str | None = None, services_filter: list[str] | None = None) -> DiscoveryResult:
+    from academic_writer.research import openscience as osc
+
+    keys = keys or {}
     q = urllib.parse.quote
     per = max(3, min(limit, 25))
     plans: list[tuple[str, str, Callable]] = []
@@ -235,16 +240,54 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                       + q(f"all:{query}"), parse_arxiv))
         if not open_access_only:
             plans.append(("crossref", f"https://api.crossref.org/works?rows={per}&query=" + q(query), parse_crossref))
+        plans.append(("semantic_scholar", osc.semantic_scholar_url(query, per), osc.parse_semantic_scholar))
+        plans.append(("europe_pmc", osc.europe_pmc_url(query, per), osc.parse_europe_pmc))
+        plans.append(("hal", osc.hal_url(query, per), osc.parse_hal))
+        plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))
+        if not open_access_only:
+            plans.append(("pubmed", "", lambda _text, query: osc.search_pubmed(query, fetch, per)))
+        if keys.get("core"):
+            plans.append(("core", osc.core_url(query, per, keys["core"]), osc.parse_core))
+    if kind == "datasets":
+        plans.append(("datacite", osc.datacite_url(query, per), osc.parse_datacite))
+        plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))
+    if services_filter:
+        plans = [plan for plan in plans if plan[0] in services_filter]
     works: list[DiscoveredWork] = []
     services: list[str] = []
     notices: list[str] = []
-    for name, url, parser in plans:
-        if name not in services:
-            services.append(name)
+
+    def run(plan: tuple[str, str, Callable]) -> tuple[str, list[DiscoveredWork], str | None]:
+        name, url, parser = plan
         try:
-            works.extend(parser(fetch(url), query))
+            return name, parser(fetch(url) if url else None, query), None
         except OSError as exc:
-            notices.append(f"{name} indisponible : {exc}")
+            return name, [], f"{name} indisponible : {exc}"
+
+    from concurrent.futures import ThreadPoolExecutor
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for name, found, error in pool.map(run, plans):
+            if name not in services:
+                services.append(name)
+            works.extend(found)
+            if error:
+                notices.append(error)
+    if unpaywall_email:
+        enriched = 0
+        for work in sorted((w for w in works if w.doi and not w.open_access), key=lambda w: -w.relevance)[:8]:
+            try:
+                url, license_name = osc.unpaywall_location(work.doi, unpaywall_email, fetch)
+            except OSError:
+                break
+            if url and license_name and osc._open_license(license_name):
+                work.open_access, work.license = True, f"{license_name} (localisé par Unpaywall)"
+                work.item_id = f"unpaywall:{work.doi}"
+                enriched += 1
+        if "unpaywall" not in services:
+            services.append("unpaywall")
+        if enriched:
+            notices.append(f"{enriched} texte(s) intégral(aux) en libre accès légal localisé(s) par Unpaywall.")
     if open_access_only:
         works = [w for w in works if w.open_access]
     if language in _LANG_CODES:

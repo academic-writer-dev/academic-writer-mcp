@@ -165,7 +165,8 @@ def diagnose(services) -> Diagnosis:  # services : Services (import circulaire �
                            detail=(f"{item.model} — " if item.model else "") + item.reason))
 
     from academic_writer.providers import secrets
-    for service, label in (("google_books", "Clé Google Books"), ("openalex", "Clé OpenAlex")):
+    for service, label in (("google_books", "Clé Google Books"), ("openalex", "Clé OpenAlex"),
+                           ("core", "Clé CORE"), ("semantic_scholar", "Clé Semantic Scholar")):
         source = secrets.key_source(service)
         add(ComponentCheck(component=label, status="ok" if source else "absent",
                            detail=f"configurée ({source})" if source else "non configurée (facultative)",

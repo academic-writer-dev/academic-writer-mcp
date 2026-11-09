@@ -149,17 +149,23 @@ def register(mcp: MCPServer) -> None:
     def find_works_by_topic(
         query: Annotated[str, Field(description="Thème de recherche (ex. « нарезание зубчатых колес методом обката »). "
                                                 "Essayer aussi la formulation en anglais pour plus de résultats.")],
-        kind: Annotated[Literal["books", "articles", "all"], Field(
-            description="books : Internet Archive, Open Library ; articles : DOAJ, arXiv, Crossref.")] = "all",
+        kind: Annotated[Literal["books", "articles", "datasets", "all"], Field(
+            description="books : Internet Archive, Open Library ; articles : DOAJ, arXiv, Crossref, Semantic Scholar, "
+                        "Europe PMC, PubMed, HAL, Zenodo, CORE (clé) ; datasets : DataCite, Zenodo.")] = "all",
         open_access_only: Annotated[bool, Field(description="Seulement les textes intégraux légalement téléchargeables.")] = False,
         language: Annotated[Literal["ru", "en", "fr"] | None, Field(description="Langue des livres (Internet Archive).")] = None,
         limit: Annotated[int, Field(ge=1, le=25)] = 10,
+        services: Annotated[list[str] | None, Field(
+            description="Restreindre aux bases citées (ex. [\"pubmed\", \"europe_pmc\"] en médecine, [\"hal\"] pour "
+                        "les travaux français).")] = None,
     ) -> DiscoveryResult:
-        """Trouve des livres, manuels et articles RÉELS sur un thème dans des bases légales (Internet Archive, DOAJ,
-        arXiv, Crossref, Open Library), classés par pertinence, avec lien de consultation, licence et fiche
-        pré-remplie. Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""
+        """Trouve des livres, manuels, articles et jeux de données RÉELS sur un thème dans des bases légales et
+        gratuites (Internet Archive, Open Library, DOAJ, arXiv, Crossref, Semantic Scholar, Europe PMC, PubMed, HAL,
+        Zenodo, DataCite, CORE), classés par pertinence, avec lien, licence et fiche pré-remplie. open_access = texte
+        intégral sous licence libre attestée (une simple lecture gratuite n'est pas présentée comme libre accès).
+        Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""
         with user_errors():
-            return get_services().sources.discover(query, kind, open_access_only, language, limit)
+            return get_services().sources.discover(query, kind, open_access_only, language, limit, services)
 
     @mcp.tool(title="Télécharger un texte en libre accès",
               annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,
@@ -167,7 +173,8 @@ def register(mcp: MCPServer) -> None:
     def download_open_access(
         project_id: str,
         item_id: Annotated[str, Field(description="item_id d'un résultat de find_works_by_topic marqué open_access "
-                                                  "(arxiv:…, ia:…, doaj:…).")],
+                                                  "(arxiv:…, ia:…, doaj:…, hal:…, epmc:PMC…, zenodo:…, s2:…, core:…, "
+                                                  "unpaywall:DOI).")],
     ) -> OpenAccessDownload:
         """Télécharge le texte intégral d'un résultat en LIBRE ACCÈS LÉGAL et l'importe dans le projet comme
         document source (copie protégée, lisible et cherchable). Licence revérifiée par le serveur ; refusé pour

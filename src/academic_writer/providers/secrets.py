@@ -14,9 +14,10 @@ from keyring.errors import KeyringError, PasswordDeleteError
 
 SERVICE = "academic-writer"
 ENV_VARS = {"anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY",
-            "google_books": "GOOGLE_BOOKS_API_KEY", "openalex": "OPENALEX_API_KEY"}
+            "google_books": "GOOGLE_BOOKS_API_KEY", "openalex": "OPENALEX_API_KEY", "core": "CORE_API_KEY",
+            "semantic_scholar": "SEMANTIC_SCHOLAR_API_KEY"}
 PROVIDERS = ("anthropic", "openai")  # fournisseurs d'IA
-METADATA_SERVICES = ("google_books", "openalex")  # services bibliographiques (métadonnées uniquement)
+METADATA_SERVICES = ("google_books", "openalex", "core", "semantic_scholar")  # services bibliographiques (métadonnées uniquement)
 ALL_SERVICES = PROVIDERS + METADATA_SERVICES
 _MIN_LENGTH = {"openalex": 8}
 

@@ -329,19 +329,21 @@ class SourceService:
                                    "l'identifiant sont envoyés ; activable avec mode = 'connected'.")
 
     def discover(self, query: str, kind: str = "all", open_access_only: bool = False, language: str | None = None,
-                 limit: int = 10) -> DiscoveryResult:
+                 limit: int = 10, services: list[str] | None = None) -> DiscoveryResult:
         if not query or len(query.strip()) < 3:
             raise ValidationFailed("Indiquez un thème de recherche (au moins 3 caractères).")
         self._require_connected("la recherche d'ouvrages par thème")
         return find_by_topic(query.strip(), self.text_fetcher, kind, open_access_only, language,
-                             max(1, min(limit, 25)))
+                             max(1, min(limit, 25)), keys=self._service_keys(),
+                             unpaywall_email=self.settings.unpaywall_email, services_filter=services)
 
     def download_open_access(self, project_id: str, item_id: str) -> OpenAccessDownload:
         self._require_external_sources(project_id, "Télécharger un texte externe")
         self.writing._active_project(project_id)
         self._require_connected("le téléchargement en libre accès")
         try:
-            url, license_text, filename = resolve_pdf(item_id, self.text_fetcher)
+            url, license_text, filename = resolve_pdf(item_id, self.text_fetcher, self._service_keys(),
+                                                      self.settings.unpaywall_email)
             data = self.bytes_fetcher(url, self.settings.max_file_size_bytes)
         except DownloadRefused as exc:
             raise ValidationFailed(str(exc)) from exc
