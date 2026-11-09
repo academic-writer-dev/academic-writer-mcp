@@ -1,0 +1,436 @@
+"""Rendu PPTX (python-pptx, licence MIT) : thèmes, mises en page par type de diapositive, notes du présentateur.
+
+Principes de design : format 16:9, marges constantes, une idée par diapositive, hiérarchie (titre, puces,
+sous-puces), couleur d'accent unique par thème, contraste élevé, numéro de diapositive et pied de page,
+taille de police calculée pour que le texte tienne dans son cadre (jamais en dessous de 14 pt : au-delà, la
+diapositive est signalée « surchargée » au lieu d'être rendue illisible).
+"""
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from pathlib import Path
+
+from pptx import Presentation
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.util import Emu, Pt
+
+from academic_writer.presentations.models import Deck, Slide, SlideCheck
+
+W, H = 13.333, 7.5  # pouces (16:9)
+MARGIN = 0.6
+MIN_FONT = 14
+
+
+def _in(value: float) -> Emu:
+    return Emu(int(value * 914400))
+
+
+@dataclass(frozen=True)
+class Theme:
+    primary: str
+    accent: str
+    text: str
+    muted: str
+    background: str
+    light: str
+    title_font: str = "Segoe UI Semibold"
+    body_font: str = "Segoe UI"
+
+
+THEMES = {
+    "academique": Theme(primary="1F3A5F", accent="2A9D8F", text="1F2933", muted="5C6B7A", background="FFFFFF",
+                        light="EEF3F7"),
+    "technique": Theme(primary="2B2D42", accent="E07A2F", text="1E1E24", muted="5F6470", background="FFFFFF",
+                       light="F1F1F4"),
+    "sobre": Theme(primary="0B3D91", accent="0B3D91", text="111111", muted="4A4A4A", background="FFFFFF",
+                   light="EDF1F8", title_font="Arial", body_font="Arial"),
+    "clair": Theme(primary="22577A", accent="57CC99", text="1B262C", muted="51606C", background="FBFCFD",
+                   light="E8F6EF"),
+}
+LABELS = {
+    "fr": {"references": "Références", "questions": "Merci de votre attention", "questions_sub": "Questions",
+           "source": "Source", "supervisor": "Directeur", "author": "Présenté par"},
+    "ru": {"references": "Список источников", "questions": "Спасибо за внимание", "questions_sub": "Вопросы",
+           "source": "Источник", "supervisor": "Руководитель", "author": "Выполнил(а)"},
+    "en": {"references": "References", "questions": "Thank you for your attention", "questions_sub": "Questions",
+           "source": "Source", "supervisor": "Supervisor", "author": "Presented by"},
+}
+
+
+def _rgb(hex_color: str) -> RGBColor:
+    return RGBColor.from_string(hex_color)
+
+
+def fit_size(lines: list[str], width_in: float, height_in: float, start: int = 24, minimum: int = MIN_FONT,
+             word_factor: float = 0.62) -> int | None:
+    """Plus grande taille (pt) pour que les lignes tiennent dans le cadre ; None si impossible au minimum."""
+    longest = max((len(word) for line in lines for word in line.split()), default=0)
+    for size in range(start, minimum - 1, -1):
+        if longest * size * word_factor / 72 > width_in:
+            continue  # le mot le plus long doit tenir sur une ligne (pas de coupure en plein mot)
+        chars_per_line = max(8, int(width_in * 72 / (size * 0.52)))
+        used = 0.0
+        for line in lines:
+            used += max(1, math.ceil(len(line) / chars_per_line)) * size * 1.25 + size * 0.45
+        if used / 72 <= height_in:
+            return size
+    return None
+
+
+class Builder:
+    def __init__(self, deck: Deck, images: dict[str, Path]) -> None:
+        self.deck = deck
+        self.theme = THEMES[deck.theme]
+        self.labels = LABELS[deck.language]
+        self.colon = " :" if deck.language == "fr" else ":"
+        self.images = images
+        self.checks: list[SlideCheck] = []
+        self.prs = Presentation()
+        self.prs.slide_width, self.prs.slide_height = _in(W), _in(H)
+        self.blank = self.prs.slide_layouts[6]
+
+    # --- primitives -------------------------------------------------------------------------------
+    def check(self, index: int, severity: str, code: str, message: str) -> None:
+        self.checks.append(SlideCheck(slide=index, severity=severity, code=code, message=message))  # type: ignore[arg-type]
+
+    def rect(self, slide, x, y, w, h, color: str, shape=MSO_SHAPE.RECTANGLE):
+        box = slide.shapes.add_shape(shape, _in(x), _in(y), _in(w), _in(h))
+        box.fill.solid()
+        box.fill.fore_color.rgb = _rgb(color)
+        box.line.fill.background()
+        box.shadow.inherit = False
+        return box
+
+    def text(self, slide, x, y, w, h, text: str, size: int, *, color: str | None = None, bold: bool = False,
+             font: str | None = None, align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, italic: bool = False):
+        box = slide.shapes.add_textbox(_in(x), _in(y), _in(w), _in(h))
+        frame = box.text_frame
+        frame.word_wrap = True
+        frame.vertical_anchor = anchor
+        frame.margin_left = frame.margin_right = _in(0.05)
+        paragraph = frame.paragraphs[0]
+        paragraph.alignment = align
+        run = paragraph.add_run()
+        run.text = text
+        run.font.size = Pt(size)
+        run.font.bold = bold
+        run.font.italic = italic
+        run.font.name = font or self.theme.body_font
+        run.font.color.rgb = _rgb(color or self.theme.text)
+        return box
+
+    def bullets(self, slide, index: int, x, y, w, h, items: list[str], start: int = 24) -> None:
+        if not items:
+            return
+        lines = [i.lstrip("- ").strip() for i in items]
+        size = fit_size(lines, w - 0.4, h, start=start)
+        if size is None:
+            size = MIN_FONT
+            self.check(index, "error", "overfull", "Texte trop long pour la diapositive même à 14 pt : scinder la "
+                                                   "diapositive ou raccourcir les puces.")
+        box = slide.shapes.add_textbox(_in(x), _in(y), _in(w), _in(h))
+        frame = box.text_frame
+        frame.word_wrap = True
+        for n, item in enumerate(items):
+            sub = item.startswith("- ")
+            paragraph = frame.paragraphs[0] if n == 0 else frame.add_paragraph()
+            paragraph.space_after = Pt(size * 0.45)
+            paragraph.level = 1 if sub else 0
+            marker = paragraph.add_run()
+            marker.text = ("–  " if sub else "■  ")
+            marker.font.size = Pt(size * (0.75 if sub else 0.55))
+            marker.font.color.rgb = _rgb(self.theme.muted if sub else self.theme.accent)
+            run = paragraph.add_run()
+            run.text = item[2:].strip() if sub else item.strip()
+            run.font.size = Pt(size - 2 if sub else size)
+            run.font.name = self.theme.body_font
+            run.font.color.rgb = _rgb(self.theme.muted if sub else self.theme.text)
+
+    def header(self, slide, title: str, index: int) -> None:
+        self.rect(slide, 0, 0, W, 0.12, self.theme.primary)
+        self.rect(slide, MARGIN, 0.42, 0.09, 0.62, self.theme.accent)
+        size = 30 if len(title) <= 48 else 26 if len(title) <= 70 else 22
+        if len(title) > 95:
+            self.check(index, "warning", "long_title", "Titre trop long (plus de 95 caractères).")
+        self.text(slide, MARGIN + 0.25, 0.3, W - 2 * MARGIN - 0.25, 0.9, title, size, color=self.theme.primary,
+                  font=self.theme.title_font, anchor=MSO_ANCHOR.MIDDLE)
+
+    def footer(self, slide, number: int) -> None:
+        self.rect(slide, MARGIN, H - 0.55, W - 2 * MARGIN, 0.015, self.theme.light)
+        if self.deck.footer:
+            self.text(slide, MARGIN, H - 0.5, W - 3, 0.35, self.deck.footer, 11, color=self.theme.muted)
+        self.text(slide, W - MARGIN - 1.0, H - 0.5, 1.0, 0.35, str(number), 11, color=self.theme.muted,
+                  align=PP_ALIGN.RIGHT)
+
+    def source_line(self, slide, text: str | None) -> None:
+        if text:
+            self.text(slide, MARGIN, H - 0.92, W - 2 * MARGIN, 0.35, f"{self.labels['source']}{self.colon} {text}", 11,
+                      color=self.theme.muted, italic=True)
+
+    # --- types de diapositives ------------------------------------------------------------------------------
+    def slide_title(self, slide, s: Slide, index: int) -> None:
+        info = self.deck.title_info
+        self.rect(slide, 0, 0, W, H, self.theme.primary)
+        self.rect(slide, 0, 4.65, W, 0.06, self.theme.accent)
+        top = " · ".join(x for x in (info.institution, info.department) if x)
+        if top:
+            self.text(slide, MARGIN, 0.45, W - 2 * MARGIN, 0.8, top, 16, color="FFFFFF", align=PP_ALIGN.CENTER)
+        if info.event:
+            self.text(slide, MARGIN, 1.25, W - 2 * MARGIN, 0.5, info.event.upper(), 14, color="BFD7EA",
+                      align=PP_ALIGN.CENTER, bold=True)
+        title = s.title or self.deck.title
+        size = fit_size([title], W - 2.4, 1.9, start=40, minimum=24) or 24
+        self.text(slide, 1.2, 1.85, W - 2.4, 1.9, title, size, color="FFFFFF", font=self.theme.title_font,
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        subtitle = s.subtitle or self.deck.subtitle
+        if subtitle:
+            self.text(slide, 1.2, 3.85, W - 2.4, 0.7, subtitle, 18, color="DCE6EF", align=PP_ALIGN.CENTER)
+        people = []
+        if info.author:
+            people.append(f"{self.labels['author']}{self.colon} {info.author}")
+        if info.supervisor:
+            people.append(f"{self.labels['supervisor']}{self.colon} {info.supervisor}")
+        if people:
+            self.text(slide, MARGIN, 5.0, W - 2 * MARGIN, 1.0, "\n".join(people), 16, color="FFFFFF",
+                      align=PP_ALIGN.CENTER)
+        if info.city_year:
+            self.text(slide, MARGIN, H - 0.9, W - 2 * MARGIN, 0.45, info.city_year, 14, color="BFD7EA",
+                      align=PP_ALIGN.CENTER)
+
+    def slide_section(self, slide, s: Slide, index: int, number: int) -> None:
+        self.rect(slide, 0, 0, W, H, self.theme.light)
+        self.rect(slide, 0, 0, 4.4, H, self.theme.primary)
+        self.text(slide, 0.4, 2.3, 3.6, 2.2, f"{number:02d}", 96, color="FFFFFF", font=self.theme.title_font,
+                  align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        self.text(slide, 5.0, 2.4, W - 5.6, 1.6, s.title, 36, color=self.theme.primary, font=self.theme.title_font,
+                  anchor=MSO_ANCHOR.MIDDLE)
+        if s.subtitle:
+            self.text(slide, 5.0, 4.0, W - 5.6, 1.0, s.subtitle, 18, color=self.theme.muted)
+
+    def slide_bullets(self, slide, s: Slide, index: int) -> None:
+        self.header(slide, s.title, index)
+        self.bullets(slide, index, MARGIN + 0.25, 1.5, W - 2 * MARGIN - 0.3, H - 2.6, s.bullets, start=28)
+        self.source_line(slide, s.source)
+
+    def slide_two_columns(self, slide, s: Slide, index: int) -> None:
+        self.header(slide, s.title, index)
+        column = (W - 2 * MARGIN - 0.5) / 2
+        for k, (title, items) in enumerate(((s.left_title, s.left_bullets), (s.right_title, s.right_bullets))):
+            x = MARGIN + k * (column + 0.5)
+            self.rect(slide, x, 1.45, column, H - 2.55, self.theme.light)
+            y = 1.6
+            if title:
+                self.text(slide, x + 0.25, y, column - 0.5, 0.55, title, 20, color=self.theme.primary, bold=True)
+                y += 0.65
+            self.bullets(slide, index, x + 0.2, y, column - 0.4, H - 1.25 - y - 0.1, items, start=20)
+        self.source_line(slide, s.source)
+
+    def picture(self, slide, path: Path, x, y, w, h) -> None:
+        from PIL import Image
+
+        with Image.open(path) as image:
+            ratio = image.width / image.height
+        width, height = (w, w / ratio) if w / ratio <= h else (h * ratio, h)
+        slide.shapes.add_picture(str(path), _in(x + (w - width) / 2), _in(y + (h - height) / 2), _in(width), _in(height))
+
+    def slide_chart(self, slide, s: Slide, index: int) -> None:
+        self.header(slide, s.title, index)
+        key = s.image_path if s.type == "image" else f"chart:{s.chart_id}"
+        path = self.images.get(key or "")
+        if path is None or not path.exists():
+            self.check(index, "error", "missing_figure", f"Figure introuvable ({key}) : créer le graphique "
+                                                         "(create_chart) ou indiquer une image du projet.")
+            self.text(slide, MARGIN, 2.5, W - 2 * MARGIN, 1, "[Figure manquante]", 28, color="C0392B",
+                      align=PP_ALIGN.CENTER)
+            return
+        has_text = bool(s.bullets)
+        area_w = (W - 2 * MARGIN) * (0.62 if has_text else 1.0)
+        self.picture(slide, path, MARGIN, 1.4, area_w, H - 2.65 - (0.35 if s.caption else 0))
+        if s.caption:
+            self.text(slide, MARGIN, H - 1.3, area_w, 0.4, s.caption, 13, color=self.theme.muted,
+                      align=PP_ALIGN.CENTER, italic=True)
+        if has_text:
+            x = MARGIN + area_w + 0.3
+            self.rect(slide, x, 1.45, W - MARGIN - x, H - 2.55, self.theme.light)
+            self.bullets(slide, index, x + 0.2, 1.65, W - MARGIN - x - 0.4, H - 2.9, s.bullets, start=20)
+        if s.type == "image" and not s.source:
+            self.check(index, "error", "image_source", "Image sans source ni droits indiqués (champ source).")
+        self.source_line(slide, s.source)
+
+    def slide_table(self, slide, s: Slide, index: int) -> None:
+        self.header(slide, s.title, index)
+        if not s.header or not s.rows:
+            self.check(index, "error", "empty_table", "Tableau sans en-tête ou sans lignes.")
+            return
+        rows, cols = len(s.rows) + 1, len(s.header)
+        if rows > 9 or cols > 6:
+            self.check(index, "warning", "table_size", "Tableau de plus de 8 lignes ou 6 colonnes : peu lisible "
+                                                       "en projection, garder l'essentiel.")
+        height = min(H - 2.8, 0.5 * rows)
+        shape = slide.shapes.add_table(rows, cols, _in(MARGIN), _in(1.5), _in(W - 2 * MARGIN), _in(height))
+        table = shape.table
+        size = 16 if rows <= 6 else 13 if rows <= 10 else 11
+        for c, value in enumerate(s.header):
+            cell = table.cell(0, c)
+            cell.fill.solid()
+            cell.fill.fore_color.rgb = _rgb(self.theme.primary)
+            cell.text = value
+            run = cell.text_frame.paragraphs[0].runs[0]
+            run.font.size, run.font.bold, run.font.color.rgb = Pt(size), True, _rgb("FFFFFF")
+        for r, row in enumerate(s.rows, start=1):
+            if len(row) != cols:
+                self.check(index, "error", "table_shape", f"Ligne {r} : {len(row)} cellules pour {cols} colonnes.")
+            for c in range(cols):
+                cell = table.cell(r, c)
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = _rgb(self.theme.light if r % 2 else "FFFFFF")
+                cell.text = row[c] if c < len(row) else ""
+                for paragraph in cell.text_frame.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size, run.font.color.rgb = Pt(size), _rgb(self.theme.text)
+        if s.caption:
+            self.text(slide, MARGIN, 1.55 + height, W - 2 * MARGIN, 0.4, s.caption, 13, color=self.theme.muted,
+                      italic=True)
+        self.source_line(slide, s.source)
+
+    def slide_key_figures(self, slide, s: Slide, index: int) -> None:
+        self.header(slide, s.title, index)
+        figures = s.figures[:4]
+        if not figures:
+            self.check(index, "error", "no_figures", "Aucun chiffre clé.")
+            return
+        gap = 0.35
+        card = (W - 2 * MARGIN - gap * (len(figures) - 1)) / len(figures)
+        for k, figure in enumerate(figures):
+            x = MARGIN + k * (card + gap)
+            self.rect(slide, x, 1.8, card, 3.6, self.theme.light)
+            self.rect(slide, x, 1.8, card, 0.09, self.theme.accent)
+            value_size = fit_size([figure.value], card - 0.3, 1.3, start=48, minimum=24) or 24
+            self.text(slide, x + 0.15, 2.15, card - 0.3, 1.4, figure.value, value_size, color=self.theme.primary,
+                      font=self.theme.title_font, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+            self.text(slide, x + 0.2, 3.65, card - 0.4, 1.1, figure.label, 16, color=self.theme.text,
+                      align=PP_ALIGN.CENTER)
+            if figure.source:
+                self.text(slide, x + 0.2, 4.8, card - 0.4, 0.5, figure.source, 11, color=self.theme.muted,
+                          align=PP_ALIGN.CENTER, italic=True)
+            else:
+                self.check(index, "warning", "figure_source", f"Chiffre « {figure.value} » sans source indiquée.")
+
+    def slide_quote(self, slide, s: Slide, index: int) -> None:
+        self.rect(slide, 0, 0, W, H, self.theme.light)
+        self.text(slide, 1.0, 0.8, 1.5, 1.5, "“", 120, color=self.theme.accent, font="Georgia")
+        size = fit_size([s.quote or ""], W - 3.2, 3.2, start=30, minimum=18) or 18
+        self.text(slide, 1.8, 1.9, W - 3.2, 3.2, s.quote or "", size, color=self.theme.primary, italic=True,
+                  font="Georgia", anchor=MSO_ANCHOR.MIDDLE)
+        if s.quote_author:
+            self.text(slide, 1.8, 5.2, W - 3.2, 0.5, f"— {s.quote_author}", 18, color=self.theme.muted,
+                      align=PP_ALIGN.RIGHT)
+        if not s.source:
+            self.check(index, "error", "quote_source", "Citation sans référence (ouvrage, page) : à compléter.")
+        self.source_line(slide, s.source)
+
+    def slide_process(self, slide, s: Slide, index: int) -> None:
+        self.header(slide, s.title, index)
+        steps = s.steps[:6]
+        if len(steps) < 2:
+            self.check(index, "error", "process_steps", "Schéma de démarche : au moins 2 étapes.")
+            return
+        # cartes numérotées reliées par des flèches : zone de texte prévisible, une seule taille pour toutes
+        gap = 0.5
+        width = (W - 2 * MARGIN - gap * (len(steps) - 1)) / len(steps)
+        top, height = 1.9, 2.4
+        size = min(fit_size([step], width - 0.4, height - 1.15, start=20, minimum=11, word_factor=0.68) or 11
+                   for step in steps)
+        for k, step in enumerate(steps):
+            x = MARGIN + k * (width + gap)
+            self.rect(slide, x, top, width, height, self.theme.light, MSO_SHAPE.ROUNDED_RECTANGLE).adjustments[0] = 0.08
+            self.rect(slide, x, top, width, 0.08, self.theme.primary if k % 2 == 0 else self.theme.accent)
+            badge = self.rect(slide, x + width / 2 - 0.32, top + 0.3, 0.64, 0.64,
+                              self.theme.primary if k % 2 == 0 else self.theme.accent, MSO_SHAPE.OVAL)
+            frame = badge.text_frame
+            frame.margin_left = frame.margin_right = frame.margin_top = frame.margin_bottom = 0
+            paragraph = frame.paragraphs[0]
+            paragraph.alignment = PP_ALIGN.CENTER
+            run = paragraph.add_run()
+            run.text = str(k + 1)
+            run.font.size, run.font.bold, run.font.color.rgb = Pt(18), True, _rgb("FFFFFF")
+            self.text(slide, x + 0.2, top + 1.05, width - 0.4, height - 1.15, step, size, bold=True,
+                      color=self.theme.primary, align=PP_ALIGN.CENTER)
+            if k < len(steps) - 1:
+                self.rect(slide, x + width + 0.1, top + height / 2 - 0.18, gap - 0.2, 0.36, self.theme.muted,
+                          MSO_SHAPE.RIGHT_ARROW)
+        if s.bullets:
+            self.bullets(slide, index, MARGIN + 0.25, top + height + 0.45, W - 2 * MARGIN - 0.3,
+                         H - (top + height + 0.45) - 0.7, s.bullets, start=20)
+
+    def slide_references(self, slide, s: Slide, index: int) -> None:
+        self.header(slide, s.title or self.labels["references"], index)
+        items = s.references or s.bullets
+        if not items:
+            self.check(index, "warning", "no_references", "Diapositive des références vide.")
+            return
+        size = fit_size(items, W - 2 * MARGIN - 0.3, H - 2.5, start=16, minimum=11)
+        if size is None:
+            size = 11
+            self.check(index, "warning", "references_overflow", "Trop de références pour une diapositive : répartir "
+                                                                "sur deux diapositives.")
+        box = slide.shapes.add_textbox(_in(MARGIN + 0.2), _in(1.45), _in(W - 2 * MARGIN - 0.3), _in(H - 2.4))
+        frame = box.text_frame
+        frame.word_wrap = True
+        for n, item in enumerate(items):
+            paragraph = frame.paragraphs[0] if n == 0 else frame.add_paragraph()
+            paragraph.space_after = Pt(size * 0.5)
+            run = paragraph.add_run()
+            run.text = f"{n + 1}. {item}"
+            run.font.size, run.font.color.rgb, run.font.name = Pt(size), _rgb(self.theme.text), self.theme.body_font
+
+    def slide_questions(self, slide, s: Slide, index: int) -> None:
+        self.rect(slide, 0, 0, W, H, self.theme.primary)
+        self.rect(slide, W / 2 - 1.2, 4.35, 2.4, 0.06, self.theme.accent)
+        self.text(slide, MARGIN, 2.3, W - 2 * MARGIN, 1.6, s.title or self.labels["questions"], 40, color="FFFFFF",
+                  font=self.theme.title_font, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        self.text(slide, MARGIN, 4.6, W - 2 * MARGIN, 0.8, s.subtitle or self.labels["questions_sub"], 22,
+                  color="DCE6EF", align=PP_ALIGN.CENTER)
+
+    # --- assemblage --------------------------------------------------------------------------------------
+    def build(self, path: Path) -> list[SlideCheck]:
+        section_number = 0
+        for index, s in enumerate(self.deck.slides, start=1):
+            slide = self.prs.slides.add_slide(self.blank)
+            background = slide.background.fill
+            background.solid()
+            background.fore_color.rgb = _rgb(self.theme.background)
+            if s.type == "title":
+                self.slide_title(slide, s, index)
+            elif s.type == "section":
+                section_number += 1
+                self.slide_section(slide, s, index, section_number)
+            elif s.type in ("bullets", "conclusion"):
+                self.slide_bullets(slide, s, index)
+            elif s.type == "two_columns":
+                self.slide_two_columns(slide, s, index)
+            elif s.type in ("chart", "image"):
+                self.slide_chart(slide, s, index)
+            elif s.type == "table":
+                self.slide_table(slide, s, index)
+            elif s.type == "key_figures":
+                self.slide_key_figures(slide, s, index)
+            elif s.type == "quote":
+                self.slide_quote(slide, s, index)
+            elif s.type == "process":
+                self.slide_process(slide, s, index)
+            elif s.type == "references":
+                self.slide_references(slide, s, index)
+            elif s.type == "questions":
+                self.slide_questions(slide, s, index)
+            if s.type not in ("title", "section", "quote", "questions"):
+                self.footer(slide, index)
+            if s.notes:
+                slide.notes_slide.notes_text_frame.text = s.notes
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.prs.save(str(path))
+        return self.checks
