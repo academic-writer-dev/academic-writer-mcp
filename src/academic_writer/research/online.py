@@ -44,8 +44,32 @@ def http_fetch(url: str) -> dict | None:
         if exc.code == 429:
             raise OSError("quota du service atteint (429) : une clé gratuite est probablement nécessaire") from exc
         if exc.code in (401, 403):
-            raise OSError(f"accès refusé ({exc.code}) : clé absente ou invalide") from exc
+            raise OSError(f"accès refusé ({exc.code}) : {_denial_reason(exc)}") from exc
         raise OSError(f"HTTP {exc.code}") from exc
+
+
+_DENIAL_HINTS = {
+    "API_KEY_SERVICE_BLOCKED": "la clé est restreinte à d'autres API : dans la console Google Cloud > Identifiants > "
+                               "votre clé > Restrictions d'API, ajoutez « Books API »",
+    "SERVICE_DISABLED": "l'API n'est pas activée dans le projet Google Cloud : cliquez sur « Activer » sur la page de l'API",
+    "API_KEY_INVALID": "clé invalide (supprimée ou mal copiée) : enregistrez-la de nouveau",
+    "API_KEY_IP_ADDRESS_BLOCKED": "la clé est restreinte à certaines adresses IP",
+    "API_KEY_HTTP_REFERRER_BLOCKED": "la clé est restreinte aux sites web (référents HTTP) : choisissez « Aucune » "
+                                     "ou « Adresses IP » comme restriction d'application",
+}
+
+
+def _denial_reason(exc: urllib.error.HTTPError) -> str:
+    """Cause précise d'un refus Google, sans jamais recopier la clé."""
+    try:
+        error = json.loads(exc.read().decode("utf-8")).get("error", {})
+        reasons = [d.get("reason") for d in error.get("details", []) if isinstance(d, dict)]
+    except (ValueError, OSError, AttributeError):
+        return "clé absente ou invalide"
+    for reason in reasons:
+        if reason in _DENIAL_HINTS:
+            return _DENIAL_HINTS[reason]
+    return "clé absente ou invalide"
 
 
 def _fold(text: str) -> str:
