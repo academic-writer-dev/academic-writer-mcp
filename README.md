@@ -4,8 +4,10 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : Phase 7 terminée (v0.7.0) — audit documentaire et indices de rédaction par IA** (indices,
-> jamais des preuves). Phase 6 : sources et bibliographie (ГОСТ Р 7.0.100/7.0.5, APA 7, IEEE,
+> **Statut : Phase 8 terminée (v0.8.0) — contrôle qualité** : recalcul des calculs écrits (unités
+> SI / notations russes et françaises, SymPy), traçabilité des affirmations, cohérence interne, structure
+> par rapport au gabarit, audit final avant remise. Phase 7 : audit documentaire et indices de rédaction
+> par IA (indices, jamais des preuves). Phase 6 : sources et bibliographie (ГОСТ Р 7.0.100/7.0.5, APA 7, IEEE,
 > Chicago, Vancouver ; vérification Crossref / Open Library). Phase 5 : rédaction encadrée, correction, traduction,
 > avec un moteur universel : fournisseur cloud autorisé (Anthropic/OpenAI), modèle local (Ollama)
 > ou assistant MCP. Phases 1 à 4 : projets, import sécurisé, lecture des documents, OCR,
@@ -36,6 +38,7 @@ techniques et professionnels (FR / RU / EN).
 | Sources et bibliographie | `register_source`, `list_sources`, `update_source`, `verify_source_metadata`, `insert_citation`, `generate_bibliography`, `audit_references`, `find_uncited_references` |
 | Recherche d'ouvrages | `find_works_by_topic`, `download_open_access`, `export_references`, `search_sources`, `import_sources_file`, `confirm_source_verification` |
 | Audit et indices IA | `detect_ai_indicators`, `analyze_writing_patterns`, `analyze_document_metadata`, `inspect_revision_history`, `inspect_document_provenance`, `verify_content_credentials`, `audit_document_integrity`, `generate_ai_audit_report` |
+| Contrôle qualité | `validate_calculations`, `evaluate_formula`, `convert_units`, `verify_factual_claims`, `check_consistency`, `check_document_structure`, `final_quality_audit` |
 | Disciplines | `identify_domain`, `set_project_domain`, `list_domain_profiles`, `get_domain_profile`, `get_document_structure_template`, `lookup_terminology`, `reload_domain_profiles` |
 
 Ressources : `academic-writer://info`, `academic-writer://projects`,

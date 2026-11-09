@@ -160,6 +160,19 @@
 - Commande `academic-writer evaluate-indicators <dossier>` : taux réels sur corpus humain/ia.
 - Essai réel sur les documents de l'utilisateur : aucune fausse alerte.
 
+## D-025 — Contrôle qualité : constats, jamais de validation — 2026-11-09
+- Cible : un document importé ou la rédaction d'un projet (sections acceptées du plan courant).
+- Calculs : analyseur d'expressions maison (aucun `eval`), unités SI en notations fr/ru/en (мм, об/мин,
+  кВт·ч, МПа…), double comparaison « valeurs SI » et « nombres tels qu'écrits » (formules écrites pour
+  des unités précises, ex. ω = πn/30 avec n en об/мин), tolérance déduite des décimales affichées,
+  symboles définis dans le texte substitués dans les formules suivantes. SymPy pour résoudre une
+  formule à une inconnue (`evaluate_formula`) ; une valeur manquante n'est jamais supposée.
+- Affirmations : seule la traçabilité est contrôlée (citation, statut de la source, chiffres retrouvés
+  dans les documents du projet, édition des normes vs profil) ; jamais « vrai » ou « faux ».
+- Verdict final : bloquant / à corriger / prêt pour la relecture humaine — jamais « validé ».
+- Essai réel (ДЗ1, ЛР4) : formule de Tchebychev vérifiée, aucune fausse alerte après réglages
+  (symboles de vecteurs ≠ abréviations, numéros de pièces ≠ chiffres à sourcer).
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.
