@@ -32,6 +32,8 @@ from academic_writer.research.models import (
     Person,
     ReferenceAudit,
     ImportedSource,
+    OpenAccessDownload,
+    ReferenceExport,
     Source,
     SourceData,
     SourceImport,
@@ -41,6 +43,8 @@ from academic_writer.research.models import (
 )
 from academic_writer.document.text_reader import decode_text
 from academic_writer.providers import secrets
+from academic_writer.research.discovery import DiscoveryResult, find_by_topic
+from academic_writer.research.fulltext import DownloadRefused, http_bytes, http_text, resolve_pdf, to_bibtex, to_ris
 from academic_writer.research.importers import parse_file
 from academic_writer.research.manual import manual_links
 from academic_writer.research.online import Fetcher, http_fetch, search_online, similarity, verify_online
@@ -104,6 +108,8 @@ class SourceService:
         self.extraction = extraction
         self.writing = writing
         self.fetcher = fetcher or http_fetch
+        self.text_fetcher = http_text
+        self.bytes_fetcher = http_bytes
 
     # --- lecture ---------------------------------------------------------------
     def _cited_counts(self, project_id: str) -> dict[str, int]:
@@ -306,6 +312,70 @@ class SourceService:
         notices.append("Fiches proposées à partir de catalogues : les faire CONFIRMER par l'utilisateur avant "
                        "register_source (data = candidat.data).")
         return SourceSearch(query=query or isbn or "", services=services, candidates=candidates, notices=notices)
+
+    def _require_connected(self, what: str) -> None:
+        if self.settings.mode != "connected":
+            raise ValidationFailed(f"Mode local : {what} est désactivé(e). Seuls les termes de recherche ou "
+                                   "l'identifiant sont envoyés ; activable avec mode = 'connected'.")
+
+    def discover(self, query: str, kind: str = "all", open_access_only: bool = False, language: str | None = None,
+                 limit: int = 10) -> DiscoveryResult:
+        if not query or len(query.strip()) < 3:
+            raise ValidationFailed("Indiquez un thème de recherche (au moins 3 caractères).")
+        self._require_connected("la recherche d'ouvrages par thème")
+        return find_by_topic(query.strip(), self.text_fetcher, kind, open_access_only, language,
+                             max(1, min(limit, 25)))
+
+    def download_open_access(self, project_id: str, item_id: str) -> OpenAccessDownload:
+        self.writing._active_project(project_id)
+        self._require_connected("le téléchargement en libre accès")
+        try:
+            url, license_text, filename = resolve_pdf(item_id, self.text_fetcher)
+            data = self.bytes_fetcher(url, self.settings.max_file_size_bytes)
+        except DownloadRefused as exc:
+            raise ValidationFailed(str(exc)) from exc
+        except OSError as exc:
+            raise ValidationFailed(f"Téléchargement impossible : {exc}") from exc
+        temp_dir = self.settings.data_dir / "tmp"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+        temp = temp_dir / f"{new_id()}.pdf"
+        try:
+            temp.write_bytes(data)
+            result = self.documents.import_downloaded(project_id, temp, original_name=filename, source_label=url)
+        finally:
+            temp.unlink(missing_ok=True)
+        message = (f"Texte intégral en libre accès importé dans le projet (licence : {license_text}). "
+                   "Il peut maintenant être lu, cherché et cité ; enregistrez aussi sa fiche (register_source).")
+        if result.duplicate:
+            message = "Ce fichier était déjà présent dans le projet."
+        return OpenAccessDownload(item_id=item_id, document_id=result.document.id,
+                                  original_filename=result.document.original_filename, duplicate=result.duplicate,
+                                  license=license_text, url=url, message=message)
+
+    def export_references(self, project_id: str, fmt: str = "bibtex", style: str = "gost",
+                          keys: list[str] | None = None) -> ReferenceExport:
+        listing = self.list(project_id)
+        sources = [s for s in listing.sources if not keys or s.key in keys]
+        if not sources:
+            raise ValidationFailed("Aucune source à exporter.")
+        if fmt == "bibtex":
+            content, extension = "\n\n".join(to_bibtex(s.key, s.source_type, s.data) for s in sources), "bib"
+        elif fmt == "ris":
+            content, extension = "\n\n".join(to_ris(s.key, s.source_type, s.data) for s in sources), "ris"
+        elif fmt == "text":
+            if style not in styles.FORMATTERS:
+                raise ValidationFailed("Style : gost, apa, ieee, chicago ou vancouver.")
+            ordered = sorted(sources, key=lambda s: styles.sort_key(s.data))
+            content = "\n".join(f"{i}. {styles.format_entry(style, s.source_type, s.data)}" for i, s in enumerate(ordered, 1))
+            extension = "txt"
+        else:
+            raise ValidationFailed("Format : bibtex, ris ou text.")
+        folder = self.settings.projects_dir / project_id / "exports"
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / f"references-{utc_now()[:19].replace(':', '').replace('-', '').replace('T', '-')}.{extension}"
+        path.write_text(content + "\n", encoding="utf-8")
+        return ReferenceExport(project_id=project_id, format=fmt, count=len(sources), path=str(path),
+                               content=content[:20000])
 
     def import_file(self, project_id: str, file_path: str) -> SourceImport:
         self.writing._active_project(project_id)

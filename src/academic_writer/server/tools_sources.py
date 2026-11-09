@@ -8,9 +8,12 @@ from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 from pydantic import Field
 
+from academic_writer.research.discovery import DiscoveryResult
 from academic_writer.research.models import (
     Bibliography,
     CitationResult,
+    OpenAccessDownload,
+    ReferenceExport,
     ReferenceAudit,
     Source,
     SourceData,
@@ -140,6 +143,48 @@ def register(mcp: MCPServer) -> None:
         qu'il confirme. Mode connecté uniquement ; seuls les termes de recherche sont envoyés."""
         with user_errors():
             return get_services().sources.search(query, author, isbn, kind, limit)
+
+    @mcp.tool(title="Trouver des ouvrages par thème",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
+    def find_works_by_topic(
+        query: Annotated[str, Field(description="Thème de recherche (ex. « нарезание зубчатых колес методом обката »). "
+                                                "Essayer aussi la formulation en anglais pour plus de résultats.")],
+        kind: Annotated[Literal["books", "articles", "all"], Field(
+            description="books : Internet Archive, Open Library ; articles : DOAJ, arXiv, Crossref.")] = "all",
+        open_access_only: Annotated[bool, Field(description="Seulement les textes intégraux légalement téléchargeables.")] = False,
+        language: Annotated[Literal["ru", "en", "fr"] | None, Field(description="Langue des livres (Internet Archive).")] = None,
+        limit: Annotated[int, Field(ge=1, le=25)] = 10,
+    ) -> DiscoveryResult:
+        """Trouve des livres, manuels et articles RÉELS sur un thème dans des bases légales (Internet Archive, DOAJ,
+        arXiv, Crossref, Open Library), classés par pertinence, avec lien de consultation, licence et fiche
+        pré-remplie. Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""
+        with user_errors():
+            return get_services().sources.discover(query, kind, open_access_only, language, limit)
+
+    @mcp.tool(title="Télécharger un texte en libre accès", annotations=_WRITE)
+    def download_open_access(
+        project_id: str,
+        item_id: Annotated[str, Field(description="item_id d'un résultat de find_works_by_topic marqué open_access "
+                                                  "(arxiv:…, ia:…, doaj:…).")],
+    ) -> OpenAccessDownload:
+        """Télécharge le texte intégral d'un résultat en LIBRE ACCÈS LÉGAL et l'importe dans le projet comme
+        document source (copie protégée, lisible et cherchable). Licence revérifiée par le serveur ; refusé pour
+        les ouvrages protégés. À faire sur demande de l'utilisateur."""
+        with user_errors():
+            return get_services().sources.download_open_access(project_id, item_id)
+
+    @mcp.tool(title="Exporter les références", annotations=_WRITE)
+    def export_references(
+        project_id: str,
+        format: Annotated[Literal["bibtex", "ris", "text"], Field(
+            description="bibtex / ris : pour Zotero, Word, LaTeX ; text : liste mise en forme dans un style.")] = "bibtex",
+        style: Literal["gost", "apa", "ieee", "chicago", "vancouver"] = "gost",
+        keys: Annotated[list[str] | None, Field(description="Clés à exporter ; toutes par défaut.")] = None,
+    ) -> ReferenceExport:
+        """Exporte les sources du projet dans un fichier (BibTeX, RIS ou liste ГОСТ / APA / IEEE…) placé dans le
+        dossier « exports » du projet, et renvoie son contenu."""
+        with user_errors():
+            return get_services().sources.export_references(project_id, format, style, keys)
 
     @mcp.tool(title="Importer des notices (RIS / BibTeX)", annotations=_WRITE)
     def import_sources_file(

@@ -90,6 +90,19 @@ class DocumentService:
         ensure_within(source, self.settings.allowed_import_dirs)
         ensure_outside(source, self.settings.data_dir,
                        "Import refusé : le fichier se trouve déjà dans le dossier de données d'Academic Writer.")
+        return self._import_checked(project_id, source, role, title, source.name, str(source))
+
+    def import_downloaded(self, project_id: str, path: Path, original_name: str, source_label: str,
+                          role: DocumentRole = DocumentRole.SOURCE, title: str | None = None) -> ImportResult:
+        """Importe un fichier téléchargé par le serveur (dossier temporaire interne) : mêmes contrôles
+        d'inspection que pour un fichier de l'utilisateur ; le fichier temporaire n'est pas conservé."""
+        project = self.projects.get(project_id)
+        if project.status is ProjectStatus.ARCHIVED:
+            raise ValidationFailed("Projet archivé : import impossible.")
+        return self._import_checked(project_id, path, DocumentRole(role), title, original_name[:200], source_label[:500])
+
+    def _import_checked(self, project_id: str, source: Path, role: DocumentRole, title: str | None,
+                        original_name: str, source_label: str) -> ImportResult:
         inspection = inspect_file(source, self.settings)
 
         existing = self._find_by_hash(project_id, inspection.sha256)
@@ -122,7 +135,7 @@ class DocumentService:
                     "INSERT INTO documents (id, project_id, role, title, original_filename, source_path, "
                     "stored_path, extension, mime_type, size_bytes, sha256, security_notes, status, "
                     "created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (document_id, project_id, role.value, title, source.name, str(source), stored_rel,
+                    (document_id, project_id, role.value, title, original_name, source_label, stored_rel,
                      inspection.extension, inspection.mime_type, inspection.size_bytes, inspection.sha256,
                      json.dumps(inspection.warnings, ensure_ascii=False), "imported", now, now),
                 )

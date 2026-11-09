@@ -158,6 +158,24 @@ class SourceImport(BaseModel):
     message: str
 
 
+class OpenAccessDownload(BaseModel):
+    item_id: str
+    document_id: str
+    original_filename: str
+    duplicate: bool
+    license: str
+    url: str
+    message: str
+
+
+class ReferenceExport(BaseModel):
+    project_id: str
+    format: str
+    count: int
+    path: str = Field(description="Fichier écrit dans le dossier « exports » du projet.")
+    content: str = Field(description="Contenu exporté (tronqué au-delà de 20 000 caractères).")
+
+
 class AuditIssue(BaseModel):
     severity: Literal["info", "warning", "error"]
     code: str

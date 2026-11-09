@@ -25,6 +25,7 @@ dependencies = [
     { name = "python-docx" },
     { name = "python-pptx" },
     { name = "pyyaml" },
+    { name = "truststore" },
 ]
 
 [package.optional-dependencies]
@@ -57,6 +58,7 @@ requires-dist = [
     { name = "python-docx", specifier = ">=1.1" },
     { name = "python-pptx", specifier = ">=1.0" },
     { name = "pyyaml", specifier = ">=6.0" },
+    { name = "truststore", specifier = ">=0.10" },
 ]
 provides-extras = ["pymupdf"]
 

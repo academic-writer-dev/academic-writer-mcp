@@ -21,8 +21,13 @@ import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
+import truststore
+
 from academic_writer.research.models import Finding, OnlineCandidate, Person, SourceData
 from academic_writer.research.validation import normalize_doi
+
+# Certificats du magasin Windows (le Python géré par uv n'en voit pas certains : archive.org, arxiv.org).
+truststore.inject_into_ssl()
 
 USER_AGENT = "AcademicWriterMCP/0.6 (local academic writing tool)"
 Fetcher = Callable[[str], dict | None]  # JSON, None si 404 ; lève OSError si réseau indisponible ou quota
