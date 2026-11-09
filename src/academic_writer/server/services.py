@@ -17,6 +17,7 @@ from academic_writer.core.editing import EditingService
 from academic_writer.core.errors import AcademicWriterError
 from academic_writer.core.extraction import ExtractionService
 from academic_writer.core.projects import ProjectService
+from academic_writer.core.quality import QualityService
 from academic_writer.core.sources import SourceService
 from academic_writer.core.writing import WritingService
 from academic_writer.providers.manager import ProviderManager
@@ -36,6 +37,7 @@ class Services:
     editing: EditingService
     sources: SourceService
     audit: AuditService
+    quality: QualityService
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -52,8 +54,10 @@ def build_services(settings: Settings | None = None) -> Services:
     editing = EditingService(settings, projects, writing, domains, ai)
     sources = SourceService(db, settings, projects, documents, extraction, writing)
     audit = AuditService(db, settings, projects, documents, extraction)
+    quality = QualityService(db, settings, projects, documents, extraction, domains, writing, sources)
     return Services(settings=settings, db=db, projects=projects, documents=documents, extraction=extraction,
-                    domains=domains, ai=ai, writing=writing, editing=editing, sources=sources, audit=audit)
+                    domains=domains, ai=ai, writing=writing, editing=editing, sources=sources, audit=audit,
+                    quality=quality)
 
 
 _services: Services | None = None

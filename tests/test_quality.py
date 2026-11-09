@@ -1,0 +1,203 @@
+"""Tests du contrôle qualité (phase 8) : calculs, unités, formules, affirmations, cohérence, structure, audit final."""
+
+from pathlib import Path
+
+import pytest
+from mcp import Client
+
+from academic_writer.core.models import DocumentRole, DocumentType, Language
+from academic_writer.quality import expr as E
+from academic_writer.quality.calculations import check_calculations, convert, evaluate_formula
+from academic_writer.quality.claims import analyze_claims, standard_references
+from academic_writer.quality.consistency import check_abbreviations, check_cross_references
+from academic_writer.quality.models import Segment
+from academic_writer.server.app import mcp
+from academic_writer.server.services import Services
+
+GEAR = """Исходные данные: m = 2 мм, z = 20, n = 1450 об/мин.
+Делительный диаметр d = m·z = 2·20 = 40 мм.
+Диаметр вершин da = d + 2m = 40 + 2·2 = 45 мм.
+Угловая скорость ω = π·n/30 = π·1450/30 = 151,8 рад/с.
+Скорость v = 10 рад/с · 0,05 м = 0,5 м/с, что соответствует норме.
+Сила F = 2 мм · 20 = 40 м.
+Площадь S = 3,2·4,1 ≈ 13,1 мм².
+Пусть m = 3 мм для второго колеса."""
+
+
+def _segments(text: str, section: str = "Расчёт") -> list[Segment]:
+    return [Segment(line, "paragraph", section, 1) for line in text.split("\n")]
+
+
+# --- expressions et unités -------------------------------------------------------------------
+
+@pytest.mark.parametrize(("text", "si", "dims_ok"), [
+    ("1,5·10³ мм", 1.5, True), ("12 500 Н", 12500, True), ("1450 об/мин", 151.8436, True),
+    ("sin 30°", 0.5, True), ("√(3²+4²)", 5, True), ("2,5 кВт·ч", 9e6, True), ("200 МПа", 2e8, True),
+])
+def test_expression_parser(text: str, si: float, dims_ok: bool) -> None:
+    value = E.evaluate(E.parse(text, units=True))
+    assert value.si == pytest.approx(si, rel=1e-4)
+
+
+def test_parser_never_evaluates_code() -> None:
+    with pytest.raises(E.ParseError):
+        E.parse("__import__('os')", units=False)
+    with pytest.raises(E.ParseError):
+        E.parse("a; b", units=False)
+
+
+# --- calculs -----------------------------------------------------------------------------------
+
+def test_calculation_chain_checks() -> None:
+    report = check_calculations("t", _segments(GEAR))
+    by_right = {c.right: c for c in report.checks}
+    assert by_right["40 мм"].status == "ok" and by_right["2·20"].status == "ok"  # m·z substitué
+    assert by_right["45 мм"].status == "mismatch"  # 40 + 4 = 44
+    assert by_right["151,8 рад/с"].status == "ok"  # formule écrite pour n en об/мин
+    assert by_right["0,5 м/с"].status == "ok"
+    assert by_right["40 м"].status == "unit_mismatch"  # mm oubliés
+    assert by_right["13,1 мм²"].status == "ok"
+    assert "3 мм" not in by_right  # redéfinition, pas un calcul
+    assert report.mismatches == 1 and report.unit_mismatches == 1
+    assert [c.code for c in report.conflicts] == ["symbol_redefined"]
+    assert report.decimal_separators == {"virgule": 6}
+
+
+def test_rounding_tolerance() -> None:
+    report = check_calculations("t", _segments("x = 10/3 = 3,33\ny = 10/3 = 3,3\nk = 10/3 = 3\n"
+                                               "q = 2/3 = 0,66\nw = 10/3 = 3,2"))
+    statuses = {c.right: c.status for c in report.checks}
+    assert statuses == {"3,33": "ok", "3,3": "ok", "3": "ok",  # arrondis corrects à la précision affichée
+                        "0,66": "rounding",  # troncature (0,67 attendu) : écart de 1 %
+                        "3,2": "mismatch"}  # écart de 4 %
+
+
+def test_evaluate_formula_and_solve() -> None:
+    result = evaluate_formula("d = m*z", {"d": "40 мм", "m": "2 мм"})
+    assert result.solved_for == "z" and result.results_si == [pytest.approx(20)]
+    result = evaluate_formula("v = ω*r", {"ω": "151,8 рад/с", "r": "50 мм"}, "м/с")
+    assert result.results_in_target == [pytest.approx(7.59)] and result.unit_si == "m/s"
+    with pytest.raises(ValueError, match="inconnue"):
+        evaluate_formula("d = m*z", {"m": "2 мм"})  # deux inconnues : rien n'est supposé
+
+
+def test_convert_units() -> None:
+    assert convert("1450 об/мин", "рад/с").converted == pytest.approx(151.84, rel=1e-4)
+    assert convert("200 МПа", "Н/мм2").converted == pytest.approx(200)
+    with pytest.raises(ValueError):
+        convert("2 мм", "кг")
+
+
+# --- affirmations -------------------------------------------------------------------------------
+
+def test_claims_traceability() -> None:
+    text = ("Метод планов скоростей применяется на 85 % предприятий. "
+            "По данным [@artobolevsky1988, с. 15] КПД зубчатой передачи достигает 0,98. "
+            "Согласно [@inconnu2020] это самый точный метод. "
+            "Оформление выполнено по ГОСТ 2.105-95. "
+            "Модуль m = 2 мм задан в варианте 4.")
+    report = analyze_claims("t", _segments(text, "Введение"), "ru",
+                            sources={"artobolevsky1988": "verified_online"},
+                            project_texts={"consignes": "вариант 4: модуль 2 мм"},
+                            known_standards=["ГОСТ 2.105-2019"])
+    support = {c.text[:12]: c.support for c in report.claims}
+    assert support["Метод планов"] == "non_etaye"
+    assert support["По данным [@"] == "source_verifiee"
+    assert support["Согласно [@i"] == "cle_inconnue"
+    gost = next(c for c in report.claims if "ГОСТ" in c.text)
+    assert any("1995" in e and "2019" in e for e in gost.evidence) and gost.severity == "warning"
+    assert not any("m = 2" in c.text for c in report.claims)  # calcul, pas affirmation
+
+
+def test_standard_references() -> None:
+    refs = standard_references("ГОСТ 13755-2015, ISO 53:1998 et ГОСТ Р 7.0.100-2018")
+    assert ("ГОСТ 13755", "2015") in [(base, year) for _, base, year in refs]
+    assert ("ISO 53", "1998") in [(base, year) for _, base, year in refs]
+
+
+# --- cohérence -------------------------------------------------------------------------------
+
+def test_figures_and_tables() -> None:
+    segments = [Segment("Схема показана на рис. 1 и рис. 3, данные в табл. 1.", "paragraph", "Ход работы"),
+                Segment("Рисунок 1 – Схема механизма", "caption", "Ход работы"),
+                Segment("Рисунок 2 – Станок", "caption", "Ход работы"),
+                Segment("Таблица 1 – Результаты", "caption", "Ход работы")]
+    issues, figures, _ = check_cross_references(segments)
+    codes = {(i.code, i.message.split()[-1] if i.code == "figure_missing" else "") for i in issues}
+    assert any(code == "figure_missing" for code, _ in codes)
+    assert any(i.code == "figure_not_referenced" and "2" in i.message for i in issues)
+    assert not any(i.code.startswith("table") for i in issues)
+    assert figures["legendes"] == ["1", "2"]
+
+
+def test_abbreviations() -> None:
+    segments = [Segment("ТММ изучает механизмы.", "paragraph", "Введение"),
+                Segment("Теория механизмов и машин (ТММ) — наука. САПР используется широко.", "paragraph", "Введение"),
+                Segment("Расчёт по ГОСТ выполнен.", "paragraph", "Введение")]
+    issues, _ = check_abbreviations(segments)
+    assert any(i.code == "abbreviation_defined_late" and "ТММ" in i.message for i in issues)
+    assert any(i.code == "abbreviation_undefined" and "САПР" in i.message and "ГОСТ" not in i.message for i in issues)
+
+
+# --- service et outils MCP --------------------------------------------------------------------------
+
+def _docx(path: Path) -> Path:
+    from docx import Document
+    document = Document()
+    document.add_heading("Цель работы", level=1)
+    document.add_paragraph("Изучить нарезание зубьев методом обкатки.")
+    document.add_heading("Ход работы", level=1)
+    document.add_paragraph("Делительный диаметр d = 2·20 = 45 мм.")
+    document.add_paragraph("Этот метод используется на 90 % заводов.")
+    document.add_heading("Выводы", level=1)
+    document.add_paragraph("[ЗАПОЛНИТЬ: вывод]")
+    document.save(str(path))
+    return path
+
+
+@pytest.fixture
+def lab(services: Services, inbox: Path):
+    project = services.projects.create("ЛР", DocumentType.RAPPORT_LABORATOIRE, Language.RU)
+    document_id = services.documents.import_document(project.id, str(_docx(inbox / "lr.docx")),
+                                                     DocumentRole.DRAFT).document.id
+    return project, document_id
+
+
+def test_final_audit_on_document(services: Services, lab) -> None:
+    project, document_id = lab
+    audit = services.quality.final_audit(document_id=document_id)
+    assert audit.verdict == "bloquant"
+    codes = {i.code for i in audit.issues}
+    assert {"mismatch", "placeholder", "non_etaye", "section_missing"} <= codes
+    assert audit.report_path and Path(audit.report_path).exists()
+    assert "Contrôle qualité" in audit.report_markdown and "Limites" in audit.report_markdown
+    with services.db.read() as conn:
+        row = conn.execute("SELECT kind, conclusion FROM audits WHERE id = ?", (audit.audit_id,)).fetchone()
+    assert tuple(row) == ("quality", "bloquant")
+
+
+def test_structure_on_document(services: Services, lab) -> None:
+    _, document_id = lab
+    report = services.quality.structure(document_id=document_id)
+    found = {s.section_id: s.found_heading for s in report.sections}
+    assert found["objective"] == "Цель работы" and found["conclusion"] == "Выводы"
+    assert found["measurements"] is None
+
+
+def test_target_requires_exactly_one(services: Services, lab) -> None:
+    from academic_writer.core.errors import ValidationFailed
+    with pytest.raises(ValidationFailed):
+        services.quality.calculations()
+
+
+@pytest.mark.anyio
+async def test_quality_tools_exposed(lab) -> None:
+    _, document_id = lab
+    async with Client(mcp) as client:
+        names = {t.name for t in (await client.list_tools()).tools}
+        assert {"validate_calculations", "evaluate_formula", "convert_units", "verify_factual_claims",
+                "check_consistency", "check_document_structure", "final_quality_audit"} <= names
+        result = await client.call_tool("validate_calculations", {"document_id": document_id})
+        assert result.structured_content["mismatches"] == 1
+        result = await client.call_tool("evaluate_formula", {"formula": "d = m*z", "values": {"m": "2 мм"}})
+        assert result.is_error and "inconnue" in result.content[0].text
