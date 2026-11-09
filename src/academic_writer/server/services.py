@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from mcp.server.mcpserver.exceptions import ToolError
 
 from academic_writer.core.audit import AuditService
+from academic_writer.core.charts import ChartService
 from academic_writer.core.config import Settings
 from academic_writer.core.course import CourseService
 from academic_writer.core.documents import DocumentService
@@ -42,6 +43,7 @@ class Services:
     quality: QualityService
     formatting: FormattingService
     course: CourseService
+    charts: ChartService
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -63,7 +65,8 @@ def build_services(settings: Settings | None = None) -> Services:
                     domains=domains, ai=ai, writing=writing, editing=editing, sources=sources, audit=audit,
                     quality=quality,
                     formatting=FormattingService(db, settings, projects, documents, domains, writing, sources),
-                    course=CourseService(db, projects, documents, extraction, writing))
+                    course=CourseService(db, projects, documents, extraction, writing),
+                    charts=ChartService(settings, projects, documents, extraction))
 
 
 _services: Services | None = None

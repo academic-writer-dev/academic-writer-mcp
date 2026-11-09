@@ -182,7 +182,9 @@ class FormattingService:
         stem = _SAFE_NAME.sub("_", project.name).strip() or "document"
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         docx_path = folder / f"{stem}-{preset.id}-{stamp}.docx"
-        stats = build_docx(docx_path, sections, preset, outline.language, fields)
+        charts = self.settings.projects_dir / project_id / "charts"
+        images = {f"chart:{p.stem}": p for p in charts.glob("*.png")} if charts.exists() else {}
+        stats = build_docx(docx_path, sections, preset, outline.language, fields, images)
         messages += stats.warnings
         if bibliography:
             messages += [f"Bibliographie : {w}" for w in bibliography.warnings]

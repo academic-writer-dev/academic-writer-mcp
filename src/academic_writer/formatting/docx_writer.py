@@ -61,6 +61,7 @@ class BuildStats:
     placeholders: int = 0
     unwritten: list[str] = field(default_factory=list)
     images_missing: int = 0
+    images_inserted: int = 0
     tables: int = 0
     headings: int = 0
     warnings: list[str] = field(default_factory=list)
@@ -271,7 +272,7 @@ def add_heading(document, text: str, level: int, preset: FormatPreset, structura
 
 
 def add_markdown(document, text: str, preset: FormatPreset, base_level: int, language: str, stats: BuildStats,
-                 counters: list[int]) -> None:
+                 counters: list[int], images: dict[str, Path] | None = None) -> None:
     labels = TITLE_LABELS.get(language, TITLE_LABELS["fr"])
     blocks = re.split(r"\n\s*\n", text.strip())
     for block in blocks:
@@ -301,9 +302,16 @@ def add_markdown(document, text: str, preset: FormatPreset, base_level: int, lan
         if image:
             paragraph = document.add_paragraph()
             _plain(paragraph)
-            run = paragraph.add_run(labels["image"])
-            run.font.highlight_color = WD_COLOR_INDEX.YELLOW
-            stats.images_missing += 1
+            picture = (images or {}).get(image.group(2).strip())
+            if picture is not None and picture.exists():
+                from docx.shared import Cm
+
+                paragraph.add_run().add_picture(str(picture), width=Cm(15))
+                stats.images_inserted += 1
+            else:
+                run = paragraph.add_run(labels["image"])
+                run.font.highlight_color = WD_COLOR_INDEX.YELLOW
+                stats.images_missing += 1
             if image.group(1):
                 caption = document.add_paragraph()
                 _plain(caption)
@@ -411,7 +419,7 @@ def add_contents(document, title: str, language: str, preset: FormatPreset, stat
 
 
 def build_docx(path: Path, sections: list[ExportSection], preset: FormatPreset, language: str,
-               title_fields: dict[str, str]) -> BuildStats:
+               title_fields: dict[str, str], images: dict[str, Path] | None = None) -> BuildStats:
     document = Document()
     configure_document(document, preset)
     stats = BuildStats()
@@ -446,7 +454,7 @@ def build_docx(path: Path, sections: list[ExportSection], preset: FormatPreset, 
                 paragraph = document.add_paragraph()
                 add_inline(paragraph, entry.strip(), stats)
             continue
-        add_markdown(document, section.text, preset, section.level, language, stats, counters)
+        add_markdown(document, section.text, preset, section.level, language, stats, counters, images)
     document.sections[0].start_type = WD_SECTION.NEW_PAGE
     path.parent.mkdir(parents=True, exist_ok=True)
     document.save(str(path))
