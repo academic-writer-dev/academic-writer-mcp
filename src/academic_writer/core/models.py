@@ -53,6 +53,12 @@ class DocumentType(StrEnum):
     PROCEDURE_OPERATIONNELLE = "procedure_operationnelle"
     RAPPORT_AUDIT = "rapport_audit"
     DOCUMENTATION_PROFESSIONNELLE = "documentation_professionnelle"
+    EXPOSE = "expose"
+    PRESENTATION_ORALE = "presentation_orale"
+    ETUDE_DE_CAS = "etude_de_cas"
+    FICHE_DE_LECTURE = "fiche_de_lecture"
+    SYNTHESE_BIBLIOGRAPHIQUE = "synthese_bibliographique"
+    RAPPORT_DE_STAGE = "rapport_de_stage"
     AUTRE = "autre"
 
 
@@ -76,6 +82,12 @@ DOCUMENT_TYPE_LABELS: dict[DocumentType, str] = {
     DocumentType.PROCEDURE_OPERATIONNELLE: "Procédure opérationnelle",
     DocumentType.RAPPORT_AUDIT: "Rapport d'audit",
     DocumentType.DOCUMENTATION_PROFESSIONNELLE: "Documentation professionnelle",
+    DocumentType.EXPOSE: "Exposé",
+    DocumentType.PRESENTATION_ORALE: "Présentation orale / soutenance",
+    DocumentType.ETUDE_DE_CAS: "Étude de cas",
+    DocumentType.FICHE_DE_LECTURE: "Fiche de lecture",
+    DocumentType.SYNTHESE_BIBLIOGRAPHIQUE: "Synthèse bibliographique",
+    DocumentType.RAPPORT_DE_STAGE: "Rapport de stage",
     DocumentType.AUTRE: "Autre",
 }
 

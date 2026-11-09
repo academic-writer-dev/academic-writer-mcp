@@ -1,0 +1,39 @@
+id: finance_comptabilite
+parent: economie
+names: {fr: "Finance et comptabilité", ru: "Финансы и бухгалтерский учёт", en: "Finance and accounting"}
+description:
+  fr: "Comptabilité générale et analytique, analyse financière, finance d'entreprise, audit, fiscalité."
+  ru: "Бухгалтерский и управленческий учёт, финансовый анализ, корпоративные финансы, аудит, налогообложение."
+  en: "Financial and cost accounting, financial analysis, corporate finance, auditing, taxation."
+risk_level: high
+risk_notice:
+  fr: "Domaine financier et fiscal : le contenu produit ne constitue pas un conseil financier, comptable ou fiscal. Les règles dépendent du pays et de l'exercice ; à valider par un professionnel."
+  ru: "Финансовая и налоговая область: текст не является финансовой, бухгалтерской или налоговой консультацией. Правила зависят от страны и периода; требуется проверка специалистом."
+  en: "Finance and tax field: generated content is not financial, accounting or tax advice. Rules depend on country and period; to be validated by a professional."
+keywords:
+  fr: ["comptabilit*", "bilan", "compte de résultat", "actif*", "passif*", "amortissement*", "trésorerie", "fonds de roulement", "ratio* financier*", "capitaux propres", "écriture* comptable*", "liasse fiscale", "audit"]
+  ru: ["бухгалтерск* учёт*", "бухгалтерск* баланс*", "отчёт* о финансовых результатах", "актив*", "пассив*", "амортизац*", "денежн* поток*", "оборотн* капитал*", "финансов* коэффициент*", "собственн* капитал*", "проводк*", "аудит*"]
+  en: ["accounting", "balance sheet", "income statement", "assets", "liabilities", "depreciation", "cash flow*", "working capital", "financial ratio*", "equity", "journal entr*", "audit*"]
+terminology:
+  - {id: working_capital, fr: "fonds de roulement", ru: "оборотный капитал", en: "working capital"}
+  - {id: depreciation, fr: "amortissement", ru: "амортизация", en: "depreciation"}
+  - {id: equity, fr: "capitaux propres", ru: "собственный капитал", en: "equity"}
+  - {id: cash_flow, fr: "flux de trésorerie", ru: "денежный поток", en: "cash flow"}
+  - {id: liquidity_ratio, fr: "ratio de liquidité", ru: "коэффициент ликвидности", en: "liquidity ratio"}
+  - {id: profit, fr: "résultat net", ru: "чистая прибыль", en: "net income"}
+methodology:
+  fr: ["Indiquer le référentiel comptable (PCG, IFRS, РСБУ/ФСБУ) et l'exercice.", "Montrer les formules des ratios avant les valeurs."]
+  ru: ["Указывать стандарт учёта (РСБУ/ФСБУ, МСФО) и отчётный период.", "Приводить формулы коэффициентов перед расчётом."]
+  en: ["State the accounting framework (IFRS, local GAAP) and period.", "Show ratio formulas before values."]
+validation_rules:
+  - {id: framework_period, severity: error, description: {fr: "Référentiel comptable, exercice et devise indiqués pour toute donnée financière.", ru: "Для финансовых данных указаны стандарт учёта, период и валюта.", en: "Accounting framework, period and currency stated for every financial figure."}}
+  - {id: balance_check, severity: warning, description: {fr: "Vérifier l'égalité actif = passif et la cohérence des totaux.", ru: "Проверять равенство актива и пассива и итогов.", en: "Check assets = liabilities + equity and totals."}}
+calculations:
+  - {id: ratios, tools: [sympy], description: {fr: "Ratios de liquidité, solvabilité, rentabilité", ru: "Коэффициенты ликвидности, платёжеспособности, рентабельности", en: "Liquidity, solvency and profitability ratios"}}
+  - {id: depreciation_schedule, tools: [sympy], description: {fr: "Plans d'amortissement, actualisation", ru: "Графики амортизации, дисконтирование", en: "Depreciation schedules, discounting"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Harvard"], intl: ["APA 7", "Harvard"]}
+standards:
+  - {code: "IAS 1", convention: intl, title: {fr: "Présentation des états financiers", ru: "Представление финансовой отчётности", en: "Presentation of financial statements"}}
+  - {code: "IAS 16", convention: intl, title: {fr: "Immobilisations corporelles", ru: "Основные средства", en: "Property, plant and equipment"}}
+  - {code: "ISA", convention: intl, title: {fr: "Normes internationales d'audit", ru: "Международные стандарты аудита", en: "International Standards on Auditing"}}

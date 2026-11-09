@@ -1,0 +1,26 @@
+id: architecture
+parent: genie_civil
+names: {fr: "Architecture et urbanisme", ru: "Архитектура и градостроительство", en: "Architecture and urban planning"}
+description:
+  fr: "Conception architecturale, urbanisme, patrimoine, performance énergétique des bâtiments."
+  ru: "Архитектурное проектирование, градостроительство, наследие, энергоэффективность зданий."
+  en: "Architectural design, urban planning, heritage, building energy performance."
+keywords:
+  fr: ["architectur*", "urbanism*", "plan masse", "esquisse", "façade*", "programme architectural", "surface de plancher", "permis de construire", "patrimoine", "aménagement urbain", "bâti"]
+  ru: ["архитектур*", "градостроител*", "генплан*", "эскиз*", "фасад*", "объёмно-планировочн*", "общ* площад*", "разрешени* на строительство", "наследи*", "благоустройств*", "застройк*"]
+  en: ["architect*", "urban planning", "site plan", "sketch design", "facade*", "design brief", "floor area", "building permit", "heritage", "urban design", "built environment"]
+terminology:
+  - {id: site_plan, fr: "plan de masse", ru: "генеральный план", en: "site plan"}
+  - {id: floor_area, fr: "surface de plancher", ru: "общая площадь", en: "gross floor area"}
+  - {id: elevation, fr: "élévation (façade)", ru: "фасад", en: "elevation"}
+  - {id: section_drawing, fr: "coupe", ru: "разрез", en: "section"}
+methodology:
+  fr: ["Analyse du site et du programme avant la conception.", "Plans à l'échelle avec cotes, orientation et légende."]
+  ru: ["Анализ участка и задания до проектирования.", "Чертежи в масштабе с размерами, ориентацией и экспликацией."]
+  en: ["Site and brief analysis before design.", "Scaled drawings with dimensions, orientation and legend."]
+validation_rules:
+  - {id: regulations, severity: warning, description: {fr: "Règles d'urbanisme et normes citées avec leur version en vigueur.", ru: "Градостроительные нормы (СП, ГрК) — с указанием действующей редакции.", en: "Planning rules and codes cited with the version in force."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Chicago", "APA 7"], intl: ["Chicago", "Harvard"]}
+standards:
+  - {code: "ГОСТ Р 21.101-2020", convention: ru, title: {fr: "Exigences de la documentation de projet", ru: "СПДС. Основные требования к проектной и рабочей документации", en: "Design documentation requirements (Russia)"}}

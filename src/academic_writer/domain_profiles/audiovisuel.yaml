@@ -1,0 +1,21 @@
+id: audiovisuel
+parent: arts
+names: {fr: "Audiovisuel, cinéma et médias", ru: "Аудиовизуальные искусства, кино и медиа", en: "Audiovisual, film and media"}
+description:
+  fr: "Cinéma, télévision, production audiovisuelle, journalisme, communication et médias numériques."
+  ru: "Кино, телевидение, аудиовизуальное производство, журналистика, медиакоммуникации."
+  en: "Film, television, audiovisual production, journalism, communication and digital media."
+keywords:
+  fr: ["cinéma", "film*", "réalisat*", "montage", "scénario*", "plan-séquence", "cadrage", "production audiovisuelle", "journalisme", "média*", "audience*", "documentaire*"]
+  ru: ["кино*", "фильм*", "режисс*", "монтаж*", "сценари*", "кадр*", "аудиовизуальн*", "журналист*", "медиа*", "аудитори*", "документальн*"]
+  en: ["cinema", "film*", "directing", "editing", "screenplay*", "framing", "shot*", "audiovisual production", "journalism", "media", "audience*", "documentar*"]
+terminology:
+  - {id: shot, fr: "plan", ru: "план (кадр)", en: "shot"}
+  - {id: editing, fr: "montage", ru: "монтаж", en: "editing"}
+  - {id: screenplay, fr: "scénario", ru: "сценарий", en: "screenplay"}
+  - {id: storyboard, fr: "storyboard (scénarimage)", ru: "раскадровка", en: "storyboard"}
+validation_rules:
+  - {id: media_rights, severity: error, description: {fr: "Extraits, musiques et images : source et droits indiqués.", ru: "Для фрагментов, музыки и изображений указаны источник и права.", en: "Clips, music and images: source and rights stated."}}
+  - {id: filmography, severity: warning, description: {fr: "Œuvres citées avec réalisateur, titre original, année, pays.", ru: "Фильмы — с режиссёром, оригинальным названием, годом и страной.", en: "Works cited with director, original title, year, country."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Chicago"], intl: ["Chicago", "MLA"]}

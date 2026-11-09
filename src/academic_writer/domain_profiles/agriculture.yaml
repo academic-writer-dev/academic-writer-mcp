@@ -1,0 +1,29 @@
+id: agriculture
+parent: biologie
+names: {fr: "Agronomie et agriculture", ru: "Агрономия и сельское хозяйство", en: "Agronomy and agriculture"}
+description:
+  fr: "Agronomie, production végétale et animale, sciences du sol, machinisme agricole, agroéconomie."
+  ru: "Агрономия, растениеводство и животноводство, почвоведение, сельскохозяйственная техника, экономика АПК."
+  en: "Agronomy, crop and animal production, soil science, agricultural machinery, agricultural economics."
+keywords:
+  fr: ["agronomi*", "rendement*", "grandes cultures", "culture céréalière", "semis", "fertilisation", "engrais", "irrigation", "élevage", "cheptel", "parcelle*", "rotation des cultures", "phytosanitaire*", "récolte*"]
+  ru: ["агроном*", "урожайност*", "посев*", "удобрени*", "орошени*", "животноводств*", "поголовь*", "севооборот*", "растениеводств*", "уборк* урожа*", "агрохими*", "почв*"]
+  en: ["agronom*", "crop yield*", "sowing", "fertili*", "irrigation", "livestock", "herd*", "crop rotation", "plant protection", "harvest*", "tillage", "agricultur*"]
+terminology:
+  - {id: yield, fr: "rendement (t/ha)", ru: "урожайность (ц/га, т/га)", en: "yield (t/ha)"}
+  - {id: rotation, fr: "rotation des cultures", ru: "севооборот", en: "crop rotation"}
+  - {id: fertiliser, fr: "engrais", ru: "удобрение", en: "fertiliser"}
+  - {id: soil_fertility, fr: "fertilité du sol", ru: "плодородие почвы", en: "soil fertility"}
+  - {id: field_trial, fr: "essai au champ", ru: "полевой опыт", en: "field trial"}
+methodology:
+  fr: ["Décrire le dispositif expérimental (blocs, répétitions, témoin).", "Préciser lieu, campagne et conditions climatiques des essais."]
+  ru: ["Описывать схему опыта (повторности, контроль, рендомизация).", "Указывать место, год и погодные условия опыта."]
+  en: ["Describe the experimental design (blocks, replicates, control).", "State location, season and weather conditions of trials."]
+validation_rules:
+  - {id: units_per_area, severity: warning, description: {fr: "Rendements et doses rapportés à l'unité de surface avec l'unité explicite (t/ha, kg/ha).", ru: "Урожайность и нормы внесения — на единицу площади с явной единицей (ц/га, кг/га).", en: "Yields and rates per unit area with explicit unit (t/ha, kg/ha)."}}
+  - {id: replicates, severity: warning, description: {fr: "Résultats d'essais avec nombre de répétitions et test statistique.", ru: "Результаты опытов с числом повторностей и статистической обработкой (НСР).", en: "Trial results with replicates and statistical test."}}
+calculations:
+  - {id: doses, tools: [sympy], description: {fr: "Doses d'engrais, bilans, rendements", ru: "Нормы удобрений, балансы, урожайность", en: "Fertiliser rates, balances, yields"}}
+  - {id: anova, tools: [numpy], description: {fr: "Analyse de variance des essais", ru: "Дисперсионный анализ опытов (НСР)", en: "Analysis of variance of trials"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Harvard"], intl: ["APA 7", "Harvard"]}

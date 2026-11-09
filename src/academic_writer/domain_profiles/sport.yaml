@@ -1,0 +1,26 @@
+id: sport
+parent: generaliste
+names: {fr: "Sciences du sport (STAPS)", ru: "Физическая культура и спорт", en: "Sport and exercise science"}
+description:
+  fr: "Physiologie de l'exercice, entraînement, biomécanique, éducation physique, management du sport."
+  ru: "Физиология мышечной деятельности, теория и методика тренировки, биомеханика, физическое воспитание, спортивный менеджмент."
+  en: "Exercise physiology, training, biomechanics, physical education, sport management."
+risk_level: high
+risk_notice:
+  fr: "Santé des sportifs : aucun programme d'entraînement, de nutrition ou de rééducation ne doit être présenté comme une prescription individuelle ; validation par un professionnel qualifié."
+  ru: "Здоровье спортсменов: программы тренировок, питания или реабилитации не являются индивидуальными назначениями; требуется проверка квалифицированным специалистом."
+  en: "Athletes' health: no training, nutrition or rehabilitation programme may be presented as an individual prescription; validation by a qualified professional."
+keywords:
+  fr: ["entraînement", "performance sportive", "vo2max", "fréquence cardiaque", "endurance", "biomécanique", "staps", "éducation physique", "athlète*", "charge d'entraînement", "récupération"]
+  ru: ["тренировк*", "спортивн* результат*", "мпк", "частот* сердечных сокращений", "чсс", "выносливост*", "биомеханик*", "физическ* воспитани*", "спортсмен*", "нагрузк*", "восстановлени*"]
+  en: ["training", "sport performance", "vo2max", "heart rate", "endurance", "biomechanic*", "physical education", "athlete*", "training load", "recovery", "exercise physiology"]
+terminology:
+  - {id: vo2max, fr: "consommation maximale d'oxygène (VO2max)", ru: "максимальное потребление кислорода (МПК)", en: "maximal oxygen uptake (VO2max)"}
+  - {id: training_load, fr: "charge d'entraînement", ru: "тренировочная нагрузка", en: "training load"}
+  - {id: periodisation, fr: "périodisation", ru: "периодизация тренировки", en: "periodisation"}
+validation_rules:
+  - {id: participant_safety, severity: error, description: {fr: "Tests d'effort : protocole, consentement et sécurité des participants décrits.", ru: "Нагрузочные тесты: методика, согласие и безопасность участников.", en: "Exercise tests: protocol, consent and participant safety described."}}
+calculations:
+  - {id: physiology, tools: [sympy, numpy], description: {fr: "Indices physiologiques, statistiques de performance", ru: "Физиологические показатели, статистика результатов", en: "Physiological indices, performance statistics"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7"], intl: ["APA 7"]}

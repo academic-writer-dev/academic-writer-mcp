@@ -1,0 +1,20 @@
+id: mode
+parent: design
+names: {fr: "Mode et textile", ru: "Мода и текстиль", en: "Fashion and textiles"}
+description:
+  fr: "Stylisme, modélisme, matériaux textiles, industrie de l'habillement, mode durable."
+  ru: "Дизайн одежды, конструирование, текстильные материалы, швейное производство, устойчивая мода."
+  en: "Fashion design, pattern making, textile materials, apparel industry, sustainable fashion."
+keywords:
+  fr: ["mode", "stylisme", "modélisme", "patronage", "collection*", "textile*", "tissu*", "fibre*", "confection", "vêtement*", "prêt-à-porter", "tendance*"]
+  ru: ["мод*", "дизайн одежды", "конструировани* одежды", "лекал*", "коллекци*", "текстил*", "ткан*", "волокн*", "швейн*", "одежд*", "тренд*"]
+  en: ["fashion", "pattern making", "collection*", "textile*", "fabric*", "fibre*", "fiber*", "garment*", "apparel", "ready-to-wear", "trend*"]
+terminology:
+  - {id: pattern, fr: "patron", ru: "лекало (выкройка)", en: "pattern"}
+  - {id: fabric, fr: "tissu", ru: "ткань", en: "fabric"}
+  - {id: grading, fr: "gradation", ru: "градация лекал", en: "grading"}
+  - {id: composition, fr: "composition (fibres)", ru: "сырьевой состав", en: "fibre composition"}
+validation_rules:
+  - {id: material_data, severity: warning, description: {fr: "Composition et propriétés des matières d'après les fiches techniques fournies.", ru: "Состав и свойства материалов — по предоставленным техническим описаниям.", en: "Material composition and properties from provided data sheets."}}
+standards:
+  - {code: "ISO 3758", convention: intl, title: {fr: "Code d'étiquetage d'entretien au moyen de symboles", ru: "Маркировка символами по уходу", en: "Care labelling code using symbols"}}

@@ -18,6 +18,10 @@ EXPECTED = {
     "generaliste", "genie_mecanique", "fabrication_mecanique", "maintenance_industrielle", "automatisation",
     "informatique", "electronique", "genie_civil", "mathematiques", "physique", "chimie", "biologie",
     "medecine", "droit", "economie", "gestion", "sciences_humaines",
+    # audit E-04 : couverture disciplinaire étendue
+    "pharmacie", "agriculture", "geologie", "environnement", "finance_comptabilite", "sciences_politiques",
+    "psychologie", "histoire", "philosophie", "langues_linguistique", "education", "architecture", "arts", "design",
+    "mode", "audiovisuel", "sport", "tourisme",
 }
 
 MECHANICS_RU = (
@@ -63,7 +67,7 @@ def test_inheritance_merges_lists_but_not_keywords(registry: DomainRegistry) -> 
 
 def test_high_risk_profiles_have_notices(registry: DomainRegistry) -> None:
     high = {p.id for p in registry.all() if p.risk_level == "high"}
-    assert high == {"medecine", "droit"}
+    assert high == {"medecine", "droit", "pharmacie", "finance_comptabilite", "psychologie", "sport"}
     for profile_id in high:
         notice = registry.get(profile_id).risk_notice
         assert notice.fr and notice.ru and notice.en
@@ -262,3 +266,33 @@ async def test_mcp_domain_tools(services: Services, inbox: Path) -> None:
 
         resource = await client.read_resource("academic-writer://domains/droit")
         assert "risk_notice" in resource.contents[0].text
+
+
+@pytest.mark.parametrize(("expected", "text"), [
+    ("pharmacie", "Étude de la pharmacocinétique : biodisponibilité, demi-vie et clairance du principe actif ; posologie."),
+    ("geologie", "Описание месторождения: керн скважин, содержание руды, разломы и стратиграфия."),
+    ("psychologie", "Participants completed a questionnaire on a Likert scale; cognitive bias and personality."),
+    ("histoire", "Analyse des archives du XVIIe siècle : critique des sources primaires et historiographie du règne."),
+    ("tourisme", "Анализ загрузки номерного фонда гостиницы, туроператоры и турпоток в дестинации."),
+    ("finance_comptabilite", "Bilan et compte de résultat : fonds de roulement, trésorerie, amortissements, ratios financiers."),
+    ("agriculture", "Урожайность пшеницы, севооборот, удобрения и полевой опыт с повторностями."),
+    ("sport", "Тренировочная нагрузка, ЧСС и МПК спортсменов, выносливость."),
+])
+def test_extended_profiles_detected(registry: DomainRegistry, expected: str, text: str) -> None:
+    """Audit E-04 : les nouvelles disciplines sont réellement détectées, pas seulement déclarées."""
+    from academic_writer.domains.detection import score_profiles
+
+    scores, _ = score_profiles(text, registry.all())
+    assert scores[0].profile.id == expected
+
+
+@pytest.mark.parametrize("document_type", ["expose", "presentation_orale", "etude_de_cas", "fiche_de_lecture",
+                                           "synthese_bibliographique", "rapport_de_stage"])
+@pytest.mark.parametrize("language", ["fr", "ru", "en"])
+def test_new_document_types_have_structures(services: Services, document_type: str, language: str) -> None:
+    from academic_writer.core.models import DocumentType, Language
+
+    project = services.projects.create("Travail", DocumentType(document_type), Language(language))
+    services.domains.assign(project.id, "generaliste", {"fr": "fr", "ru": "ru", "en": "intl"}[language])
+    template = services.domains.structure_template(project.id)
+    assert len(template.sections) >= 6 and all(s.title for s in template.sections)

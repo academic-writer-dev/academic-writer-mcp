@@ -18,6 +18,11 @@ families:
   cahier_des_charges: [cahier_des_charges]
   procedure: [procedure_operationnelle, documentation_professionnelle]
   autre: [autre]
+  expose: [expose, presentation_orale]
+  etude_de_cas: [etude_de_cas]
+  fiche_lecture: [fiche_de_lecture]
+  synthese_bibliographique: [synthese_bibliographique]
+  rapport_stage: [rapport_de_stage]
 
 structures:
   # ======================================================================
@@ -162,6 +167,70 @@ structures:
         - {id: steps, title: {fr: "Mode opératoire", ru: "Порядок выполнения", en: "Procedure steps"}}
         - {id: records, required: false, title: {fr: "Enregistrements", ru: "Записи", en: "Records"}}
         - {id: revision_history, title: {fr: "Historique des révisions", ru: "Лист регистрации изменений", en: "Revision history"}}
+    expose:
+      standard: "Требования кафедры; оформление по ГОСТ 7.32-2017 при необходимости"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: contents, required: false, title: {fr: "Plan", ru: "Содержание", en: "Outline"}}
+        - {id: introduction, title: {fr: "Introduction et problématique", ru: "Введение", en: "Introduction and research question"},
+           guidance: {fr: "Contexte, problématique, annonce du plan.", ru: "Актуальность, цель и задачи, структура работы.", en: "Context, research question, outline."}}
+        - {id: body, title: {fr: "Développement", ru: "Основная часть", en: "Main body"},
+           guidance: {fr: "Deux ou trois parties argumentées, chaque idée appuyée sur une source citée.", ru: "Два-три раздела, каждое положение подкреплено источником.", en: "Two or three argued parts, each point supported by a cited source."}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+    etude_de_cas:
+      standard: "Требования кафедры; оформление по ГОСТ 7.32-2017 при необходимости"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: case, title: {fr: "Présentation du cas", ru: "Описание ситуации (кейса)", en: "Case presentation"},
+           guidance: {fr: "Faits fournis uniquement ; aucune donnée ajoutée.", ru: "Только предоставленные факты, без добавления данных.", en: "Given facts only; no added data."}}
+        - {id: problem, title: {fr: "Problématique", ru: "Постановка проблемы", en: "Problem statement"}}
+        - {id: analysis, title: {fr: "Analyse", ru: "Анализ", en: "Analysis"},
+           guidance: {fr: "Outils d'analyse nommés (SWOT, causes-effets, calculs) appliqués aux données du cas.", ru: "Названные методы анализа (SWOT, причинно-следственный анализ, расчёты) применительно к данным кейса.", en: "Named analysis tools (SWOT, cause-effect, calculations) applied to the case data."}}
+        - {id: options, title: {fr: "Solutions envisageables", ru: "Варианты решений", en: "Options"}}
+        - {id: recommendations, title: {fr: "Recommandations", ru: "Рекомендации", en: "Recommendations"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+    fiche_lecture:
+      standard: "Требования кафедры; оформление по ГОСТ 7.32-2017 при необходимости"
+      sections:
+        - {id: reference, title: {fr: "Référence complète de l'ouvrage", ru: "Библиографическое описание", en: "Full reference"}}
+        - {id: author, title: {fr: "L'auteur et le contexte", ru: "Об авторе и контексте", en: "Author and context"}}
+        - {id: summary, title: {fr: "Résumé", ru: "Краткое содержание", en: "Summary"},
+           guidance: {fr: "Fidèle au texte, sans interprétation ; pages citées.", ru: "Точно по тексту, без интерпретации; с указанием страниц.", en: "Faithful to the text, without interpretation; pages cited."}}
+        - {id: key_ideas, title: {fr: "Idées principales", ru: "Основные идеи", en: "Key ideas"}}
+        - {id: quotes, required: false, title: {fr: "Citations commentées", ru: "Цитаты с комментариями", en: "Annotated quotations"}}
+        - {id: critique, title: {fr: "Analyse critique", ru: "Критический анализ", en: "Critical analysis"},
+           guidance: {fr: "Distinguer clairement l'avis personnel du contenu de l'ouvrage.", ru: "Чётко отделять собственное мнение от содержания книги.", en: "Clearly separate personal opinion from the book's content."}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Вывод", en: "Conclusion"}}
+    synthese_bibliographique:
+      standard: "Требования кафедры; оформление по ГОСТ 7.32-2017 при необходимости"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: introduction, title: {fr: "Introduction et question de recherche", ru: "Введение", en: "Introduction and review question"}}
+        - {id: method, title: {fr: "Méthode de recherche documentaire", ru: "Методика поиска литературы", en: "Search method"},
+           guidance: {fr: "Bases interrogées, mots-clés, période, critères d'inclusion et d'exclusion, nombre de références retenues.", ru: "Базы данных, ключевые слова, период, критерии включения и исключения, число отобранных источников.", en: "Databases, keywords, period, inclusion and exclusion criteria, number of references kept."}}
+        - {id: review, title: {fr: "État des connaissances", ru: "Обзор литературы", en: "Review of the literature"},
+           guidance: {fr: "Organisé par thèmes ; chaque affirmation référencée ; accords et désaccords entre auteurs.", ru: "По темам; каждое утверждение со ссылкой; совпадения и расхождения авторов.", en: "Organised by theme; every claim referenced; agreements and disagreements."}}
+        - {id: discussion, title: {fr: "Discussion et limites", ru: "Обсуждение и ограничения", en: "Discussion and limitations"}}
+        - {id: conclusion, title: {fr: "Conclusion et pistes de recherche", ru: "Заключение", en: "Conclusion and research gaps"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+    rapport_stage:
+      standard: "Требования кафедры; оформление по ГОСТ 7.32-2017 при необходимости"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: contents, title: {fr: "Sommaire", ru: "Содержание", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"},
+           guidance: {fr: "Lieu, durée, objectifs du stage.", ru: "Место, сроки, цели и задачи практики.", en: "Place, duration, internship objectives."}}
+        - {id: organisation, title: {fr: "Présentation de l'organisme d'accueil", ru: "Характеристика предприятия (организации)", en: "Host organisation"},
+           guidance: {fr: "Uniquement les informations fournies par l'utilisateur ou l'organisme.", ru: "Только сведения, предоставленные пользователем или организацией.", en: "Only information provided by the user or the organisation."}}
+        - {id: missions, title: {fr: "Missions et travaux réalisés", ru: "Выполненные работы", en: "Assignments and work carried out"}}
+        - {id: results, title: {fr: "Résultats et apports", ru: "Результаты практики", en: "Results and contributions"}}
+        - {id: assessment, title: {fr: "Bilan personnel et professionnel", ru: "Выводы по практике", en: "Personal and professional assessment"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
     autre:
       standard: null
       sections:
@@ -319,6 +388,70 @@ structures:
         - {id: steps, title: {fr: "Description du mode opératoire", ru: "Порядок выполнения", en: "Procedure steps"}}
         - {id: records, required: false, title: {fr: "Enregistrements", ru: "Записи", en: "Records"}}
         - {id: revision_history, title: {fr: "Historique des révisions", ru: "Лист регистрации изменений", en: "Revision history"}}
+    expose:
+      standard: "Consignes de l'enseignant ou de l'établissement"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: contents, required: false, title: {fr: "Plan", ru: "Содержание", en: "Outline"}}
+        - {id: introduction, title: {fr: "Introduction et problématique", ru: "Введение", en: "Introduction and research question"},
+           guidance: {fr: "Contexte, problématique, annonce du plan.", ru: "Актуальность, цель и задачи, структура работы.", en: "Context, research question, outline."}}
+        - {id: body, title: {fr: "Développement", ru: "Основная часть", en: "Main body"},
+           guidance: {fr: "Deux ou trois parties argumentées, chaque idée appuyée sur une source citée.", ru: "Два-три раздела, каждое положение подкреплено источником.", en: "Two or three argued parts, each point supported by a cited source."}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+    etude_de_cas:
+      standard: "Consignes de l'enseignant ou de l'établissement"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: case, title: {fr: "Présentation du cas", ru: "Описание ситуации (кейса)", en: "Case presentation"},
+           guidance: {fr: "Faits fournis uniquement ; aucune donnée ajoutée.", ru: "Только предоставленные факты, без добавления данных.", en: "Given facts only; no added data."}}
+        - {id: problem, title: {fr: "Problématique", ru: "Постановка проблемы", en: "Problem statement"}}
+        - {id: analysis, title: {fr: "Analyse", ru: "Анализ", en: "Analysis"},
+           guidance: {fr: "Outils d'analyse nommés (SWOT, causes-effets, calculs) appliqués aux données du cas.", ru: "Названные методы анализа (SWOT, причинно-следственный анализ, расчёты) применительно к данным кейса.", en: "Named analysis tools (SWOT, cause-effect, calculations) applied to the case data."}}
+        - {id: options, title: {fr: "Solutions envisageables", ru: "Варианты решений", en: "Options"}}
+        - {id: recommendations, title: {fr: "Recommandations", ru: "Рекомендации", en: "Recommendations"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+    fiche_lecture:
+      standard: "Consignes de l'enseignant ou de l'établissement"
+      sections:
+        - {id: reference, title: {fr: "Référence complète de l'ouvrage", ru: "Библиографическое описание", en: "Full reference"}}
+        - {id: author, title: {fr: "L'auteur et le contexte", ru: "Об авторе и контексте", en: "Author and context"}}
+        - {id: summary, title: {fr: "Résumé", ru: "Краткое содержание", en: "Summary"},
+           guidance: {fr: "Fidèle au texte, sans interprétation ; pages citées.", ru: "Точно по тексту, без интерпретации; с указанием страниц.", en: "Faithful to the text, without interpretation; pages cited."}}
+        - {id: key_ideas, title: {fr: "Idées principales", ru: "Основные идеи", en: "Key ideas"}}
+        - {id: quotes, required: false, title: {fr: "Citations commentées", ru: "Цитаты с комментариями", en: "Annotated quotations"}}
+        - {id: critique, title: {fr: "Analyse critique", ru: "Критический анализ", en: "Critical analysis"},
+           guidance: {fr: "Distinguer clairement l'avis personnel du contenu de l'ouvrage.", ru: "Чётко отделять собственное мнение от содержания книги.", en: "Clearly separate personal opinion from the book's content."}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Вывод", en: "Conclusion"}}
+    synthese_bibliographique:
+      standard: "Consignes de l'enseignant ou de l'établissement"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: introduction, title: {fr: "Introduction et question de recherche", ru: "Введение", en: "Introduction and review question"}}
+        - {id: method, title: {fr: "Méthode de recherche documentaire", ru: "Методика поиска литературы", en: "Search method"},
+           guidance: {fr: "Bases interrogées, mots-clés, période, critères d'inclusion et d'exclusion, nombre de références retenues.", ru: "Базы данных, ключевые слова, период, критерии включения и исключения, число отобранных источников.", en: "Databases, keywords, period, inclusion and exclusion criteria, number of references kept."}}
+        - {id: review, title: {fr: "État des connaissances", ru: "Обзор литературы", en: "Review of the literature"},
+           guidance: {fr: "Organisé par thèmes ; chaque affirmation référencée ; accords et désaccords entre auteurs.", ru: "По темам; каждое утверждение со ссылкой; совпадения и расхождения авторов.", en: "Organised by theme; every claim referenced; agreements and disagreements."}}
+        - {id: discussion, title: {fr: "Discussion et limites", ru: "Обсуждение и ограничения", en: "Discussion and limitations"}}
+        - {id: conclusion, title: {fr: "Conclusion et pistes de recherche", ru: "Заключение", en: "Conclusion and research gaps"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+    rapport_stage:
+      standard: "Consignes de l'enseignant ou de l'établissement"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: contents, title: {fr: "Sommaire", ru: "Содержание", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"},
+           guidance: {fr: "Lieu, durée, objectifs du stage.", ru: "Место, сроки, цели и задачи практики.", en: "Place, duration, internship objectives."}}
+        - {id: organisation, title: {fr: "Présentation de l'organisme d'accueil", ru: "Характеристика предприятия (организации)", en: "Host organisation"},
+           guidance: {fr: "Uniquement les informations fournies par l'utilisateur ou l'organisme.", ru: "Только сведения, предоставленные пользователем или организацией.", en: "Only information provided by the user or the organisation."}}
+        - {id: missions, title: {fr: "Missions et travaux réalisés", ru: "Выполненные работы", en: "Assignments and work carried out"}}
+        - {id: results, title: {fr: "Résultats et apports", ru: "Результаты практики", en: "Results and contributions"}}
+        - {id: assessment, title: {fr: "Bilan personnel et professionnel", ru: "Выводы по практике", en: "Personal and professional assessment"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
     autre:
       standard: null
       sections:
@@ -465,6 +598,70 @@ structures:
         - {id: steps, title: {fr: "Étapes", ru: "Порядок действий", en: "Steps"}}
         - {id: records, required: false, title: {fr: "Enregistrements", ru: "Записи", en: "Records"}}
         - {id: revision_history, title: {fr: "Historique des révisions", ru: "История изменений", en: "Revision history"}}
+    expose:
+      standard: "Instructor or institution guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: contents, required: false, title: {fr: "Plan", ru: "Содержание", en: "Outline"}}
+        - {id: introduction, title: {fr: "Introduction et problématique", ru: "Введение", en: "Introduction and research question"},
+           guidance: {fr: "Contexte, problématique, annonce du plan.", ru: "Актуальность, цель и задачи, структура работы.", en: "Context, research question, outline."}}
+        - {id: body, title: {fr: "Développement", ru: "Основная часть", en: "Main body"},
+           guidance: {fr: "Deux ou trois parties argumentées, chaque idée appuyée sur une source citée.", ru: "Два-три раздела, каждое положение подкреплено источником.", en: "Two or three argued parts, each point supported by a cited source."}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+    etude_de_cas:
+      standard: "Instructor or institution guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: case, title: {fr: "Présentation du cas", ru: "Описание ситуации (кейса)", en: "Case presentation"},
+           guidance: {fr: "Faits fournis uniquement ; aucune donnée ajoutée.", ru: "Только предоставленные факты, без добавления данных.", en: "Given facts only; no added data."}}
+        - {id: problem, title: {fr: "Problématique", ru: "Постановка проблемы", en: "Problem statement"}}
+        - {id: analysis, title: {fr: "Analyse", ru: "Анализ", en: "Analysis"},
+           guidance: {fr: "Outils d'analyse nommés (SWOT, causes-effets, calculs) appliqués aux données du cas.", ru: "Названные методы анализа (SWOT, причинно-следственный анализ, расчёты) применительно к данным кейса.", en: "Named analysis tools (SWOT, cause-effect, calculations) applied to the case data."}}
+        - {id: options, title: {fr: "Solutions envisageables", ru: "Варианты решений", en: "Options"}}
+        - {id: recommendations, title: {fr: "Recommandations", ru: "Рекомендации", en: "Recommendations"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+    fiche_lecture:
+      standard: "Instructor or institution guidelines"
+      sections:
+        - {id: reference, title: {fr: "Référence complète de l'ouvrage", ru: "Библиографическое описание", en: "Full reference"}}
+        - {id: author, title: {fr: "L'auteur et le contexte", ru: "Об авторе и контексте", en: "Author and context"}}
+        - {id: summary, title: {fr: "Résumé", ru: "Краткое содержание", en: "Summary"},
+           guidance: {fr: "Fidèle au texte, sans interprétation ; pages citées.", ru: "Точно по тексту, без интерпретации; с указанием страниц.", en: "Faithful to the text, without interpretation; pages cited."}}
+        - {id: key_ideas, title: {fr: "Idées principales", ru: "Основные идеи", en: "Key ideas"}}
+        - {id: quotes, required: false, title: {fr: "Citations commentées", ru: "Цитаты с комментариями", en: "Annotated quotations"}}
+        - {id: critique, title: {fr: "Analyse critique", ru: "Критический анализ", en: "Critical analysis"},
+           guidance: {fr: "Distinguer clairement l'avis personnel du contenu de l'ouvrage.", ru: "Чётко отделять собственное мнение от содержания книги.", en: "Clearly separate personal opinion from the book's content."}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Вывод", en: "Conclusion"}}
+    synthese_bibliographique:
+      standard: "Instructor or institution guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: introduction, title: {fr: "Introduction et question de recherche", ru: "Введение", en: "Introduction and review question"}}
+        - {id: method, title: {fr: "Méthode de recherche documentaire", ru: "Методика поиска литературы", en: "Search method"},
+           guidance: {fr: "Bases interrogées, mots-clés, période, critères d'inclusion et d'exclusion, nombre de références retenues.", ru: "Базы данных, ключевые слова, период, критерии включения и исключения, число отобранных источников.", en: "Databases, keywords, period, inclusion and exclusion criteria, number of references kept."}}
+        - {id: review, title: {fr: "État des connaissances", ru: "Обзор литературы", en: "Review of the literature"},
+           guidance: {fr: "Organisé par thèmes ; chaque affirmation référencée ; accords et désaccords entre auteurs.", ru: "По темам; каждое утверждение со ссылкой; совпадения и расхождения авторов.", en: "Organised by theme; every claim referenced; agreements and disagreements."}}
+        - {id: discussion, title: {fr: "Discussion et limites", ru: "Обсуждение и ограничения", en: "Discussion and limitations"}}
+        - {id: conclusion, title: {fr: "Conclusion et pistes de recherche", ru: "Заключение", en: "Conclusion and research gaps"}}
+        - {id: references, title: {fr: "Bibliographie", ru: "Список литературы", en: "References"}}
+    rapport_stage:
+      standard: "Instructor or institution guidelines"
+      sections:
+        - {id: title_page, title: {fr: "Page de garde", ru: "Титульный лист", en: "Title page"}}
+        - {id: acknowledgements, required: false, title: {fr: "Remerciements", ru: "Благодарности", en: "Acknowledgements"}}
+        - {id: contents, title: {fr: "Sommaire", ru: "Содержание", en: "Contents"}}
+        - {id: introduction, title: {fr: "Introduction", ru: "Введение", en: "Introduction"},
+           guidance: {fr: "Lieu, durée, objectifs du stage.", ru: "Место, сроки, цели и задачи практики.", en: "Place, duration, internship objectives."}}
+        - {id: organisation, title: {fr: "Présentation de l'organisme d'accueil", ru: "Характеристика предприятия (организации)", en: "Host organisation"},
+           guidance: {fr: "Uniquement les informations fournies par l'utilisateur ou l'organisme.", ru: "Только сведения, предоставленные пользователем или организацией.", en: "Only information provided by the user or the organisation."}}
+        - {id: missions, title: {fr: "Missions et travaux réalisés", ru: "Выполненные работы", en: "Assignments and work carried out"}}
+        - {id: results, title: {fr: "Résultats et apports", ru: "Результаты практики", en: "Results and contributions"}}
+        - {id: assessment, title: {fr: "Bilan personnel et professionnel", ru: "Выводы по практике", en: "Personal and professional assessment"}}
+        - {id: conclusion, title: {fr: "Conclusion", ru: "Заключение", en: "Conclusion"}}
+        - {id: references, required: false, title: {fr: "Références", ru: "Список использованных источников", en: "References"}}
+        - {id: appendices, required: false, title: {fr: "Annexes", ru: "Приложения", en: "Appendices"}}
     autre:
       standard: null
       sections:

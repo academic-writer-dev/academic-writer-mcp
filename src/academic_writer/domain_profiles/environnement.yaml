@@ -1,0 +1,31 @@
+id: environnement
+parent: generaliste
+names: {fr: "Environnement et écologie", ru: "Экология и охрана окружающей среды", en: "Environment and ecology"}
+description:
+  fr: "Écologie, pollution, gestion des déchets, climat, évaluation environnementale."
+  ru: "Экология, загрязнение, обращение с отходами, климат, оценка воздействия на окружающую среду."
+  en: "Ecology, pollution, waste management, climate, environmental assessment."
+keywords:
+  fr: ["environnement*", "écologi*", "pollution", "polluant*", "émissions", "gaz à effet de serre", "bilan carbone", "déchets", "biodiversité", "impact environnemental", "étude d'impact", "développement durable"]
+  ru: ["окружающ* сред*", "экологи*", "загрязнени*", "загрязняющ* веществ*", "выброс*", "парников* газ*", "углеродн* след*", "отход*", "биоразнообрази*", "овос", "устойчив* развити*", "пдк"]
+  en: ["environment*", "ecolog*", "pollution", "pollutant*", "emissions", "greenhouse gas*", "carbon footprint", "waste", "biodiversity", "environmental impact", "impact assessment", "sustainab*"]
+terminology:
+  - {id: ghg, fr: "gaz à effet de serre", ru: "парниковые газы", en: "greenhouse gases"}
+  - {id: co2e, fr: "équivalent CO2", ru: "CO2-эквивалент", en: "CO2 equivalent"}
+  - {id: eia, fr: "étude d'impact environnemental", ru: "оценка воздействия на окружающую среду (ОВОС)", en: "environmental impact assessment"}
+  - {id: limit_value, fr: "valeur limite", ru: "предельно допустимая концентрация (ПДК)", en: "limit value"}
+  - {id: lca, fr: "analyse du cycle de vie", ru: "оценка жизненного цикла", en: "life cycle assessment"}
+methodology:
+  fr: ["Indiquer périmètre, année de référence et facteurs d'émission utilisés.", "Comparer les mesures aux valeurs réglementaires en vigueur (texte et date)."]
+  ru: ["Указывать границы, базовый год и используемые коэффициенты выбросов.", "Сравнивать измерения с действующими нормативами (документ и дата)."]
+  en: ["State scope, reference year and emission factors used.", "Compare measurements with regulatory limits in force (text and date)."]
+validation_rules:
+  - {id: emission_factors, severity: warning, description: {fr: "Facteurs d'émission et valeurs limites cités avec leur source et leur date.", ru: "Коэффициенты выбросов и нормативы — с источником и датой.", en: "Emission factors and limits cited with source and date."}}
+calculations:
+  - {id: emissions, tools: [sympy], description: {fr: "Bilans d'émissions, concentrations, dilution", ru: "Расчёт выбросов, концентраций, рассеивания", en: "Emission balances, concentrations, dilution"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Harvard"], intl: ["APA 7", "Harvard"]}
+standards:
+  - {code: "ISO 14001", convention: intl, title: {fr: "Systèmes de management environnemental", ru: "Системы экологического менеджмента", en: "Environmental management systems"}}
+  - {code: "ISO 14040", convention: intl, title: {fr: "Analyse du cycle de vie — principes et cadre", ru: "Оценка жизненного цикла — принципы и структура", en: "Life cycle assessment — principles and framework"}}
+  - {code: "ISO 14064-1", convention: intl, title: {fr: "Gaz à effet de serre — quantification au niveau des organismes", ru: "Парниковые газы — количественное определение на уровне организации", en: "Greenhouse gases — organisation-level quantification"}}

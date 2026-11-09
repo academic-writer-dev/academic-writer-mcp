@@ -1,0 +1,24 @@
+id: design
+parent: arts
+names: {fr: "Design", ru: "Дизайн", en: "Design"}
+description:
+  fr: "Design produit, graphique, d'interface (UX/UI), d'espace ; démarche de conception centrée utilisateur."
+  ru: "Промышленный, графический, интерфейсный (UX/UI) дизайн, дизайн среды; человеко-ориентированное проектирование."
+  en: "Product, graphic, interface (UX/UI) and spatial design; user-centred design process."
+keywords:
+  fr: ["design*", "ux", "ui", "maquette*", "prototype*", "persona*", "charte graphique", "typographie", "ergonomi*", "parcours utilisateur", "wireframe*", "identité visuelle"]
+  ru: ["дизайн*", "макет*", "прототип*", "персон*", "фирменн* стил*", "типографик*", "эргономик*", "пользовательск* опыт*", "интерфейс*", "айдентик*"]
+  en: ["design*", "ux", "ui", "mock-up*", "prototype*", "persona*", "brand guidelines", "typography", "ergonomic*", "user journey", "wireframe*", "visual identity"]
+terminology:
+  - {id: persona, fr: "persona", ru: "персона (портрет пользователя)", en: "persona"}
+  - {id: usability, fr: "utilisabilité", ru: "юзабилити (удобство использования)", en: "usability"}
+  - {id: prototype, fr: "prototype", ru: "прототип", en: "prototype"}
+methodology:
+  fr: ["Démarche : recherche utilisateurs, idéation, prototypage, tests, itérations.", "Résultats de tests utilisateurs avec protocole et nombre de participants."]
+  ru: ["Этапы: исследование пользователей, генерация идей, прототипирование, тестирование, итерации.", "Результаты юзабилити-тестов с методикой и числом участников."]
+  en: ["Process: user research, ideation, prototyping, testing, iterations.", "User test results with protocol and number of participants."]
+validation_rules:
+  - {id: accessibility, severity: warning, description: {fr: "Contrastes et lisibilité conformes aux règles d'accessibilité (WCAG).", ru: "Контраст и читаемость по требованиям доступности (WCAG).", en: "Contrast and legibility meet accessibility rules (WCAG)."}}
+standards:
+  - {code: "ISO 9241-210", convention: intl, title: {fr: "Conception centrée sur l'opérateur humain", ru: "Человеко-ориентированное проектирование интерактивных систем", en: "Human-centred design for interactive systems"}}
+  - {code: "WCAG 2.2", convention: intl, title: {fr: "Règles pour l'accessibilité des contenus web", ru: "Руководство по доступности веб-контента", en: "Web Content Accessibility Guidelines"}}

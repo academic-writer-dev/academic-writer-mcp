@@ -1,0 +1,24 @@
+id: education
+parent: sciences_humaines
+names: {fr: "Sciences de l'éducation", ru: "Педагогика и образование", en: "Education"}
+description:
+  fr: "Didactique, pédagogie, évaluation des apprentissages, ingénierie de formation."
+  ru: "Дидактика, педагогика, оценивание результатов обучения, проектирование образовательных программ."
+  en: "Didactics, pedagogy, assessment of learning, instructional design."
+keywords:
+  fr: ["pédagogi*", "didactique", "apprenant*", "enseignement", "apprentissage*", "séquence pédagogique", "compétence*", "évaluation formative", "curriculum", "classe", "élève*"]
+  ru: ["педагогик*", "дидактик*", "обучающ*", "обучени*", "учебн* процесс*", "компетенци*", "формирующ* оценивани*", "учебн* план*", "урок*", "школьник*", "фгос"]
+  en: ["pedagog*", "didactic*", "learner*", "teaching", "learning outcome*", "lesson plan*", "competenc*", "formative assessment", "curriculum", "classroom", "pupil*"]
+terminology:
+  - {id: learning_outcome, fr: "objectif d'apprentissage", ru: "образовательный результат", en: "learning outcome"}
+  - {id: formative, fr: "évaluation formative", ru: "формирующее оценивание", en: "formative assessment"}
+  - {id: competence, fr: "compétence", ru: "компетенция", en: "competence"}
+  - {id: curriculum, fr: "programme d'enseignement", ru: "образовательная программа", en: "curriculum"}
+methodology:
+  fr: ["Décrire le public, le contexte et les objectifs mesurables.", "Pour une expérimentation : groupes, pré-test/post-test, analyse statistique."]
+  ru: ["Описывать контингент, условия и измеримые цели.", "Для эксперимента: группы, входной/итоговый контроль, статистическая обработка."]
+  en: ["Describe audience, context and measurable objectives.", "For an experiment: groups, pre-test/post-test, statistical analysis."]
+validation_rules:
+  - {id: minors_data, severity: error, description: {fr: "Données d'élèves anonymisées ; autorisations mentionnées pour les mineurs.", ru: "Данные учащихся обезличены; для несовершеннолетних указаны разрешения.", en: "Pupil data anonymised; permissions stated for minors."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7"], intl: ["APA 7"]}

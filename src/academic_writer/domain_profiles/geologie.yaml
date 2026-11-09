@@ -1,0 +1,29 @@
+id: geologie
+parent: generaliste
+names: {fr: "Géologie et géosciences", ru: "Геология и науки о Земле", en: "Geology and earth sciences"}
+description:
+  fr: "Géologie, minéralogie, pétrographie, hydrogéologie, géophysique, exploitation minière."
+  ru: "Геология, минералогия, петрография, гидрогеология, геофизика, горное дело."
+  en: "Geology, mineralogy, petrography, hydrogeology, geophysics, mining."
+keywords:
+  fr: ["géologi*", "minéralogi*", "pétrographi*", "stratigraphi*", "gisement*", "minerai*", "roche*", "forage*", "sondage*", "faille*", "nappe phréatique", "hydrogéologi*", "géophysi*"]
+  ru: ["геологи*", "минералоги*", "петрограф*", "стратиграф*", "месторождени*", "руд*", "горн* пород*", "бурени*", "скважин*", "разлом*", "водоносн* горизонт*", "гидрогеолог*", "геофизик*"]
+  en: ["geolog*", "mineralog*", "petrograph*", "stratigraph*", "ore deposit*", "ore*", "rock*", "drilling", "borehole*", "fault*", "aquifer*", "hydrogeolog*", "geophysic*"]
+terminology:
+  - {id: deposit, fr: "gisement", ru: "месторождение", en: "deposit"}
+  - {id: ore_grade, fr: "teneur", ru: "содержание (полезного компонента)", en: "grade"}
+  - {id: reserves, fr: "réserves / ressources", ru: "запасы / ресурсы", en: "reserves / resources"}
+  - {id: aquifer, fr: "aquifère", ru: "водоносный горизонт", en: "aquifer"}
+  - {id: core, fr: "carotte de forage", ru: "керн", en: "drill core"}
+methodology:
+  fr: ["Localiser les observations (coordonnées, profondeur, échelle des cartes).", "Distinguer ressources et réserves selon le code de déclaration utilisé."]
+  ru: ["Привязывать наблюдения (координаты, глубина, масштаб карт).", "Различать ресурсы и запасы по используемой классификации."]
+  en: ["Locate observations (coordinates, depth, map scale).", "Separate resources and reserves according to the reporting code used."]
+validation_rules:
+  - {id: reporting_code, severity: warning, description: {fr: "Toute estimation de ressources indique la classification utilisée (JORC, NI 43-101, classification russe).", ru: "Для оценки запасов указывать классификацию (ГКЗ, JORC, NI 43-101).", en: "Resource estimates state the classification used (JORC, NI 43-101, Russian GKZ)."}}
+calculations:
+  - {id: reserves, tools: [sympy], description: {fr: "Volumes, tonnages, teneurs moyennes", ru: "Объёмы, тоннаж, средние содержания", en: "Volumes, tonnages, average grades"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7"], intl: ["APA 7"]}
+standards:
+  - {code: "JORC Code", convention: intl, title: {fr: "Code de déclaration des ressources minérales (Australasie)", ru: "Кодекс JORC (отчётность о ресурсах)", en: "Australasian Code for Reporting of Mineral Resources"}}

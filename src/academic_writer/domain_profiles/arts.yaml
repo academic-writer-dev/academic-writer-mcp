@@ -1,0 +1,23 @@
+id: arts
+parent: generaliste
+names: {fr: "Arts et histoire de l'art", ru: "Искусство и искусствоведение", en: "Arts and art history"}
+description:
+  fr: "Arts plastiques, histoire de l'art, musique, arts du spectacle, médiation culturelle."
+  ru: "Изобразительное искусство, искусствоведение, музыка, исполнительские искусства, культурология."
+  en: "Fine arts, art history, music, performing arts, cultural mediation."
+keywords:
+  fr: ["œuvre*", "artiste*", "peinture", "sculpture", "esthétique", "histoire de l'art", "courant artistique", "musée*", "exposition*", "composition", "musique", "spectacle vivant"]
+  ru: ["произведени* искусства", "художник*", "живопис*", "скульптур*", "эстетик*", "искусствоведени*", "художественн* направлени*", "музе*", "выставк*", "композици*", "музык*", "театр*"]
+  en: ["artwork*", "artist*", "painting", "sculpture", "aesthetic*", "art history", "art movement", "museum*", "exhibition*", "composition", "music", "performing arts"]
+terminology:
+  - {id: artwork, fr: "œuvre", ru: "произведение", en: "work of art"}
+  - {id: movement, fr: "courant artistique", ru: "художественное направление", en: "art movement"}
+  - {id: provenance, fr: "provenance", ru: "провенанс (история бытования)", en: "provenance"}
+methodology:
+  fr: ["Identifier chaque œuvre : auteur, titre, date, technique, dimensions, lieu de conservation.", "Distinguer description, analyse et interprétation."]
+  ru: ["Атрибуция произведения: автор, название, дата, техника, размеры, место хранения.", "Разделять описание, анализ и интерпретацию."]
+  en: ["Identify each work: artist, title, date, medium, dimensions, collection.", "Separate description, analysis and interpretation."]
+validation_rules:
+  - {id: image_rights, severity: error, description: {fr: "Toute reproduction d'œuvre indique sa source et ses droits (domaine public, licence, autorisation).", ru: "Для репродукций указаны источник и права (общественное достояние, лицензия, разрешение).", en: "Every reproduction states its source and rights (public domain, licence, permission)."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Chicago (notes)"], intl: ["Chicago"]}

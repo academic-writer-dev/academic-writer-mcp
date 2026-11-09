@@ -1,0 +1,24 @@
+id: langues_linguistique
+parent: sciences_humaines
+names: {fr: "Langues et linguistique", ru: "Языкознание и филология", en: "Languages and linguistics"}
+description:
+  fr: "Linguistique, traduction, didactique des langues, littérature et analyse du discours."
+  ru: "Лингвистика, перевод, методика преподавания языков, литературоведение, анализ дискурса."
+  en: "Linguistics, translation, language teaching, literature and discourse analysis."
+keywords:
+  fr: ["linguisti*", "phonéti*", "phonologi*", "morphologi*", "syntaxe", "sémantique", "lexique", "traductolog*", "corpus", "discours", "énonciation", "littéraire*"]
+  ru: ["лингвист*", "фонетик*", "фонолог*", "морфолог*", "синтаксис*", "семантик*", "лексик*", "переводовед*", "корпус*", "дискурс*", "филолог*", "литературовед*"]
+  en: ["linguistic*", "phonetic*", "phonolog*", "morpholog*", "syntax", "semantic*", "lexicon", "translation studies", "corpus", "discourse", "pragmatic*", "literary"]
+terminology:
+  - {id: morpheme, fr: "morphème", ru: "морфема", en: "morpheme"}
+  - {id: phoneme, fr: "phonème", ru: "фонема", en: "phoneme"}
+  - {id: corpus, fr: "corpus", ru: "корпус (текстов)", en: "corpus"}
+  - {id: equivalence, fr: "équivalence de traduction", ru: "переводческая эквивалентность", en: "translation equivalence"}
+methodology:
+  fr: ["Exemples numérotés avec glose et traduction ; source du corpus indiquée.", "Transcription phonétique en API."]
+  ru: ["Нумерованные примеры с глоссированием и переводом; указание источника корпуса.", "Фонетическая транскрипция в МФА."]
+  en: ["Numbered examples with gloss and translation; corpus source stated.", "Phonetic transcription in IPA."]
+validation_rules:
+  - {id: examples_sourced, severity: warning, description: {fr: "Chaque exemple attesté indique sa source (corpus, œuvre, page).", ru: "Для каждого примера указан источник (корпус, произведение, страница).", en: "Every attested example states its source (corpus, work, page)."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "MLA"], intl: ["APA 7", "MLA"]}

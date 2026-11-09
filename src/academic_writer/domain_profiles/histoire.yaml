@@ -1,0 +1,26 @@
+id: histoire
+parent: sciences_humaines
+names: {fr: "Histoire", ru: "История", en: "History"}
+description:
+  fr: "Histoire ancienne, médiévale, moderne et contemporaine ; histoire des techniques ; archives et historiographie."
+  ru: "Древняя, средневековая, новая и новейшая история; история техники; архивы и историография."
+  en: "Ancient, medieval, modern and contemporary history; history of technology; archives and historiography."
+keywords:
+  fr: ["historiographi*", "archive*", "source* primaire*", "chronologi*", "siècle*", "époque", "révolution", "empire*", "règne", "guerre*", "traité*", "manuscrit*"]
+  ru: ["историограф*", "архив*", "первоисточник*", "хронолог*", "век*", "эпох*", "революци*", "импери*", "царствовани*", "войн*", "договор*", "летопис*"]
+  en: ["historiograph*", "archive*", "primary source*", "chronolog*", "century", "centuries", "era", "revolution", "empire*", "reign", "war*", "treat*", "manuscript*"]
+terminology:
+  - {id: primary_source, fr: "source primaire", ru: "первоисточник (исторический источник)", en: "primary source"}
+  - {id: historiography, fr: "historiographie", ru: "историография", en: "historiography"}
+  - {id: periodisation, fr: "périodisation", ru: "периодизация", en: "periodisation"}
+  - {id: source_criticism, fr: "critique des sources", ru: "источниковедческий анализ", en: "source criticism"}
+methodology:
+  fr: ["Dater et localiser chaque fait ; distinguer sources primaires et travaux d'historiens.", "Critique externe et interne des documents (auteur, date, intention)."]
+  ru: ["Датировать и локализовать каждый факт; различать первоисточники и исследования.", "Внешняя и внутренняя критика источника (автор, дата, цель)."]
+  en: ["Date and locate every fact; separate primary sources and historians' work.", "External and internal criticism of documents (author, date, purpose)."]
+validation_rules:
+  - {id: dated_facts, severity: error, description: {fr: "Toute date, tout chiffre ou toute citation historique est référencé.", ru: "Каждая дата, цифра или цитата сопровождается ссылкой.", en: "Every historical date, figure or quotation is referenced."}}
+  - {id: anachronism, severity: warning, description: {fr: "Éviter les anachronismes de vocabulaire et de jugement.", ru: "Избегать анахронизмов в терминах и оценках.", en: "Avoid anachronistic terms and judgements."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Chicago (notes)"], intl: ["Chicago"]}
+  notes: {fr: "Les archives se citent avec le fonds, la cote et le lieu de conservation.", ru: "Архивные документы — с указанием фонда, описи, дела, листа.", en: "Archives are cited with collection, reference number and repository."}

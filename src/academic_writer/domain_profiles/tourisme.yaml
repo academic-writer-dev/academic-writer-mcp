@@ -1,0 +1,21 @@
+id: tourisme
+parent: gestion
+names: {fr: "Tourisme et hôtellerie", ru: "Туризм и гостеприимство", en: "Tourism and hospitality"}
+description:
+  fr: "Économie et gestion du tourisme, hôtellerie, restauration, aménagement touristique, patrimoine."
+  ru: "Экономика и управление туризмом, гостиничное и ресторанное дело, туристские территории, наследие."
+  en: "Tourism economics and management, hotels, catering, destination planning, heritage."
+keywords:
+  fr: ["touris*", "hôtel*", "hôtellerie", "destination*", "taux d'occupation", "nuitée*", "voyagiste*", "restauration", "flux touristique*", "séjour*", "réservation*"]
+  ru: ["туризм*", "турист*", "гостиниц*", "гостеприимств*", "туристск* дестинаци*", "загрузк* номерного фонда", "ночёвк*", "туроператор*", "ресторанн*", "турпоток*", "бронировани*"]
+  en: ["touris*", "hotel*", "hospitality", "destination*", "occupancy rate", "overnight stay*", "tour operator*", "catering", "tourist flow*", "booking*"]
+terminology:
+  - {id: occupancy, fr: "taux d'occupation", ru: "коэффициент загрузки номерного фонда", en: "occupancy rate"}
+  - {id: revpar, fr: "revenu par chambre disponible (RevPAR)", ru: "доход на доступный номер (RevPAR)", en: "revenue per available room (RevPAR)"}
+  - {id: destination, fr: "destination touristique", ru: "туристская дестинация", en: "tourist destination"}
+validation_rules:
+  - {id: tourism_stats, severity: warning, description: {fr: "Statistiques touristiques avec source officielle, période et définition (arrivées, nuitées).", ru: "Статистика туризма — с официальным источником, периодом и определением показателя.", en: "Tourism statistics with official source, period and definition (arrivals, nights)."}}
+calculations:
+  - {id: hotel_kpis, tools: [sympy], description: {fr: "Taux d'occupation, prix moyen, RevPAR", ru: "Загрузка, средняя цена номера, RevPAR", en: "Occupancy, average daily rate, RevPAR"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Harvard"], intl: ["APA 7", "Harvard"]}

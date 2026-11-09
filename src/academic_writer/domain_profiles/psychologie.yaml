@@ -1,0 +1,33 @@
+id: psychologie
+parent: sciences_humaines
+names: {fr: "Psychologie", ru: "Психология", en: "Psychology"}
+description:
+  fr: "Psychologie cognitive, sociale, du développement, clinique ; méthodes expérimentales et psychométrie."
+  ru: "Когнитивная, социальная, возрастная, клиническая психология; экспериментальные методы и психометрия."
+  en: "Cognitive, social, developmental and clinical psychology; experimental methods and psychometrics."
+risk_level: high
+risk_notice:
+  fr: "Psychologie clinique : le contenu produit ne constitue ni un diagnostic ni un avis thérapeutique. Les tests psychométriques ne s'interprètent que par un professionnel habilité ; données personnelles anonymisées."
+  ru: "Клиническая психология: текст не является диагнозом или терапевтической рекомендацией. Психометрические тесты интерпретирует только специалист; персональные данные обезличиваются."
+  en: "Clinical psychology: generated content is neither a diagnosis nor therapeutic advice. Psychometric tests are interpreted only by a qualified professional; personal data anonymised."
+keywords:
+  fr: ["psycholog*", "cognitif*", "cognition", "comportement*", "émotion*", "personnalité", "psychométri*", "questionnaire*", "échelle de likert", "participants", "groupe contrôle", "biais cognitif*", "motivation"]
+  ru: ["психолог*", "когнитивн*", "поведени*", "эмоци*", "личност*", "психометри*", "опросник*", "шкала лайкерта", "испытуем*", "контрольн* групп*", "мотиваци*"]
+  en: ["psycholog*", "cognitive", "cognition", "behaviour*", "behavior*", "emotion*", "personality", "psychometric*", "questionnaire*", "likert scale", "participants", "control group", "cognitive bias*"]
+terminology:
+  - {id: participant, fr: "participant", ru: "испытуемый (респондент)", en: "participant"}
+  - {id: validity, fr: "validité", ru: "валидность", en: "validity"}
+  - {id: reliability, fr: "fidélité (fiabilité)", ru: "надёжность", en: "reliability"}
+  - {id: effect_size, fr: "taille d'effet", ru: "размер эффекта", en: "effect size"}
+  - {id: informed_consent, fr: "consentement éclairé", ru: "информированное согласие", en: "informed consent"}
+methodology:
+  fr: ["Décrire échantillon, recrutement, consentement et comité d'éthique.", "Rapporter statistiques complètes (test, ddl, p, taille d'effet, intervalle de confiance)."]
+  ru: ["Описывать выборку, набор участников, согласие и этическое одобрение.", "Приводить полную статистику (критерий, степени свободы, p, размер эффекта, доверительный интервал)."]
+  en: ["Describe sample, recruitment, consent and ethics approval.", "Report full statistics (test, df, p, effect size, confidence interval)."]
+validation_rules:
+  - {id: ethics, severity: error, description: {fr: "Données de participants anonymisées ; consentement et avis éthique mentionnés.", ru: "Данные участников обезличены; указаны согласие и одобрение этического комитета.", en: "Participant data anonymised; consent and ethics approval stated."}}
+  - {id: apa_stats, severity: warning, description: {fr: "Résultats statistiques au format APA (ex. t(28) = 2,10 ; p = 0,045 ; d = 0,77).", ru: "Статистика в формате APA (например, t(28) = 2,10; p = 0,045; d = 0,77).", en: "Statistics reported in APA format (e.g. t(28) = 2.10, p = .045, d = 0.77)."}}
+calculations:
+  - {id: statistics, tools: [numpy], description: {fr: "Tests statistiques, corrélations, tailles d'effet, alpha de Cronbach", ru: "Статистические критерии, корреляции, размер эффекта, альфа Кронбаха", en: "Statistical tests, correlations, effect sizes, Cronbach's alpha"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7"], intl: ["APA 7"]}

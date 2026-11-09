@@ -1,0 +1,39 @@
+id: pharmacie
+parent: medecine
+names: {fr: "Pharmacie et pharmacologie", ru: "Фармация и фармакология", en: "Pharmacy and pharmacology"}
+description:
+  fr: "Pharmacologie, pharmacocinétique, galénique, pharmacie clinique, réglementation du médicament."
+  ru: "Фармакология, фармакокинетика, технология лекарственных форм, клиническая фармация, регулирование лекарственных средств."
+  en: "Pharmacology, pharmacokinetics, pharmaceutics, clinical pharmacy, drug regulation."
+risk_level: high
+risk_notice:
+  fr: "Domaine du médicament : aucune posologie, interaction ou indication ne doit être présentée comme une recommandation. Toute information doit provenir d'une source officielle à jour (RCP, pharmacopée, autorité sanitaire) et être validée par un pharmacien ou un médecin."
+  ru: "Область лекарственных средств: дозировки, взаимодействия и показания не являются рекомендациями. Сведения — только из актуальных официальных источников (инструкция, фармакопея, регулятор) с проверкой провизором или врачом."
+  en: "Medicines field: no dosage, interaction or indication may be presented as a recommendation. Information must come from an up-to-date official source (SmPC, pharmacopoeia, health authority) and be validated by a pharmacist or physician."
+keywords:
+  fr: ["pharmacocinéti*", "pharmacodynami*", "posologie", "principe actif", "excipient*", "biodisponibilité", "demi-vie", "galénique", "pharmacopée", "médicament*", "forme pharmaceutique", "rcp", "effet indésirable*"]
+  ru: ["фармакокинетик*", "фармакодинамик*", "дозировк*", "действующ* веществ*", "вспомогательн* веществ*", "биодоступност*", "период полувыведения", "лекарственн* форм*", "фармакопе*", "лекарственн* средств*", "побочн* действ*", "провизор*"]
+  en: ["pharmacokinetic*", "pharmacodynamic*", "dosage", "active ingredient", "excipient*", "bioavailability", "half-life", "pharmaceutics", "pharmacopoeia", "drug product*", "dosage form", "smpc", "adverse drug reaction*"]
+terminology:
+  - {id: api, fr: "principe actif (substance active)", ru: "действующее вещество (АФС)", en: "active pharmaceutical ingredient"}
+  - {id: bioavailability, fr: "biodisponibilité", ru: "биодоступность", en: "bioavailability"}
+  - {id: half_life, fr: "demi-vie d'élimination", ru: "период полувыведения", en: "elimination half-life"}
+  - {id: clearance, fr: "clairance", ru: "клиренс", en: "clearance"}
+  - {id: smpc, fr: "résumé des caractéristiques du produit (RCP)", ru: "общая характеристика лекарственного препарата (ОХЛП)", en: "summary of product characteristics (SmPC)"}
+  - {id: adr, fr: "effet indésirable", ru: "нежелательная реакция", en: "adverse drug reaction"}
+methodology:
+  fr: ["Distinguer données précliniques, essais cliniques et usage réel.", "Citer la source officielle et sa date pour toute donnée sur un médicament."]
+  ru: ["Разделять доклинические данные, клинические испытания и реальную практику.", "Для сведений о препарате указывать официальный источник и дату."]
+  en: ["Separate preclinical data, clinical trials and real-world use.", "Cite the official source and date for any drug information."]
+validation_rules:
+  - {id: official_source, severity: error, description: {fr: "Posologies, indications et interactions uniquement d'après une source officielle datée.", ru: "Дозировки, показания и взаимодействия — только по датированному официальному источнику.", en: "Dosages, indications and interactions only from a dated official source."}}
+  - {id: professional_validation, severity: error, description: {fr: "Validation par un pharmacien ou un médecin avant tout usage pratique.", ru: "Проверка провизором или врачом перед практическим использованием.", en: "Validation by a pharmacist or physician before any practical use."}}
+calculations:
+  - {id: pharmacokinetics, tools: [sympy], description: {fr: "Pharmacocinétique : demi-vie, clairance, volume de distribution, concentrations", ru: "Фармакокинетика: период полувыведения, клиренс, объём распределения, концентрации", en: "Pharmacokinetics: half-life, clearance, volume of distribution, concentrations"}}
+  - {id: dilutions, tools: [sympy], description: {fr: "Dilutions et concentrations (à double vérification)", ru: "Разведения и концентрации (с двойной проверкой)", en: "Dilutions and concentrations (double-checked)"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Vancouver"], intl: ["Vancouver", "AMA"]}
+standards:
+  - {code: "Ph. Eur.", convention: intl, title: {fr: "Pharmacopée européenne", ru: "Европейская фармакопея", en: "European Pharmacopoeia"}}
+  - {code: "ГФ РФ", convention: ru, title: {fr: "Pharmacopée d'État de la Fédération de Russie", ru: "Государственная фармакопея Российской Федерации", en: "State Pharmacopoeia of the Russian Federation"}}
+  - {code: "ICH E6 (GCP)", convention: intl, title: {fr: "Bonnes pratiques cliniques", ru: "Надлежащая клиническая практика", en: "Good Clinical Practice"}}

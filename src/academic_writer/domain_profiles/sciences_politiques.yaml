@@ -1,0 +1,25 @@
+id: sciences_politiques
+parent: sciences_humaines
+names: {fr: "Science politique et relations internationales", ru: "Политология и международные отношения", en: "Political science and international relations"}
+description:
+  fr: "Institutions, politiques publiques, élections, relations internationales, géopolitique."
+  ru: "Политические институты, государственная политика, выборы, международные отношения, геополитика."
+  en: "Institutions, public policy, elections, international relations, geopolitics."
+keywords:
+  fr: ["science politique", "politique publique*", "élection*", "électorat", "parti* politique*", "régime politique", "démocratie", "relations internationales", "géopolitique", "diplomati*", "gouvernance", "souveraineté"]
+  ru: ["политолог*", "государственн* политик*", "выбор*", "электорат*", "политическ* парти*", "политическ* режим*", "демократи*", "международн* отношени*", "геополитик*", "дипломати*", "суверенитет*"]
+  en: ["political science", "public polic*", "election*", "electorate", "political part*", "political regime", "democrac*", "international relations", "geopolitic*", "diplomac*", "governance", "sovereignty"]
+terminology:
+  - {id: public_policy, fr: "politique publique", ru: "государственная политика", en: "public policy"}
+  - {id: regime, fr: "régime politique", ru: "политический режим", en: "political regime"}
+  - {id: legitimacy, fr: "légitimité", ru: "легитимность", en: "legitimacy"}
+  - {id: sovereignty, fr: "souveraineté", ru: "суверенитет", en: "sovereignty"}
+methodology:
+  fr: ["Distinguer faits, sources primaires (textes officiels, données électorales) et analyses.", "Présenter les positions en présence de façon équilibrée et sourcée."]
+  ru: ["Разделять факты, первичные источники (официальные документы, данные выборов) и интерпретации.", "Излагать позиции сторон сбалансированно и со ссылками."]
+  en: ["Separate facts, primary sources (official texts, electoral data) and analysis.", "Present competing positions in a balanced, sourced way."]
+validation_rules:
+  - {id: balanced, severity: warning, description: {fr: "Aucune opinion partisane présentée comme un fait ; positions attribuées à leurs auteurs.", ru: "Политические оценки не выдаются за факты; позиции атрибутированы авторам.", en: "No partisan opinion presented as fact; positions attributed to their authors."}}
+  - {id: dated_data, severity: warning, description: {fr: "Données électorales et sondages avec source, date et méthode.", ru: "Электоральные данные и опросы — с источником, датой и методом.", en: "Electoral data and polls with source, date and method."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Chicago", "APA 7"], intl: ["Chicago", "APA 7"]}

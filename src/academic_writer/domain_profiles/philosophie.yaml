@@ -1,0 +1,24 @@
+id: philosophie
+parent: sciences_humaines
+names: {fr: "Philosophie", ru: "Философия", en: "Philosophy"}
+description:
+  fr: "Histoire de la philosophie, éthique, épistémologie, logique, philosophie politique et des sciences."
+  ru: "История философии, этика, эпистемология, логика, социальная философия и философия науки."
+  en: "History of philosophy, ethics, epistemology, logic, political philosophy and philosophy of science."
+keywords:
+  fr: ["philosoph*", "éthique", "morale", "épistémologi*", "ontologi*", "métaphysique", "dialectique", "concept*", "raison", "liberté", "vérité", "dissertation"]
+  ru: ["философ*", "этик*", "морал*", "эпистемолог*", "гносеолог*", "онтолог*", "метафизик*", "диалектик*", "поняти*", "разум*", "свобод*", "истин*"]
+  en: ["philosoph*", "ethic*", "moral*", "epistemolog*", "ontolog*", "metaphysic*", "dialectic*", "concept*", "reason", "freedom", "truth", "argument*"]
+terminology:
+  - {id: epistemology, fr: "épistémologie", ru: "эпистемология (теория познания)", en: "epistemology"}
+  - {id: ontology, fr: "ontologie", ru: "онтология", en: "ontology"}
+  - {id: argument, fr: "argument", ru: "аргумент", en: "argument"}
+  - {id: thesis, fr: "thèse", ru: "тезис", en: "thesis"}
+methodology:
+  fr: ["Problématiser : définir les notions, exposer thèse et objections.", "Citer précisément les textes (édition, page) et ne pas attribuer une idée sans référence."]
+  ru: ["Ставить проблему: определить понятия, изложить тезис и возражения.", "Точно цитировать тексты (издание, страница); не приписывать идей без ссылки."]
+  en: ["Frame the problem: define concepts, state thesis and objections.", "Quote texts precisely (edition, page); never attribute an idea without reference."]
+validation_rules:
+  - {id: exact_quotes, severity: error, description: {fr: "Citations exactes avec édition et page ; aucune citation reconstituée de mémoire.", ru: "Точные цитаты с изданием и страницей; никаких цитат «по памяти».", en: "Exact quotations with edition and page; no quotation reconstructed from memory."}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["Chicago (notes)"], intl: ["Chicago"]}
