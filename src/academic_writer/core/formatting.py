@@ -133,7 +133,7 @@ class FormattingService:
         convention = self._convention(project_id)
         style = citation_style or _DEFAULT_STYLE.get(convention, "apa")
         if style not in styles.FORMATTERS:
-            raise ValidationFailed("Style de citation : gost, apa, ieee, chicago ou vancouver.")
+            raise ValidationFailed("Style de citation : gost, apa, ieee, chicago, vancouver, harvard ou iso690.")
         sources = {s.key: s for s in self.sources.list(project_id).sources}
         bibliography = self.sources.generate_bibliography(project_id, style) if sources else None
         numbers = {e.key: e.number for e in bibliography.entries if e.number} if bibliography else {}

@@ -364,7 +364,7 @@ class SourceService:
             content, extension = "\n\n".join(to_ris(s.key, s.source_type, s.data) for s in sources), "ris"
         elif fmt == "text":
             if style not in styles.FORMATTERS:
-                raise ValidationFailed("Style : gost, apa, ieee, chicago ou vancouver.")
+                raise ValidationFailed("Style : gost, apa, ieee, chicago, vancouver, harvard ou iso690.")
             ordered = sorted(sources, key=lambda s: styles.sort_key(s.data))
             content = "\n".join(f"{i}. {styles.format_entry(style, s.source_type, s.data)}" for i, s in enumerate(ordered, 1))
             extension = "txt"
@@ -465,7 +465,7 @@ class SourceService:
     def generate_bibliography(self, project_id: str, style: str = "gost", ordering: str | None = None,
                               include_uncited: bool = False, save: bool = False) -> Bibliography:
         if style not in styles.FORMATTERS:
-            raise ValidationFailed("Style : gost, apa, ieee, chicago ou vancouver.")
+            raise ValidationFailed("Style : gost, apa, ieee, chicago, vancouver, harvard ou iso690.")
         ordering = ordering or ("appearance" if style in styles.NUMERIC_STYLES else "alphabetical")
         sources = {s.key: s for s in self.list(project_id).sources}
         order: list[str] = []

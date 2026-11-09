@@ -443,3 +443,16 @@ def test_confirm_manual_verification(services: Services, project, section) -> No
     bad = services.sources.register(project.id, "book", BOOK.model_copy(update={"year": 2999, "title": "X"}), key="bad")
     with pytest.raises(ValidationFailed):
         services.sources.confirm_manual(bad.id, "РГБ")
+
+
+def test_harvard_and_iso690_styles() -> None:
+    """Audit M-05 : styles Harvard (Cite Them Right) et ISO 690:2021 (auteur-date)."""
+    assert format_entry("harvard", "article", ARTICLE) == (
+        "Ivanov, I.I. and Petrov, P.P. (2020) ‘Gear cutting’, *Journal of Mechanisms*, 5(3), pp. 10–20. "
+        "Available at: https://doi.org/10.1234/abc.")
+    assert format_entry("iso690", "article", ARTICLE) == (
+        "IVANOV, Ivan I. and PETROV, Petr P. 2020. Gear cutting. *Journal of Mechanisms*. vol. 5, no. 3, "
+        "pp. 10–20. DOI 10.1234/abc.")
+    book = format_entry("harvard", "book", BOOK)
+    assert book.startswith("Иванов, И.И. and Петров, П.П. (2020) *Теория механизмов и машин: учебник*. 2 edn.")
+    assert "ISBN" in format_entry("iso690", "book", BOOK)

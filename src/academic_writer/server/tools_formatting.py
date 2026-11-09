@@ -28,7 +28,7 @@ def register(mcp: MCPServer) -> None:
                         include_drafts: bool = False) -> ExportResult:
         """Produit le document final (DOCX, ou PDF + DOCX via Microsoft Word) à partir des sections ACCEPTÉES du
         plan : mise en forme du gabarit, titres numérotés, sommaire, citations [@clé] rendues dans le style
-        (gost, apa, ieee, chicago, vancouver), bibliographie. title_page : organization, ministry, faculty,
+        (gost, apa, ieee, chicago, vancouver, harvard, iso690), bibliographie. title_page : organization, ministry, faculty,
         department, document_kind, discipline, title, variant, author, group, supervisor, supervisor_title, city,
         year — UNIQUEMENT des informations données par l'utilisateur (mémorisées pour la suite ; champs manquants
         laissés en blanc). include_drafts=true reprend les brouillons non validés (signalés)."""

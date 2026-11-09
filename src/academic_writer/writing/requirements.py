@@ -71,12 +71,20 @@ STRUCTURE = re.compile(
     r"\b(?:введени\w*|заключени\w*|содержани\w*|реферат\w*|аннотаци\w*|список\s+(?:использованн\w*|литератур\w*)|"
     r"приложени\w*|титульн\w*|introduction|conclusion|bibliograph\w*|sommaire|table des matières|annexes?|"
     r"résumé|abstract|references|appendi\w*|page de (?:garde|titre)|title page|keywords|mots-clés|ключев\w* слов\w*)\b", _I)
-DATA = re.compile(r"(?<![\w])([A-Za-zА-Яа-яωαβγδεμφλρστ][\w₀-₉']{0,6})\s*=\s*(-?\d+(?:[.,]\d+)?)\s*([A-Za-zА-Яа-я°/·²³%\-*]{0,12})")
+DATA = re.compile(r"(?<![\w])([A-Za-zА-Яа-яωαβγδεμφλρστ][\w₀-₉']{0,6})\s*=\s*(-?\d+(?:[.,]\d+)?)"
+                  r"(?![\d.,])(?!\s*[/*·×^:+]\s*[\d(])"  # « v = 120/8 = 15 » : expression, pas une donnée
+                  r"\s*([A-Za-zА-Яа-я°/·²³%\-*]{0,12})")
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?;])\s+(?=[A-ZА-ЯЁÀ-Ý])")
 MATH_CONTEXT = re.compile(r"[·×=±^]|\b\w\s*[·×]\s*\w")
 SYMBOL = re.compile(r"(?<![\w])([A-Za-zα-ωΑ-Ω](?:_?[a-z0-9]{1,2})?|х)(?![\w])")
 SYMBOL_LIST = re.compile(r"(?<![\w])((?:[A-Za-z](?:_?[a-z0-9]{1,2})?\s*,\s*){2,}[A-Za-z](?:_?[a-z0-9]{1,2})?)(?![\w])")
 NOT_SYMBOLS = {"a", "i", "I", "A", "e", "B", "C", "D", "O", "y", "o"}
+# mots courts fr / en (jamais des grandeurs) : « Calculer sa vitesse », « et », « of »…
+SHORT_WORDS = frozenset(
+    "sa se ce ma ta me te le la de du un en on il au ou et es ni ne si ses ces mes les des une est par pas "
+    "sur son ton mon qui que car aux nos vos to of in at is as an or be we it by do if so no up us the and "
+    "for are was not its per via".split())
+_AFTER_NUMBER = re.compile(r"\d[\d.,]*\s*$")
 
 
 @dataclass
@@ -178,7 +186,12 @@ def missing_symbols(texts: list[str], data_values: str) -> list[str]:
             for symbol in re.split(r"\s*,\s*", listing):
                 found.setdefault(symbol, None)
         if MATH_CONTEXT.search(text):
-            for symbol in SYMBOL.findall(text):
+            for match in SYMBOL.finditer(text):
+                symbol = match.group(1)
+                following = text[match.end():match.end() + 1]
+                if (symbol.casefold() in SHORT_WORDS or following in "'’" and following
+                        or _AFTER_NUMBER.search(text[:match.start()])):  # mot, élision « l' », unité « 120 m »
+                    continue
                 found.setdefault("x" if symbol == "х" else symbol, None)
     given = {m.group(1).casefold() for m in DATA.finditer(data_values)}
     return [s for s in found if s not in NOT_SYMBOLS and s.casefold() not in given]

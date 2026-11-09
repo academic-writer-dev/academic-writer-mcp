@@ -27,7 +27,7 @@ from academic_writer.server.services import get_services, user_errors
 
 _READ = ToolAnnotations(read_only_hint=True, open_world_hint=False, idempotent_hint=True)
 _WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False)
-Style = Literal["gost", "apa", "ieee", "chicago", "vancouver"]
+Style = Literal["gost", "apa", "ieee", "chicago", "vancouver", "harvard", "iso690"]
 
 
 def register(mcp: MCPServer) -> None:
@@ -119,7 +119,7 @@ def register(mcp: MCPServer) -> None:
         project_id: str,
         style: Style = "gost",
         ordering: Annotated[Literal["appearance", "alphabetical"] | None, Field(
-            description="Par défaut : ordre d'apparition (gost, ieee, vancouver), alphabétique (apa, chicago).")] = None,
+            description="Par défaut : ordre d'apparition (gost, ieee, vancouver), alphabétique (apa, chicago, harvard, iso690).")] = None,
         include_uncited: bool = False,
         save: Annotated[bool, Field(description="Enregistrer comme révision proposée de la section bibliographie.")] = False,
     ) -> Bibliography:
@@ -161,7 +161,9 @@ def register(mcp: MCPServer) -> None:
         with user_errors():
             return get_services().sources.discover(query, kind, open_access_only, language, limit)
 
-    @mcp.tool(title="Télécharger un texte en libre accès", annotations=_WRITE)
+    @mcp.tool(title="Télécharger un texte en libre accès",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,
+                                          open_world_hint=True))  # télécharge sur Internet
     def download_open_access(
         project_id: str,
         item_id: Annotated[str, Field(description="item_id d'un résultat de find_works_by_topic marqué open_access "
@@ -178,7 +180,7 @@ def register(mcp: MCPServer) -> None:
         project_id: str,
         format: Annotated[Literal["bibtex", "ris", "text"], Field(
             description="bibtex / ris : pour Zotero, Word, LaTeX ; text : liste mise en forme dans un style.")] = "bibtex",
-        style: Literal["gost", "apa", "ieee", "chicago", "vancouver"] = "gost",
+        style: Literal["gost", "apa", "ieee", "chicago", "vancouver", "harvard", "iso690"] = "gost",
         keys: Annotated[list[str] | None, Field(description="Clés à exporter ; toutes par défaut.")] = None,
     ) -> ReferenceExport:
         """Exporte les sources du projet dans un fichier (BibTeX, RIS ou liste ГОСТ / APA / IEEE…) placé dans le

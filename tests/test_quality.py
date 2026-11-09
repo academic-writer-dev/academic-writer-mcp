@@ -201,3 +201,18 @@ async def test_quality_tools_exposed(lab) -> None:
         assert result.structured_content["mismatches"] == 1
         result = await client.call_tool("evaluate_formula", {"formula": "d = m*z", "values": {"m": "2 мм"}})
         assert result.is_error and "inconnue" in result.content[0].text
+
+
+@pytest.mark.parametrize(("text", "checked", "errors"), [
+    ("On a v = 15 m/s et t = 8 s.\nDonc a = v/t = 2,5 m/s².", 1, 1),
+    ("On a v = 15 m/s et t = 8 s.\nDonc a = v/t = 1,875 m/s².", 1, 0),
+    ("We have v = 15 m/s and t = 8 s, so a = v/t = 1.875 m/s².", 1, 0),
+    ("Дано v = 15 м/с и t = 8 с. Тогда a = v/t = 2,5 м/с².", 1, 1),
+    ("Calculer l'accélération a = v/t avec v = 15 m/s et t = 8 s : a = 2,5 m/s².", 1, 1),
+    ("Le module m = 2 мм et le nombre de dents z = 20, donc d = m·z = 45 мм.", 1, 1),
+])
+def test_symbols_defined_in_running_text(text: str, checked: int, errors: int) -> None:
+    """Audit C-03 : définitions reliées par « et / and / и / avec », formule écrite avant ses données."""
+    report = check_calculations("t", [Segment(text, "paragraph")])
+    assert (report.calculations_checked, report.mismatches) == (checked, errors)
+    assert all(d.symbol != "m" or d.value == "2 мм" for d in report.definitions)

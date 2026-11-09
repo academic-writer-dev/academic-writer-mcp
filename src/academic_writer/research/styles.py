@@ -1,6 +1,7 @@
 """Mise en forme bibliographique et appels de citation.
 
-Styles : ГОСТ Р 7.0.100-2018 / 7.0.5-2008 (« gost »), APA 7, IEEE, Chicago (auteur-date), Vancouver.
+Styles : ГОСТ Р 7.0.100-2018 / 7.0.5-2008 (« gost »), APA 7, IEEE, Chicago (auteur-date), Vancouver,
+Harvard (Cite Them Right) et ISO 690:2021 (auteur-date).
 Les citations sont stockées dans le texte sous forme STABLE : [@clé] ou [@clé, с. 15] (plusieurs :
 [@a; @b]). Leur rendu ([1], (Иванов, 2020)…) est calculé à partir du style choisi.
 Mise en forme simplifiée mais fidèle aux éléments principaux de chaque norme : à relire selon les
@@ -16,6 +17,7 @@ from academic_writer.research.models import Person, SourceData
 STYLE_LABELS = {
     "gost": "ГОСТ Р 7.0.100-2018 (description) / ГОСТ Р 7.0.5-2008 (références)",
     "apa": "APA 7e édition", "ieee": "IEEE", "chicago": "Chicago (auteur-date)", "vancouver": "Vancouver (ICMJE)",
+    "harvard": "Harvard (Cite Them Right)", "iso690": "ISO 690:2021 (auteur-date)",
 }
 NUMERIC_STYLES = {"gost", "ieee", "vancouver"}
 MARKER = re.compile(r"\[(@[^\[\]]+)\]")
@@ -268,8 +270,71 @@ def format_vancouver(source_type: str, d: SourceData) -> str:
     return _clean(f"{authors}. {title}.{edition} {d.place or ''}: {d.publisher or ''}; {d.year or ''}.")
 
 
+# --- Harvard (Cite Them Right) ------------------------------------------------------------
+
+def harvard_name(person: Person) -> str:
+    return f"{person.family}, {initials(person.given, spaced=False)}".rstrip(", ")
+
+
+def format_harvard(source_type: str, d: SourceData) -> str:
+    names = [harvard_name(p) for p in d.authors]
+    authors = (names[0] + " et al.") if len(names) > 3 else _join(names, "and", oxford=False)
+    year = f"({d.year})" if d.year else "(no date)"
+    title = (d.title or "") + (f": {d.subtitle}" if d.subtitle else "")
+    doi = f" Available at: https://doi.org/{d.doi}." if d.doi else (
+        f" Available at: {d.url}" + (f" (Accessed: {d.accessed})." if d.accessed else ".") if d.url else "")
+    if source_type in ("article", "conference"):
+        volume = f", {d.volume}" if d.volume else ""
+        issue = f"({d.issue})" if d.issue else ""
+        pages = f", pp. {d.pages}" if d.pages else ""
+        return _clean(f"{authors} {year} ‘{title}’, *{d.container or ''}*{volume}{issue}{pages}.{doi}")
+    if source_type == "chapter":
+        eds = _join([f"{initials(p.given)} {p.family}".strip() for p in d.editors], "and", oxford=False)
+        eds = f"{eds} ({'eds' if len(d.editors) > 1 else 'ed.'}) " if eds else ""
+        place = f"{d.place}: " if d.place else ""
+        return _clean(f"{authors} {year} ‘{title}’, in {eds}*{d.container or ''}*. {place}{d.publisher or ''}, "
+                      f"pp. {d.pages or ''}.{doi}")
+    if source_type == "standard":
+        return _clean(f"{d.publisher or ''} {year} *{d.standard_number or ''}: {title}*. {d.place or ''}"
+                      f"{': ' if d.place else ''}{d.publisher or ''}.{doi}")
+    if source_type == "web":
+        return _clean(f"{authors or d.container or ''} {year} *{title}*.{doi}")
+    edition = f" {d.edition} edn." if d.edition else ""
+    place = f" {d.place}:" if d.place else ""
+    return _clean(f"{authors} {year} *{title}*.{edition}{place} {d.publisher or ''}.{doi}")
+
+
+# --- ISO 690:2021 (auteur-date) --------------------------------------------------------------
+
+def iso_name(person: Person) -> str:
+    return f"{person.family.upper()}, {person.given or ''}".rstrip(", ")
+
+
+def format_iso690(source_type: str, d: SourceData) -> str:
+    names = [iso_name(p) for p in d.authors]
+    authors = (names[0] + " et al.") if len(names) > 3 else _join(names, "and", oxford=False)
+    year = str(d.year) if d.year else "[s.d.]"
+    title = (d.title or "") + (f": {d.subtitle}" if d.subtitle else "")
+    ids = "".join([f" DOI {d.doi}." if d.doi else "", f" ISBN {d.isbn}." if d.isbn else "",
+                   f" Available from: {d.url}" + (f" [viewed {d.accessed}]." if d.accessed else ".") if d.url else ""])
+    if source_type in ("article", "conference"):
+        parts = ", ".join(filter(None, [f"vol. {d.volume}" if d.volume else None,
+                                        f"no. {d.issue}" if d.issue else None, f"pp. {d.pages}" if d.pages else None]))
+        return _clean(f"{authors}. {year}. {title}. *{d.container or ''}*. {parts}.{ids}")
+    if source_type == "chapter":
+        eds = _join([iso_name(p) for p in d.editors], "and", oxford=False)
+        return _clean(f"{authors}. {year}. {title}. In: {eds}{', ed.' if eds else ''} *{d.container or ''}*. "
+                      f"{d.place or ''}{': ' if d.place else ''}{d.publisher or ''}, pp. {d.pages or ''}.{ids}")
+    if source_type == "standard":
+        return _clean(f"{d.publisher or ''}. {year}. *{d.standard_number or ''}. {title}*. "
+                      f"{d.place or ''}{': ' if d.place else ''}{d.publisher or ''}.{ids}")
+    edition = f" {d.edition} ed." if d.edition else ""
+    place = f" {d.place}:" if d.place else ""
+    return _clean(f"{authors}. {year}. *{title}*.{edition}{place} {d.publisher or ''}.{ids}")
+
+
 FORMATTERS = {"gost": format_gost, "apa": format_apa, "ieee": format_ieee, "chicago": format_chicago,
-              "vancouver": format_vancouver}
+              "vancouver": format_vancouver, "harvard": format_harvard, "iso690": format_iso690}
 
 
 def format_entry(style: str, source_type: str, data: SourceData) -> str:

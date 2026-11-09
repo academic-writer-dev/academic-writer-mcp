@@ -26,7 +26,17 @@ NOTICE = ("Contrôle de l'arithmétique et des unités écrites. Ne valide ni le
           "d'entrée, ni l'interprétation : relecture humaine indispensable.")
 
 _RELATION = re.compile(r"\s*(=|≈|≅)\s*")
-_PIECE_SPLIT = re.compile(r"\n|;\s|,\s+(?=[^\d\s])|(?<=[^\d\s][.!?])\s+(?=[A-ZА-ЯЁ])")
+_PIECE_SPLIT = re.compile(
+    r"\n|;\s|,\s+(?=[^\d\s])|(?<=[^\d\s][.!?])\s+(?=[A-ZА-ЯЁ])"
+    # « v = 15 m/s et t = 8 s » : plusieurs définitions reliées par une conjonction
+    r"|\s+(?:et|and|и|а также|puis|then|avec|with|где|при)\s+(?=[^\W\d]\w{0,3}(?:_\w+)?\s*=)"
+    r"|\s*:\s+(?=[^\W\d]\w{0,3}(?:_\w+)?\s*=)")
+_WORD = re.compile(r"^[^\W\d_]+(?:['’][^\W\d_]+)*$")
+# mots outils fr / en / ru : jamais des symboles à l'intérieur d'une expression de plusieurs mots
+_STOPWORDS = frozenset(
+    "et le la les de des du un une au aux en on avec pour par donc soit ou est sont puis ainsi "
+    "the and of with so to is are for then thus or "
+    "и на со для при где то это также тогда или".split())  # « с » (секунда) et « в » (вольт) : aussi des unités
 _FIRST_NUMBER = re.compile(r"\d+(?:\.(\d+))?")
 _SYMBOL = re.compile(r"^(?:[A-Za-zА-Яа-яЁё]{1,2}|[α-ωΑ-ΩΔ][\w']*|[A-Za-zА-Яа-яЁё]{1,3}[\d_'][\w']*|[A-Za-z]\w{0,2}_\w+)$")
 _STRIP_TRAIL = ",.;:)»\"'"
@@ -82,6 +92,9 @@ def _accept(text: str, known: dict[str, E.Variable]) -> _Seg | None:
     text = text.strip()
     if not text or not any(c.isalnum() for c in text):
         return None
+    tokens = text.split()
+    if len(tokens) > 1 and any(t.lower().strip(_STRIP_TRAIL + _STRIP_LEAD) in _STOPWORDS for t in tokens):
+        return None  # « 2 мм et le », « On a v »
     try:
         node = E.parse(text, units=True)
         return _Seg(text, node, E.evaluate(node))
@@ -115,6 +128,8 @@ def _first_member(text: str, known) -> _Seg | None:
         candidate = " ".join(tokens[-k:]).lstrip(_STRIP_LEAD)
         if not _balanced(candidate):
             continue
+        if k > 1 and all(_WORD.match(t) for t in tokens[-k:]):
+            break  # « On a v », « Donc a » : des mots juxtaposés ne forment pas un produit de symboles
         seg = _accept(candidate, known)
         if seg:
             best = seg
@@ -207,10 +222,72 @@ def _pieces(text: str) -> list[str]:
     return [p for p in _PIECE_SPLIT.split(text) if p and ("=" in p or "≈" in p or "≅" in p)]
 
 
+def _equations(piece: str, known) -> list[tuple[list[_Seg | None], list[str]]]:
+    """Découpe une chaîne d'égalités en équations. Un membre intermédiaire illisible qui se termine par un
+    symbole (« 2 мм et le nombre de dents z ») sépare deux équations : « m = 2 мм » et « z = 20 »."""
+    parts = _RELATION.split(piece)
+    members, relations = parts[0::2], parts[1::2]
+    result: list[tuple[list[_Seg | None], list[str]]] = []
+    chain: list[_Seg | None] = [_first_member(members[0], known)]
+    rels: list[str] = []
+    for index, middle in enumerate(members[1:-1]):
+        rels.append(relations[index])
+        seg = _accept(middle.strip().rstrip(_STRIP_TRAIL), known) if _balanced(middle) else None
+        if seg is None:
+            last, first = _last_member(middle, known), _first_member(middle, known)
+            if last and first and middle.rfind(first.text) >= middle.find(last.text) + len(last.text):
+                chain.append(last)
+                result.append((chain, rels))
+                chain, rels = [first], []
+                continue
+        chain.append(seg)
+    if len(members) > 1:
+        rels.append(relations[-1])
+        chain.append(_last_member(members[-1], known))
+    else:
+        chain.append(None)
+    result.append((chain, rels))
+    return result
+
+
+def _check_equation(chain, relations, piece, segment, known, pending, checks, separators) -> None:
+    """Compare les membres consécutifs évaluables (une rupture de chaîne interrompt la comparaison)."""
+    for seg in chain:
+        if seg and seg.value is not None and not E.variables_of(seg.node):
+            for match in re.finditer(r"\d[.,]\d", seg.text):
+                separators["virgule" if "," in match.group(0) else "point"] += 1
+    previous: _Seg | None = None
+    for index, seg in enumerate(chain):
+        if seg is None:
+            previous = None
+            continue
+        if seg.value is None or (index == 0 and seg.node.kind == "var"):
+            continue  # symbole défini par la chaîne : « m = 3 мм » est une (re)définition, pas un calcul
+        if previous is not None:
+            approx = relations[index - 1] != "=" if index - 1 < len(relations) else False
+            status, message = compare(previous, seg, approx)
+            checks.append(CalcCheck(location=segment.location, expression=excerpt(piece, 260),
+                                    status=status, left=previous.text, right=seg.text,
+                                    computed=_fmt(previous.value), stated=_fmt(seg.value), message=message))
+        previous = seg
+
+
+def _definition(chain, segment) -> tuple[str, E.Variable, _Seg] | None:
+    """« m = 2 мм » ou résultat « d = m·z = 40 мм » — seulement si la chaîne est lue sans rupture."""
+    head, tail = chain[0], chain[-1]
+    if (head and head.node.kind == "var" and tail and tail is not head and tail.value is not None
+            and not E.variables_of(tail.node) and None not in chain):
+        value = tail.value
+        return head.node.text, E.Variable(value.si, value.shown, value.dims, value.has_unit), tail
+    return None
+
+
 def check_calculations(label: str, segments: list[Segment]) -> CalculationReport:
     known: dict[str, E.Variable] = {}
     definitions: list[Definition] = []
     first_definition: dict[str, tuple[E.Variable, Definition]] = {}
+    # formule littérale non encore calculable (« a = v/t avec v = … ») : vérifiée quand a reçoit une valeur
+    pending: dict[str, tuple[_Seg, str]] = {}
     conflicts: list[QualityIssue] = []
     checks: list[CalcCheck] = []
     separators = {"virgule": 0, "point": 0}
@@ -218,40 +295,33 @@ def check_calculations(label: str, segments: list[Segment]) -> CalculationReport
         if segment.kind == "heading":
             continue
         for piece in _pieces(segment.text):
-            parts = _RELATION.split(piece)
-            members, relations = parts[0::2], parts[1::2]
-            chain: list[_Seg | None] = [_first_member(members[0], known)]
-            for middle in members[1:-1]:
-                chain.append(_accept(middle.strip().rstrip(_STRIP_TRAIL), known) if _balanced(middle) else None)
-            chain.append(_last_member(members[-1], known) if len(members) > 1 else None)
-            for seg in chain:
-                if seg and seg.value is not None and not E.variables_of(seg.node):
-                    for match in re.finditer(r"\d[.,]\d", seg.text):
-                        separators["virgule" if "," in match.group(0) else "point"] += 1
-            # comparaisons des membres consécutifs évaluables (une rupture de chaîne interrompt la comparaison)
-            previous: _Seg | None = None
-            for index, seg in enumerate(chain):
-                if seg is None:
-                    previous = None
+            for chain, relations in _equations(piece, known):
+                _check_equation(chain, relations, piece, segment, known, pending, checks, separators)
+                definition = _definition(chain, segment)
+                if definition is None:
+                    head = chain[0]
+                    literal = next((s for s in chain[1:] if s and s.value is None and E.variables_of(s.node)), None)
+                    if head and head.node.kind == "var" and literal and None not in chain:
+                        pending[head.node.text] = (literal, piece)
                     continue
-                if seg.value is None or (index == 0 and seg.node.kind == "var"):
-                    continue  # symbole défini par la chaîne : « m = 3 мм » est une (re)définition, pas un calcul
-                if previous is not None:
-                    approx = relations[index - 1] != "=" if index - 1 < len(relations) else False
-                    status, message = compare(previous, seg, approx)
-                    checks.append(CalcCheck(location=segment.location, expression=excerpt(piece, 260),
-                                            status=status, left=previous.text, right=seg.text,
-                                            computed=_fmt(previous.value), stated=_fmt(seg.value), message=message))
-                previous = seg
-            # définition : « m = 2 мм », ou résultat « d = m·z = 40 мм »
-            head, tail = chain[0], chain[-1]
-            if (head and head.node.kind == "var" and tail and tail is not head and tail.value is not None
-                    and not E.variables_of(tail.node)):
-                symbol, value = head.node.text, tail.value
-                variable = E.Variable(value.si, value.shown, value.dims, value.has_unit)
-                definition = Definition(symbol=symbol, value=tail.text, si_value=value.si,
-                                        unit_si=U.format_dims(value.dims) if value.has_unit else None,
-                                        location=segment.location)
+                symbol, variable, tail = definition
+                waiting = pending.pop(symbol, None)
+                if waiting:  # « a = v/t avec v = 15 m/s et t = 8 s : a = 2,5 m/s² »
+                    formula, origin = waiting
+                    try:
+                        value = E.evaluate(formula.node, known)
+                    except (E.Unresolved, ArithmeticError, ValueError, OverflowError):
+                        value = None
+                    if value is not None:
+                        computed = _Seg(formula.text, formula.node, value)
+                        status, message = compare(computed, tail, False)
+                        checks.append(CalcCheck(location=segment.location,
+                                                expression=excerpt(f"{symbol} = {formula.text} … {piece}", 260),
+                                                status=status, left=formula.text, right=tail.text,
+                                                computed=_fmt(value), stated=_fmt(tail.value), message=message))
+                record = Definition(symbol=symbol, value=tail.text, si_value=variable.si,
+                                    unit_si=U.format_dims(variable.dims) if variable.has_unit else None,
+                                    location=segment.location)
                 if symbol in first_definition:
                     old_var, old_def = first_definition[symbol]
                     same = _rel(old_var.si, variable.si) <= 0.02 or _rel(old_var.shown, variable.shown) <= 0.02
@@ -263,9 +333,9 @@ def check_calculations(label: str, segments: list[Segment]) -> CalculationReport
                             location=segment.location, excerpt=excerpt(piece),
                             suggestion="Vérifier s'il s'agit de la même grandeur ; sinon, utiliser un indice distinct."))
                 else:
-                    first_definition[symbol] = (variable, definition)
+                    first_definition[symbol] = (variable, record)
                 known[symbol] = variable
-                definitions.append(definition)
+                definitions.append(record)
     order = {"mismatch": 0, "unit_mismatch": 1, "rounding": 2, "ok": 3}
     counts = {status: sum(1 for c in checks if c.status == status) for status in order}
     shown = sorted(checks, key=lambda c: order[c.status])

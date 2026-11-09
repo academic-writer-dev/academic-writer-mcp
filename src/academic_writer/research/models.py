@@ -10,7 +10,7 @@ SourceType = Literal["book", "article", "chapter", "conference", "thesis", "stan
 VerificationStatus = Literal["unverified", "incomplete", "well_formed", "verified_online", "verified_manual",
                              "mismatch", "not_found", "suspicious"]
 TRUSTED_STATUSES = ("verified_online", "verified_manual", "well_formed")
-Style = Literal["gost", "apa", "ieee", "chicago", "vancouver"]
+Style = Literal["gost", "apa", "ieee", "chicago", "vancouver", "harvard", "iso690"]
 
 STATUS_LABELS = {
     "unverified": "non vérifiée",

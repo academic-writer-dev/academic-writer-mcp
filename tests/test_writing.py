@@ -432,3 +432,13 @@ async def test_mcp_writing_workflow(services: Services, project, mock: MockProvi
         assert reviewed.structured_content["status"] == "accepted"
         status = await client.call_tool("get_draft_status", {"project_id": project.id})
         assert "1/" in status.structured_content["progress"]
+
+
+def test_missing_symbols_ignore_words_units_and_elisions() -> None:
+    """Audit M-01 : « sa », « et », « l' » et les unités après un nombre ne sont pas des grandeurs manquantes."""
+    from academic_writer.writing.requirements import DATA, missing_symbols
+
+    text = ("Un mobile parcourt 120 m en 8 s. Calculer sa vitesse moyenne v = s/t et l'accélération a = v/t "
+            "avec t = 8 s.")
+    assert missing_symbols([text], "t = 8 s") == ["v", "s"]
+    assert [m.group(0) for m in DATA.finditer("Résultat : v = 120/8 = 15 m/s ; t = 8 s")] == ["t = 8 s"]
