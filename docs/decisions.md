@@ -124,6 +124,26 @@
   `mixed_language`, `generated_bibliography` (erreur), `unsourced_numbers`, fidélité des réécritures.
 - La relecture humaine reste indispensable (vérification des calculs prévue en Phase 8).
 
+## D-021 — Analyse des consignes structurelle et données d'entrée des calculs — 2026-11-09
+- Retours d'essai réel (ЛР4 ТММ) : intertitres (objectif, étapes, questions, tâches), éléments
+  numérotés non découpés, étapes « manipulation » distinctes des livrables, migration v6.
+- Profils : chaque calcul déclare déclencheurs et données d'entrée ; valeurs par défaut seulement
+  normalisées et sourcées (ex. α = 20°, ha* = 1, c* = 0,25 selon ГОСТ 13755-2015 / ISO 53),
+  toujours PROPOSÉES à l'utilisateur.
+
+## D-022 — Sources : marqueurs stables et vérification en deux temps — 2026-11-09
+- Citations stockées sous forme stable `[@clé, с. 15]` ; numérotation et format calculés au
+  moment de la bibliographie (une citation ajoutée ne décale rien).
+- Vérification locale (complétude par type, ISBN/ISSN par somme de contrôle, DOI, année) :
+  « bien formée » n'est jamais présenté comme « vérifiée ».
+- Vérification en ligne en mode connecté seulement : Crossref (DOI, titre), Open Library (ISBN) ;
+  seules des métadonnées sont envoyées. Absence d'un ISBN = non concluant (couverture partielle).
+  Essai réel : vrai DOI confirmé, DOI détourné → divergente, DOI inventé → introuvable.
+- Citation d'une source suspecte / introuvable / divergente refusée sauf décision explicite.
+- Rédacteurs : citer uniquement les clés de la liste fournie ; clé inconnue = erreur bloquante.
+- Styles : ГОСТ Р 7.0.100-2018 / 7.0.5-2008, APA 7, IEEE, Chicago auteur-date, Vancouver
+  (éléments principaux ; à relire selon l'établissement).
+
 ## Points ouverts
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.

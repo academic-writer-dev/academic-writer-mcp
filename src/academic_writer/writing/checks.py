@@ -34,10 +34,14 @@ def _fold(text: str) -> str:
     return "".join(ch for ch in decomposed if not unicodedata.combining(ch)).replace("ё", "е")
 
 
+_SOURCE_MARKER = re.compile(r"\[@[^\[\]]+\]")
+
+
 def numbers_in(text: str) -> set[str]:
-    """Nombres « significatifs » normalisés (au moins 2 chiffres ou décimaux), virgule = point."""
+    """Nombres « significatifs » normalisés (au moins 2 chiffres ou décimaux), virgule = point.
+    Les marqueurs de citation [@clé, с. 15] sont ignorés."""
     result = set()
-    for raw in _NUMBER.findall(text):
+    for raw in _NUMBER.findall(_SOURCE_MARKER.sub(" ", text)):
         value = raw.replace(",", ".").lstrip("-")
         digits = sum(ch.isdigit() for ch in value)
         if "." in value or digits >= 2:
@@ -92,8 +96,17 @@ def _foreign_words(text: str, language: str) -> list[str]:
 
 def check_draft(text: str, *, language: str, target_words: int | None, sources_text: str,
                 profile: DomainProfile, has_bibliography: bool = False, truncated: bool = False,
-                is_references_section: bool = False) -> list[Check]:
+                is_references_section: bool = False, known_keys: set[str] | None = None) -> list[Check]:
     checks: list[Check] = []
+    used_keys = {m.group(1) for m in re.finditer(r"@([A-Za-z0-9_:\-]+)", " ".join(_SOURCE_MARKER.findall(text)))}
+    unknown = sorted(used_keys - (known_keys or set()))
+    if unknown:
+        checks.append(Check(code="unknown_source_keys", severity="error",
+                            message="Citations vers des sources non enregistrées dans le projet (inventées ?).",
+                            details=[f"[@{k}]" for k in unknown]))
+    elif used_keys:
+        checks.append(Check(code="citations", severity="info",
+                            message=f"{len(used_keys)} source(s) du projet citée(s).", details=sorted(used_keys)))
     if not is_references_section:
         entries = _BIBLIO_ENTRY.findall(text)
         if _BIBLIO_HEADING.search(text) or len(entries) >= 2:
@@ -132,11 +145,12 @@ def check_draft(text: str, *, language: str, target_words: int | None, sources_t
         checks.append(Check(code="avoided_terms", severity="warning",
                             message="Terminologie déconseillée par le profil disciplinaire.", details=avoided))
 
-    citations = sorted(set(_CITATION.findall(text)))
-    if citations and not has_bibliography:
+    citations = sorted(set(_CITATION.findall(_SOURCE_MARKER.sub(" ", text))))
+    if citations and not is_references_section:
         checks.append(Check(code="unverified_citations", severity="warning",
-                            message="Références citées sans bibliographie vérifiée dans le projet : "
-                                    "ne pas les conserver sans vérification.", details=citations[:20]))
+                            message="Références écrites à la main ([n], (Auteur, année)), non reliées à une source "
+                                    "enregistrée : ne pas les conserver sans vérification (utiliser [@clé]).",
+                            details=citations[:20]))
 
     placeholders = _PLACEHOLDER.findall(text)
     if placeholders:

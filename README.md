@@ -4,7 +4,8 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : Phase 5 terminée (v0.5.0) — rédaction encadrée, correction, style et traduction**,
+> **Statut : Phase 6 terminée (v0.6.0) — sources et bibliographie** (ГОСТ Р 7.0.100/7.0.5, APA 7, IEEE,
+> Chicago, Vancouver ; vérification Crossref / Open Library). Phase 5 : rédaction encadrée, correction, traduction,
 > avec un moteur universel : fournisseur cloud autorisé (Anthropic/OpenAI), modèle local (Ollama)
 > ou assistant MCP. Phases 1 à 4 : projets, import sécurisé, lecture des documents, OCR,
 > recherche, 17 profils disciplinaires, gabarits ГОСТ / NF-EN / ISO.
@@ -31,6 +32,7 @@ techniques et professionnels (FR / RU / EN).
 | IA et moteurs | `get_ai_status`, `set_project_ai_consent`, `test_ai_provider`, `get_writing_engine` |
 | Rédaction | `analyze_assignment`, `extract_requirements`, `manage_requirement`, `create_academic_outline`, `get_academic_outline`, `edit_academic_outline`, `validate_outline`, `write_academic_section`, `rewrite_academic_section`, `get_section_brief`, `save_section_draft`, `get_section_revision`, `review_revision`, `get_draft_status` |
 | Correction et traduction | `check_language`, `correct_academic_section`, `improve_academic_style`, `translate_academic_section`, `manage_languagetool` |
+| Sources et bibliographie | `register_source`, `list_sources`, `update_source`, `verify_source_metadata`, `insert_citation`, `generate_bibliography`, `audit_references`, `find_uncited_references` |
 | Disciplines | `identify_domain`, `set_project_domain`, `list_domain_profiles`, `get_domain_profile`, `get_document_structure_template`, `lookup_terminology`, `reload_domain_profiles` |
 
 Ressources : `academic-writer://info`, `academic-writer://projects`,
@@ -101,6 +103,7 @@ src/academic_writer/
   domains/    schéma des profils, chargement/héritage, détection, gabarits de structure
   providers/  fournisseurs IA : Anthropic, OpenAI, Ollama, simulé ; secrets ; consentement ; usage
   writing/    exigences, plan, dossiers, contrôles, style, LanguageTool local
+  research/   sources : validation (ISBN, DOI…), vérification en ligne, styles bibliographiques
   domain_profiles/  17 profils YAML + _document_structures.yaml (3 conventions × 11 familles)
 tests/        tests unitaires, sécurité, intégration MCP
 docs/         documentation technique

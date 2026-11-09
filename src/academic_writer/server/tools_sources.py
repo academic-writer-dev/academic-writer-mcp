@@ -1,0 +1,124 @@
+"""Outils MCP : sources, vérification, citations, bibliographie, audit."""
+
+from __future__ import annotations
+
+from typing import Annotated, Any, Literal
+
+from mcp.server import MCPServer
+from mcp.types import ToolAnnotations
+from pydantic import Field
+
+from academic_writer.research.models import (
+    Bibliography,
+    CitationResult,
+    ReferenceAudit,
+    Source,
+    SourceData,
+    SourceList,
+    SourceType,
+    VerificationResult,
+)
+from academic_writer.server.services import get_services, user_errors
+
+_READ = ToolAnnotations(read_only_hint=True, open_world_hint=False, idempotent_hint=True)
+_WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False)
+Style = Literal["gost", "apa", "ieee", "chicago", "vancouver"]
+
+
+def register(mcp: MCPServer) -> None:
+    @mcp.tool(title="Enregistrer une source", annotations=_WRITE)
+    def register_source(
+        project_id: str,
+        source_type: Annotated[SourceType, Field(description="book, article, chapter, conference, thesis, standard, "
+                                                             "web, report, patent, other")],
+        data: Annotated[SourceData | None, Field(description="Métadonnées RÉELLES fournies par l'utilisateur ou lues "
+                                                             "dans un document ; ne jamais en inventer.")] = None,
+        key: Annotated[str | None, Field(description="Clé de citation (sinon générée : ivanov2020).")] = None,
+        document_id: Annotated[str | None, Field(description="Document importé correspondant (pré-remplit la fiche "
+                                                             "si data est vide).")] = None,
+        allow_duplicate: bool = False,
+    ) -> Source:
+        """Enregistre une source bibliographique et la vérifie localement (champs obligatoires, ISBN, DOI, année).
+        Statut honnête : « bien formée » ne signifie pas « vérifiée ». N'inventer aucun auteur, titre ou DOI."""
+        with user_errors():
+            services = get_services()
+            if data is None:
+                if not document_id:
+                    from academic_writer.core.errors import ValidationFailed
+                    raise ValidationFailed("Fournissez les métadonnées (data) ou un document_id.")
+                return services.sources.register_from_document(project_id, document_id, source_type)
+            return services.sources.register(project_id, source_type, data, key, document_id, allow_duplicate)
+
+    @mcp.tool(title="Lister les sources", annotations=_READ)
+    def list_sources(project_id: str, status: Literal["unverified", "incomplete", "well_formed", "verified_online",
+                                                      "mismatch", "not_found", "suspicious"] | None = None) -> SourceList:
+        """Liste les sources du projet avec leur statut de vérification et leur nombre de citations."""
+        with user_errors():
+            return get_services().sources.list(project_id, status)
+
+    @mcp.tool(title="Compléter une source", annotations=_WRITE)
+    def update_source(
+        source_id: str,
+        changes: Annotated[dict[str, Any], Field(description="Champs à modifier (title, year, doi, authors=[{family, "
+                                                             "given}], pages…).")],
+        source_type: SourceType | None = None,
+    ) -> Source:
+        """Complète ou corrige une fiche ; elle est revérifiée localement."""
+        with user_errors():
+            return get_services().sources.update(source_id, changes, source_type)
+
+    @mcp.tool(title="Vérifier une source",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True,
+                                          open_world_hint=True))
+    def verify_source_metadata(
+        source_id: str,
+        online: Annotated[bool, Field(description="Interroger Crossref / Open Library (mode connecté uniquement ; "
+                                                  "seules des métadonnées sont envoyées).")] = True,
+    ) -> VerificationResult:
+        """Vérifie une source : localement (complétude, identifiants) puis en ligne si autorisé (DOI via Crossref,
+        ISBN via Open Library, recherche par titre). Signale les références divergentes ou introuvables."""
+        with user_errors():
+            return get_services().sources.verify(source_id, online)
+
+    @mcp.tool(title="Insérer une citation", annotations=_WRITE)
+    def insert_citation(
+        project_id: str,
+        section_id: str,
+        source_key: str,
+        anchor_text: Annotated[str, Field(description="Passage exact et unique de la section après lequel citer.")],
+        locator: Annotated[str | None, Field(description="Localisation : « с. 15 », « p. 15 », « chap. 2 ».")] = None,
+        claim: Annotated[str | None, Field(description="Affirmation étayée par la source (traçabilité).")] = None,
+        force: Annotated[bool, Field(description="Citer une source douteuse sur décision explicite de l'utilisateur.")] = False,
+    ) -> CitationResult:
+        """Ajoute un appel [@clé] après un passage : crée une révision PROPOSÉE (rien n'est écrasé). Refuse une source
+        suspecte, introuvable ou divergente, sauf décision explicite de l'utilisateur."""
+        with user_errors():
+            return get_services().sources.insert_citation(project_id, section_id, source_key, anchor_text, locator,
+                                                          claim, force)
+
+    @mcp.tool(title="Générer la bibliographie", annotations=_WRITE)
+    def generate_bibliography(
+        project_id: str,
+        style: Style = "gost",
+        ordering: Annotated[Literal["appearance", "alphabetical"] | None, Field(
+            description="Par défaut : ordre d'apparition (gost, ieee, vancouver), alphabétique (apa, chicago).")] = None,
+        include_uncited: bool = False,
+        save: Annotated[bool, Field(description="Enregistrer comme révision proposée de la section bibliographie.")] = False,
+    ) -> Bibliography:
+        """Met en forme la bibliographie (ГОСТ Р 7.0.100 / 7.0.5, APA 7, IEEE, Chicago, Vancouver) à partir des
+        citations des sections acceptées, avec la forme des appels dans le texte. Signale les sources non vérifiées."""
+        with user_errors():
+            return get_services().sources.generate_bibliography(project_id, style, ordering, include_uncited, save)
+
+    @mcp.tool(title="Auditer les références", annotations=_READ)
+    def audit_references(project_id: str) -> ReferenceAudit:
+        """Contrôle : citations sans source, citations écrites à la main, sources jamais citées, fiches incomplètes,
+        suspectes, introuvables ou divergentes, doublons."""
+        with user_errors():
+            return get_services().sources.audit(project_id)
+
+    @mcp.tool(title="Sources jamais citées", annotations=_READ)
+    def find_uncited_references(project_id: str) -> SourceList:
+        """Sources enregistrées qui ne sont citées dans aucune section acceptée."""
+        with user_errors():
+            return get_services().sources.uncited(project_id)

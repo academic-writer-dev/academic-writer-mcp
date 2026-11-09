@@ -492,6 +492,8 @@ class WritingService:
                 "WHERE v.project_id = ? AND v.status = 'accepted' AND s.outline_id = ? ORDER BY s.position",
                 (project_id, outline.id))]
 
+        citable = self._citable_sources(project_id)
+
         def describe(req: Requirement) -> str:
             source = f" [{req.source_filename}" + (f", p. {req.page}" if req.page else "") + "]" if req.source_filename else ""
             return f"({req.kind}) {req.text}{source}"
@@ -503,7 +505,7 @@ class WritingService:
             requirements=[describe(r) for r in linked] + [describe(r) for r in data_reqs if r not in linked][:10],
             global_requirements=[describe(r) for r in global_reqs], excerpts=excerpts, terminology=terms,
             previous_sections=previous, instructions=instructions, base_text=base_text,
-            budget_chars=_BUDGET.get(engine, 20000))
+            budget_chars=_BUDGET.get(engine, 20000), sources=citable)
         system = briefs.system_prompt(
             language=language, document_type=DOCUMENT_TYPE_LABELS[project.document_type],
             domain_name=profile.names.get(language), convention_label=template.convention_label,
@@ -513,6 +515,25 @@ class WritingService:
         return SectionBrief(project_id=project_id, section_id=section_id, section_title=section.title, language=language,
                             target_words=section.target_words, system_prompt=system, brief=brief_text,
                             source_excerpts=len(excerpts), trust_notice=TRUST_NOTICE)
+
+    def _source_keys(self, project_id: str) -> set[str]:
+        with self.db.read() as conn:
+            return {r["key"] for r in conn.execute("SELECT key FROM sources WHERE project_id = ?", (project_id,))}
+
+    def _citable_sources(self, project_id: str) -> list[str]:
+        """Sources que le rédacteur peut citer (les sources douteuses sont exclues)."""
+        from academic_writer.research.models import STATUS_LABELS, SourceData
+        from academic_writer.research.styles import format_entry
+
+        lines: list[str] = []
+        with self.db.read() as conn:
+            rows = conn.execute("SELECT key, source_type, data, verification_status FROM sources WHERE project_id = ? "
+                                "AND verification_status NOT IN ('suspicious', 'not_found', 'mismatch') ORDER BY key",
+                                (project_id,)).fetchall()
+        for row in rows:
+            entry = format_entry("gost", row["source_type"], SourceData.model_validate_json(row["data"]))
+            lines.append(f"[@{row['key']}] — {entry[:220]} — {STATUS_LABELS[row['verification_status']]}")
+        return lines
 
     def write_section(self, project_id: str, section_id: str, instructions: str | None = None,
                       engine: str | None = None) -> WriteResult:
@@ -593,7 +614,7 @@ class WritingService:
         if parent is not None:
             sources += "\n" + parent.text  # une correction ou une réécriture reprend les valeurs de sa version de départ
         checks += check_draft(text, language=language, target_words=section.target_words if kind != "translation" else None,
-                              sources_text=sources, profile=profile,
+                              sources_text=sources, profile=profile, known_keys=self._source_keys(project_id),
                               truncated=truncated, is_references_section=section.section_key == "references")
         if parent is not None and kind != "translation":
             checks += check_fidelity(parent.text, text, profile, language)

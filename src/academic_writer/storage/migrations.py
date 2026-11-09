@@ -286,6 +286,43 @@ ALTER TABLE requirements_v6 RENAME TO requirements;
 CREATE INDEX idx_requirements_project ON requirements(project_id, kind);
 """,
     ),
+    Migration(
+        version=7,
+        description="Sources bibliographiques et citations",
+        sql="""
+CREATE TABLE sources (
+    id                   TEXT PRIMARY KEY,
+    project_id           TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    key                  TEXT NOT NULL,
+    source_type          TEXT NOT NULL CHECK (source_type IN ('book', 'article', 'chapter', 'conference', 'thesis',
+                                                             'standard', 'web', 'report', 'patent', 'other')),
+    data                 TEXT NOT NULL,
+    document_id          TEXT REFERENCES documents(id) ON DELETE RESTRICT,
+    origin               TEXT NOT NULL CHECK (origin IN ('user', 'document', 'online')),
+    verification_status  TEXT NOT NULL DEFAULT 'unverified'
+                         CHECK (verification_status IN ('unverified', 'incomplete', 'well_formed', 'verified_online',
+                                                        'mismatch', 'not_found', 'suspicious')),
+    verification_details TEXT NOT NULL DEFAULT '[]',
+    verified_at          TEXT,
+    created_at           TEXT NOT NULL,
+    updated_at           TEXT NOT NULL,
+    UNIQUE (project_id, key)
+);
+CREATE INDEX idx_sources_project ON sources(project_id);
+
+CREATE TABLE citations (
+    id          TEXT PRIMARY KEY,
+    project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+    source_id   TEXT NOT NULL REFERENCES sources(id) ON DELETE RESTRICT,
+    section_id  TEXT REFERENCES outline_sections(id) ON DELETE RESTRICT,
+    revision_id TEXT REFERENCES section_revisions(id) ON DELETE RESTRICT,
+    locator     TEXT,
+    claim       TEXT,
+    created_at  TEXT NOT NULL
+);
+CREATE INDEX idx_citations_source ON citations(source_id);
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

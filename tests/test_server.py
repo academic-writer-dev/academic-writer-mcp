@@ -22,7 +22,10 @@ EXPECTED_TOOLS = {
     "analyze_assignment", "extract_requirements", "manage_requirement", "create_academic_outline",
     "get_academic_outline", "edit_academic_outline", "validate_outline", "write_academic_section",
     "rewrite_academic_section", "get_section_brief", "save_section_draft", "get_section_revision",
-    "review_revision", "get_draft_status",
+    "review_revision", "get_draft_status", "check_language", "correct_academic_section", "improve_academic_style",
+    "translate_academic_section", "manage_languagetool", "register_source", "list_sources", "update_source",
+    "verify_source_metadata", "insert_citation", "generate_bibliography", "audit_references",
+    "find_uncited_references",
 }
 
 
