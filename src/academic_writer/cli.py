@@ -15,6 +15,30 @@ import sys
 from academic_writer.providers import secrets
 
 
+def read_clipboard() -> str:
+    """Texte du presse-papiers Windows (via PowerShell Get-Clipboard), sans l'afficher."""
+    import subprocess
+
+    try:
+        completed = subprocess.run(["powershell", "-NoProfile", "-Command", "Get-Clipboard -Raw"],  # noqa: S603,S607
+                                   capture_output=True, timeout=15, check=False, creationflags=0x08000000)
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    for encoding in ("utf-8", "cp866", "cp1252"):
+        try:
+            return completed.stdout.decode(encoding).strip()
+        except UnicodeDecodeError:
+            continue
+    return ""
+
+
+def clear_clipboard() -> None:
+    import subprocess
+
+    subprocess.run(["powershell", "-NoProfile", "-Command", "Set-Clipboard -Value ' '"],  # noqa: S603,S607
+                   capture_output=True, timeout=15, check=False, creationflags=0x08000000)
+
+
 def _secrets(args: argparse.Namespace) -> int:
     if args.action == "status":
         for provider in secrets.ALL_SERVICES:
@@ -25,13 +49,22 @@ def _secrets(args: argparse.Namespace) -> int:
         print("Précisez le service : anthropic, openai, google_books ou openalex", file=sys.stderr)
         return 2
     if args.action == "set":
-        key = getpass.getpass(f"Collez la clé API {args.provider} (saisie masquée), puis Entrée : ")
+        if getattr(args, "clipboard", False):
+            key = read_clipboard()
+            if not key:
+                print("Presse-papiers vide ou illisible : copiez d'abord la clé (Ctrl+C).", file=sys.stderr)
+                return 1
+        else:
+            key = getpass.getpass(f"Collez la clé API {args.provider} (saisie masquée), puis Entrée : ")
         try:
             secrets.set_key(args.provider, key)
         except ValueError as exc:
             print(f"Erreur : {exc}", file=sys.stderr)
             return 1
         print(f"Clé {args.provider} enregistrée dans le Gestionnaire d'identification de Windows ({secrets.mask(key.strip())}).")
+        if getattr(args, "clipboard", False):
+            clear_clipboard()
+            print("Presse-papiers vidé par précaution.")
         return 0
     if args.action == "delete":
         print("Clé supprimée." if secrets.delete_key(args.provider) else "Aucune clé enregistrée pour ce fournisseur.")
@@ -50,6 +83,8 @@ def main(argv: list[str] | None = None) -> int:
     sec = sub.add_parser("secrets", help="Gérer les clés API (IA : anthropic, openai ; sources : google_books, openalex)")
     sec.add_argument("action", choices=["set", "status", "delete"])
     sec.add_argument("provider", nargs="?", choices=list(secrets.ALL_SERVICES))
+    sec.add_argument("--clipboard", action="store_true",
+                     help="Lire la clé dans le presse-papiers (si le collage ne marche pas dans la saisie masquée)")
     ev = sub.add_parser("evaluate-indicators", help="Mesurer les indices IA sur un corpus annoté (humain/ et ia/)")
     ev.add_argument("folder")
     ev.add_argument("--language", choices=["fr", "ru", "en"], default="ru")
