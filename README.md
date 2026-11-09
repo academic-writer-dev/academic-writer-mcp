@@ -4,7 +4,12 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : version 1.0.0 — Phase 10 terminée (maintenance)** : diagnostic complet de l'installation
+> **Statut : version 1.1.0 — corrections de l'audit général** (voir [docs/audit-v1.0.0.md](docs/audit-v1.0.0.md)) :
+> présentations professionnelles (PPTX, PDF, aperçus), graphiques, calcul formel vérifié (SymPy), consignes de
+> l'enseignant (« uniquement le cours »), profils d'enseignants, 35 disciplines, 26 types de travaux, 15 bases
+> scientifiques ouvertes, détection des logiciels du poste. 91 outils MCP.
+>
+> Version 1.0.0 — Phase 10 (maintenance) : diagnostic complet de l'installation
 > (`academic-writer doctor` / `system_check`), sauvegarde complète (.zip) et restauration vérifiée,
 > déclaration automatique dans Claude Desktop, parcours guidés (prompts).
 > Phase 9 : mise en forme et export : DOCX selon ГОСТ 7.32-2017,
@@ -44,6 +49,11 @@ techniques et professionnels (FR / RU / EN).
 | Sources et bibliographie | `register_source`, `list_sources`, `update_source`, `verify_source_metadata`, `insert_citation`, `generate_bibliography`, `audit_references`, `find_uncited_references` |
 | Recherche d'ouvrages | `find_works_by_topic`, `download_open_access`, `export_references`, `search_sources`, `import_sources_file`, `confirm_source_verification` |
 | Audit et indices IA | `detect_ai_indicators`, `analyze_writing_patterns`, `analyze_document_metadata`, `inspect_revision_history`, `inspect_document_provenance`, `verify_content_credentials`, `audit_document_integrity`, `generate_ai_audit_report` |
+| Calcul formel | `solve_math` (dérivées, intégrales, limites, équations, EDO, matrices — résultats vérifiés) |
+| Graphiques | `create_chart`, `list_charts` |
+| Présentations | `plan_presentation`, `create_presentation` |
+| Cours et enseignants | `create_teacher_profile`, `list_teacher_profiles`, `update_teacher_profile`, `set_project_teaching`, `check_course_coverage`, `extract_course_notations` |
+| Logiciels du poste | `detect_software` |
 | Contrôle qualité | `validate_calculations`, `evaluate_formula`, `convert_units`, `verify_factual_claims`, `check_consistency`, `check_document_structure`, `final_quality_audit` |
 | Mise en forme et export | `list_format_presets`, `export_document`, `check_formatting`, `apply_formatting` |
 | Disciplines | `identify_domain`, `set_project_domain`, `list_domain_profiles`, `get_domain_profile`, `get_document_structure_template`, `lookup_terminology`, `reload_domain_profiles` |
@@ -72,6 +82,8 @@ Profils disciplinaires : [docs/profils-disciplinaires.md](docs/profils-disciplin
 | keyring | 25.x | Clés API dans le Gestionnaire d'identification Windows |
 | Ollama (programme externe) | 0.40 | Modèle local `qwen3.5:4b` (aucun envoi externe) |
 | LanguageTool 6.6 + Java 21 (externes) | — | Correction fr/ru/en, serveur LOCAL uniquement |
+| matplotlib | 3.x | Graphiques (licence PSF/BSD) |
+| Microsoft PowerPoint (externe, facultatif) | 2019+ | Export PDF / ODP et aperçus des présentations |
 | pytest, reportlab (tests) | 9.x / 5.x | Tests et génération de PDF de test |
 
 ## Prérequis

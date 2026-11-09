@@ -199,6 +199,24 @@
   prise en charge de Claude Desktop version Microsoft Store (`%LOCALAPPDATA%\Claude-Data`).
 - Sortie console : `errors="replace"` pour ne pas planter sur une console redirigée en cp1251.
 
+## D-028 — Corrections de l'audit général (v1.1.0) — 2026-11-10
+- Consigne « uniquement à partir du cours » détectée (fr/ru/en) → politique de sources course_only :
+  dossier de rédaction limité aux documents de l'enseignant, citations et sources externes refusées,
+  questions non traitées signalées (check_course_coverage), jamais complétées.
+- Calcul formel : SymPy derrière une liste blanche (parse_expr évalue du Python), limite de 30 s, chaque
+  résultat vérifié indépendamment (champ verified).
+- Graphiques : matplotlib, données exactes conservées en JSON, régression avec R², insertion DOCX.
+- Bases ouvertes : Semantic Scholar, Europe PMC, PubMed, HAL, Zenodo, DataCite, CORE (clé gratuite),
+  Unpaywall (seulement avec l'adresse fournie par l'utilisateur). « Libre accès » = licence libre attestée.
+- Logiciels : détection réelle (registre, PATH, serveurs MCP) ; statut native / mcp_server / none ; aucune
+  exécution dans un logiciel tiers ; règles de sécurité pour les automates industriels.
+- Présentations : python-pptx + PowerPoint (COM) pour PDF / ODP / aperçus ; Slide.Export refuse les chemins
+  non ASCII → export dans un dossier temporaire. Contrôle visuel des aperçus effectué ; chevrons
+  abandonnés (texte imprévisible) au profit de cartes numérotées.
+- Fournisseurs IA payants conservés mais désactivés par défaut (règle : ne supprimer aucune fonctionnalité).
+
 ## Points ouverts
+- Recherche en ligne des nouvelles bases : testée avec des réponses simulées seulement (mode local) ;
+  essai réel à faire en mode connecté avec l'accord de l'utilisateur.
 - **Licence PyMuPDF (AGPL-3.0)** : résolu par D-011 (lecteur optionnel, défaut permissif).
 - **Correction linguistique** : LanguageTool (LGPL, nécessite Java) à évaluer en Phase 5.
