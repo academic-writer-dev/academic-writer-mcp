@@ -158,6 +158,11 @@ def register(mcp: MCPServer) -> None:
         services: Annotated[list[str] | None, Field(
             description="Restreindre aux bases citées (ex. [\"pubmed\", \"europe_pmc\"] en médecine, [\"hal\"] pour "
                         "les travaux français).")] = None,
+        author: Annotated[str | None, Field(description="Nom d'un auteur (filtre).")] = None,
+        year_from: int | None = None,
+        year_to: int | None = None,
+        publication_type: Annotated[Literal["article", "book", "chapter", "thesis", "preprint", "conference",
+                                            "dataset", "report"] | None, Field(description="Type de publication.")] = None,
     ) -> DiscoveryResult:
         """Trouve des livres, manuels, articles et jeux de données RÉELS sur un thème dans des bases légales et
         gratuites (Internet Archive, Open Library, DOAJ, arXiv, Crossref, Semantic Scholar, Europe PMC, PubMed, HAL,
@@ -165,7 +170,8 @@ def register(mcp: MCPServer) -> None:
         intégral sous licence libre attestée (une simple lecture gratuite n'est pas présentée comme libre accès).
         Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""
         with user_errors():
-            return get_services().sources.discover(query, kind, open_access_only, language, limit, services)
+            return get_services().sources.discover(query, kind, open_access_only, language, limit, services, author,
+                                                   year_from, year_to, publication_type)
 
     @mcp.tool(title="Télécharger un texte en libre accès",
               annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,
@@ -218,3 +224,45 @@ def register(mcp: MCPServer) -> None:
         """Sources enregistrées qui ne sont citées dans aucune section acceptée."""
         with user_errors():
             return get_services().sources.uncited(project_id)
+
+    @mcp.tool(title="Vérifier les rétractations",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
+    def check_retractions(project_id: str | None = None, doi: str | None = None) -> dict:
+        """Cherche les avis de rétractation, retrait, correction ou d'inquiétude publiés pour un DOI ou pour toutes
+        les sources d'un projet (Crossref). Seuls les DOI sont envoyés. Mode connecté requis."""
+        with user_errors():
+            return get_services().sources.check_retractions(project_id, doi)
+
+    @mcp.tool(title="Trouver un chercheur (ORCID)",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
+    def find_researcher(family: str, given: str | None = None) -> list:
+        """Identifiants ORCID correspondant à un nom (homonymes possibles : vérifier l'affiliation et les travaux sur
+        la page ORCID avant d'attribuer une publication)."""
+        with user_errors():
+            return [r.model_dump() for r in get_services().sources.find_researcher(family, given)]
+
+    @mcp.tool(title="Données statistiques ouvertes",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
+    def fetch_open_data(
+        provider: Literal["worldbank", "eurostat"],
+        dataset: Annotated[str, Field(description="World Bank : code d'indicateur (ex. NY.GDP.MKTP.CD) ; Eurostat : "
+                                                  "code du jeu (ex. nama_10_gdp).")],
+        country: Annotated[str | None, Field(description="World Bank : codes ISO séparés par ; (ex. FR;RU).")] = None,
+        years: Annotated[str | None, Field(description="World Bank : « 2015:2023 ».")] = None,
+        filters: Annotated[dict[str, str] | None, Field(description="Eurostat : dimensions (ex. {\"geo\": \"FR\", "
+                                                                    "\"time\": \"2021\", \"unit\": \"CP_MEUR\"}).")] = None,
+    ):
+        """Récupère des séries statistiques officielles et gratuites (World Bank, Eurostat), avec l'adresse source et
+        la date de mise à jour, pour les citer et les tracer (create_chart). Valeurs non modifiées."""
+        with user_errors():
+            return get_services().sources.open_data(provider, dataset, country, years, filters)
+
+    @mcp.tool(title="Fournisseurs documentaires et gratuité", annotations=_READ)
+    def list_source_providers(region: str | None = None) -> dict:
+        """Registre des bases et services (international, Europe, Russie) : statut de gratuité (PUBLIC_FREE,
+        FREE_ACCOUNT, FREE_API_KEY, PAID_EXCLUDED, UNVERIFIED_EXCLUDED, UNAVAILABLE), clé requise, accès au texte
+        intégral, mode d'intégration (api, manual_link, excluded) et résultat de la vérification réelle."""
+        from academic_writer.research.providers import PROVIDERS, VERIFIED_ON, summary
+
+        providers = [p.model_dump() for p in PROVIDERS if not region or region.casefold() in p.region.casefold()]
+        return {"verified_on": VERIFIED_ON, "by_status": summary(), "providers": providers}

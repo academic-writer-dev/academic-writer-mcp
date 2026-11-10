@@ -329,13 +329,16 @@ class SourceService:
                                    "l'identifiant sont envoyés ; activable avec mode = 'connected'.")
 
     def discover(self, query: str, kind: str = "all", open_access_only: bool = False, language: str | None = None,
-                 limit: int = 10, services: list[str] | None = None) -> DiscoveryResult:
+                 limit: int = 10, services: list[str] | None = None, author: str | None = None,
+                 year_from: int | None = None, year_to: int | None = None,
+                 publication_type: str | None = None) -> DiscoveryResult:
         if not query or len(query.strip()) < 3:
             raise ValidationFailed("Indiquez un thème de recherche (au moins 3 caractères).")
         self._require_connected("la recherche d'ouvrages par thème")
         return find_by_topic(query.strip(), self.text_fetcher, kind, open_access_only, language,
                              max(1, min(limit, 25)), keys=self._service_keys(),
-                             unpaywall_email=self.settings.unpaywall_email, services_filter=services)
+                             unpaywall_email=self.settings.unpaywall_email, services_filter=services,
+                             author=author, year_from=year_from, year_to=year_to, publication_type=publication_type)
 
     def download_open_access(self, project_id: str, item_id: str) -> OpenAccessDownload:
         self._require_external_sources(project_id, "Télécharger un texte externe")
@@ -584,3 +587,52 @@ class SourceService:
         counts = self._cited_counts(project_id)
         sources = [s for s in listing.sources if counts.get(s.key, 0) == 0]
         return SourceList(project_id=project_id, count=len(sources), by_status={}, sources=sources)
+
+    # --- rétractations, chercheurs, données ouvertes ------------------------------------------------------------
+    def check_retractions(self, project_id: str | None = None, doi: str | None = None):
+        from academic_writer.research.openscience_more import crossref_updates
+        from academic_writer.research.validation import normalize_doi
+
+        self._require_connected("la vérification des rétractations (Crossref)")
+        targets: list[tuple[str, str]] = []
+        if doi:
+            targets.append(("DOI", normalize_doi(doi) or doi))
+        if project_id:
+            targets += [(s.key, s.data.doi) for s in self.list(project_id).sources if s.data.doi]
+        if not targets:
+            raise ValidationFailed("Aucun DOI à vérifier (indiquez doi ou un projet dont les sources ont un DOI).")
+        results = []
+        for label, value in targets[:60]:
+            try:
+                notices = crossref_updates(value, self.text_fetcher)
+                results.append({"source": label, "doi": value, "notices": [n.model_dump() for n in notices],
+                                "status": ("RÉTRACTÉ" if any(n.type in ("retraction", "withdrawal", "removal")
+                                                              for n in notices) else
+                                           "à examiner" if notices else "aucun avis connu")})
+            except OSError as exc:
+                results.append({"source": label, "doi": value, "notices": [], "status": f"non vérifié ({exc})"})
+        return {"checked": len(results), "results": results,
+                "notice": "Avis de Crossref (rétractation, retrait, correction, avis d'inquiétude). « Aucun avis connu » "
+                          "ne garantit pas l'absence de problème."}
+
+    def find_researcher(self, family: str, given: str | None = None):
+        from academic_writer.research.openscience_more import search_orcid
+
+        self._require_connected("la recherche ORCID")
+        if not family or len(family.strip()) < 2:
+            raise ValidationFailed("Indiquez le nom de famille.")
+        return search_orcid(family.strip(), given.strip() if given else None, self.text_fetcher)
+
+    def open_data(self, provider: str, dataset: str, country: str | None = None, years: str | None = None,
+                  filters: dict[str, str] | None = None):
+        from academic_writer.research import openscience_more as more
+
+        self._require_connected("l'accès aux données ouvertes")
+        try:
+            if provider == "worldbank":
+                return more.worldbank(dataset, country or "", years, self.text_fetcher)
+            if provider == "eurostat":
+                return more.eurostat(dataset, filters or {}, self.text_fetcher)
+        except (ValueError, OSError) as exc:
+            raise ValidationFailed(str(exc)) from exc
+        raise ValidationFailed("Fournisseur : worldbank ou eurostat.")

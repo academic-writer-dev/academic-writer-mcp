@@ -215,8 +215,11 @@ def archive_query(query: str) -> str:
 
 def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access_only: bool = False,
                   language: str | None = None, limit: int = 10, keys: dict[str, str] | None = None,
-                  unpaywall_email: str | None = None, services_filter: list[str] | None = None) -> DiscoveryResult:
+                  unpaywall_email: str | None = None, services_filter: list[str] | None = None,
+                  author: str | None = None, year_from: int | None = None, year_to: int | None = None,
+                  publication_type: str | None = None) -> DiscoveryResult:
     from academic_writer.research import openscience as osc
+    from academic_writer.research import openscience_more as more
 
     keys = keys or {}
     q = urllib.parse.quote
@@ -263,6 +266,16 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
             plans.append(("pubmed", "", lambda _text, query: osc.search_pubmed(query, fetch, per)))
         if keys.get("core"):
             plans.append(("core", osc.core_url(query, per, keys["core"]), osc.parse_core))
+    openalex_type = {"article": "article", "book": "book", "thesis": "dissertation", "preprint": "preprint",
+                     "dataset": "dataset", "chapter": "book-chapter"}.get(publication_type or "")
+    if kind in ("books", "articles", "all"):
+        plans.append(("openalex", more.openalex_url(query, per, year_from, year_to, openalex_type, keys.get("openalex")),
+                      more.parse_openalex))
+    if kind in ("articles", "all"):
+        plans.append(("openaire", more.openaire_url(query, per), more.parse_openaire))
+        plans.append(("eric", more.eric_url(query, per), more.parse_eric))
+    if kind in ("books", "all"):
+        plans.append(("dnb", more.dnb_url(query, per), more.parse_dnb))
     if kind == "datasets":
         plans.append(("datacite", osc.datacite_url(query, per), osc.parse_datacite))
         plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))
@@ -305,6 +318,20 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
             notices.append(f"{enriched} texte(s) intégral(aux) en libre accès légal localisé(s) par Unpaywall.")
     if open_access_only:
         works = [w for w in works if w.open_access]
+    if author:
+        needle = _fold(author)
+        works = [w for w in works if any(needle in _fold(a) for a in w.authors)]
+    if year_from or year_to:
+        works = [w for w in works if w.year and (year_from or 0) <= w.year <= (year_to or 9999)]
+    if publication_type:
+        wanted = {"article": {"article"}, "book": {"book"}, "chapter": {"chapter"}, "thesis": {"thesis"},
+                  "preprint": {"report"}, "conference": {"conference"}, "dataset": {"other"},
+                  "report": {"report"}}.get(publication_type, {publication_type})
+        works = [w for w in works if w.source_type in wanted]
+    retracted = [w.title for w in works if w.title.startswith("[RÉTRACTÉ]")]
+    if retracted:
+        notices.append(f"{len(retracted)} travail(aux) RÉTRACTÉ(S) signalé(s) par OpenAlex : ne pas les citer comme "
+                       "preuve (ou seulement pour discuter la rétractation).")
     if language in _LANG_CODES:
         codes = _LANG_CODES[language]
         works = [w for w in works if not w.language or _fold(w.language) in codes]
