@@ -218,7 +218,8 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                   unpaywall_email: str | None = None, services_filter: list[str] | None = None,
                   author: str | None = None, year_from: int | None = None, year_to: int | None = None,
                   publication_type: str | None = None, local_records: list | None = None,
-                  discipline: str | None = None) -> DiscoveryResult:
+                  discipline: str | None = None, auto_domain: str | None = None,
+                  auto_label: str | None = None) -> DiscoveryResult:
     from academic_writer.research import disciplines
     from academic_writer.research import openscience as osc
     from academic_writer.research import openscience_more as more
@@ -275,7 +276,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                      "dataset": "dataset", "chapter": "book-chapter"}.get(publication_type or "")
     if kind in ("books", "articles", "all"):
         plans.append(("openalex", more.openalex_url(query, per, year_from, year_to, openalex_type, keys.get("openalex"),
-                                                    language, profile.openalex_subfields if profile else ()),
+                                                    language, disciplines.openalex_filter(profile) if profile else None),
                       more.parse_openalex))
     if kind in ("articles", "all"):
         plans.append(("openaire", more.openaire_url(query, per), more.parse_openaire))
@@ -301,9 +302,39 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                 data=SourceData(authors=[_person(a) for a in r.authors[:10]], title=r.title, container=r.journal,
                                 publisher=r.publisher, url=r.url, language="ru")) for r in _records]
         plans.append(("cyberleninka", "", cyberleninka_local))
-    if profile:  # discipline : bases hors sujet retirées, revues et rapports spécialisés ajoutés
+    preferred: set[str] = set()
+    auto_notice = None
+    if profile:  # discipline imposée : bases hors sujet retirées, revues et rapports spécialisés ajoutés
         plans = [plan for plan in plans if plan[0] not in profile.skip_services]
         plans += disciplines.extra_plans(profile, query, per, kind)
+    elif auto_domain:  # domaine reconnu : sources spécialisées AJOUTÉES, aucune base retirée
+        auto_profile, topic_filter = disciplines.resolve(auto_domain)
+        extra: list[tuple[str, str, Callable]] = []
+        if topic_filter and kind in ("books", "articles", "all"):
+            extra.append(("openalex", more.openalex_url(query, per, year_from, year_to, openalex_type,
+                                                        keys.get("openalex"), language, topic_filter),
+                          more.parse_openalex))
+        if auto_profile:
+            if kind in ("articles", "all"):
+                extra.append(("doaj", "https://doaj.org/api/search/articles/"
+                              f"{q(disciplines.doaj_query(query, auto_profile))}?pageSize={per}", parse_doaj))
+            extra += disciplines.extra_plans(auto_profile, query, per, kind)
+
+        def marked(plan: tuple[str, str, Callable]) -> tuple[str, str, Callable]:
+            name, url, parser = plan
+
+            def parse(text, query, _parser=parser):
+                found = _parser(text, query)
+                preferred.update(w.item_id for w in found)
+                return found
+            return name, url, parse
+        plans += [marked(plan) for plan in extra]
+        if auto_profile:  # revues russes moissonnées de la discipline
+            plans = [marked(plan) if plan[0] == "cyberleninka" else plan for plan in plans]
+        if extra:
+            label = auto_label or (auto_profile.name if auto_profile else auto_domain)
+            auto_notice = (f"Domaine reconnu : {label} — sources spécialisées ajoutées et classées en premier "
+                           "(les autres bases restent interrogées).")
     if services_filter:
         plans = [plan for plan in plans if plan[0] in services_filter]
     works: list[DiscoveredWork] = []
@@ -366,7 +397,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
         notices.append(f"{discarded} résultat(s) peu pertinent(s) écarté(s) (moins de la moitié des mots du thème).")
     seen: set[str] = set()
     unique: list[DiscoveredWork] = []
-    for work in sorted(works, key=lambda w: (w.relevance, w.open_access), reverse=True):
+    for work in sorted(works, key=lambda w: (w.relevance, w.item_id in preferred, w.open_access), reverse=True):
         signature = _fold(work.title)[:60]
         if signature in seen:
             continue
@@ -377,6 +408,8 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
     if restricted:
         notices.append(f"{restricted} ouvrage(s) d'Internet Archive sans licence libre déclarée : consultation via le "
                        "lien seulement ; le droit d'auteur peut s'appliquer (vérifier avant tout usage).")
+    if auto_notice:
+        notices.append(auto_notice)
     notices.append("Résultats issus de catalogues : présenter à l'utilisateur, qui choisit les ouvrages à enregistrer "
                    "(register_source) ou à télécharger s'ils sont en libre accès (download_open_access).")
     return DiscoveryResult(query=query, services=services, count=len(unique), works=unique, notices=notices)

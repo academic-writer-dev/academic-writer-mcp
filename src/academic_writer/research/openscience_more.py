@@ -38,10 +38,10 @@ def _json(text: str | None) -> dict:
 
 def openalex_url(query: str, per: int, year_from: int | None = None, year_to: int | None = None,
                  kind: str | None = None, key: str | None = None, language: str | None = None,
-                 subfields: tuple[str, ...] = ()) -> str:
+                 topic_filter: str | None = None) -> str:
     filters = [f"language:{language}"] if language in ("ru", "fr", "en") else []
-    if subfields:
-        filters.append("primary_topic.subfield.id:" + "|".join(subfields))
+    if topic_filter:  # ex. primary_topic.subfield.id:2210|2211
+        filters.append(topic_filter)
     if year_from or year_to:
         filters.append(f"publication_year:{year_from or 1000}-{year_to or 2100}")
     if kind:

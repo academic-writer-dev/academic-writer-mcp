@@ -62,3 +62,56 @@ def test_russian_mechanical_journals_and_registry() -> None:
     by_id = {p.id: p for p in PROVIDERS}
     assert by_id["ntrs"].integration == "api" and by_id["ntrs"].access == "PUBLIC_FREE"
     assert by_id["engrxiv"].integration == "manual_link" and "robots.txt" in by_id["engrxiv"].verification
+
+
+def _profiles():
+    from academic_writer.core.config import Settings
+    from academic_writer.domains.registry import DomainRegistry
+
+    return DomainRegistry(Settings()).all()
+
+
+@pytest.mark.parametrize(("query", "expected"), [
+    ("расчет зубчатой передачи редуктора", "genie_mecanique"),
+    ("gear tooth bending fatigue", "genie_mecanique"),
+    ("résistance des matériaux poutre", "genie_mecanique"),  # priorité au programme de génie mécanique
+    ("обработка резанием", "fabrication_mecanique"),
+    ("béton armé poutre", "genie_civil"),
+    ("diabète de type 2 traitement", "medecine"),
+    ("contrat de travail licenciement", "droit"),
+    ("machine learning", "ia_data_science"),
+    ("histoire de la révolution française", "histoire"),
+])
+def test_domain_detection(query: str, expected: str) -> None:
+    assert disciplines.detect(query, _profiles()) == expected
+
+
+def test_auto_mode_adds_without_removing() -> None:
+    urls = []
+
+    def fetch(url: str):
+        urls.append(urllib.parse.unquote(url))
+        return None
+
+    general = set(find_by_topic("gear fatigue", lambda _u: None, "all").services)
+    result = find_by_topic("gear fatigue", fetch, "all", auto_domain="genie_mecanique")
+    assert general <= set(result.services)  # aucune base retirée (PubMed, ERIC… restent)
+    assert {"ntrs", "jstage"} <= set(result.services)
+    assert any("primary_topic.subfield.id:2210" in u for u in urls)
+    assert any("api.openalex.org" in u and "subfield" not in u for u in urls)  # recherche générale conservée
+    urls.clear()
+    other = find_by_topic("diabetes treatment", fetch, "all", auto_domain="medecine", auto_label="Médecine")
+    assert any("primary_topic.field.id:27" in u for u in urls) and "ntrs" not in other.services
+
+
+def test_auto_mode_ranks_specialized_first() -> None:
+    def fetch(url: str):
+        if "primary_topic.subfield.id" in url:
+            return json.dumps({"results": [{"id": "https://openalex.org/W2", "display_name": "Gear fatigue strength"}]})
+        if "api.crossref.org" in url and "prefix" not in url:
+            return json.dumps({"message": {"items": [{"DOI": "10.1/x", "title": ["Gear fatigue in general"]}]}})
+        return None
+
+    result = find_by_topic("gear fatigue", fetch, "all", auto_domain="genie_mecanique", auto_label="Génie mécanique")
+    assert result.works[0].title == "Gear fatigue strength"
+    assert any(n.startswith("Domaine reconnu : Génie mécanique") for n in result.notices)

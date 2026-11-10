@@ -167,11 +167,13 @@ def register(mcp: MCPServer) -> None:
         publication_type: Annotated[Literal["article", "book", "chapter", "thesis", "preprint", "conference",
                                             "dataset", "report"] | None, Field(description="Type de publication.")] = None,
         discipline: Annotated[Literal["genie_mecanique", "fabrication_mecanique", "materiaux_metallurgie",
-                                      "automobile_engins", "maintenance_industrielle"] | None, Field(
-            description="Recherche spécialisée génie mécanique (au sens large) : OpenAlex et DOAJ filtrés sur la "
-                        "mécanique, revues JSME (J-STAGE), rapports NASA (NTRS), revues russes de machinostroenie "
-                        "moissonnées ; bases médicales et éducatives retirées. À utiliser pour tout travail de "
-                        "génie mécanique, fabrication, matériaux, automobile, maintenance.")] = None,
+                                      "automobile_engins", "maintenance_industrielle", "aucune"] | None, Field(
+            description="Laisser vide (recommandé) : le domaine est reconnu AUTOMATIQUEMENT (domaine du projet, sinon "
+                        "vocabulaire de la recherche, 40 disciplines) et ses sources spécialisées sont AJOUTÉES sans "
+                        "retirer de base. Valeur génie mécanique : recherche STRICTE (OpenAlex et DOAJ filtrés, revues "
+                        "JSME, NASA NTRS, revues russes ; bases médicales et éducatives retirées). « aucune » : "
+                        "recherche générale sans spécialisation.")] = None,
+        project_id: Annotated[str | None, Field(description="Projet dont le domaine guide la recherche.")] = None,
     ) -> DiscoveryResult:
         """Trouve des livres, manuels, articles et jeux de données RÉELS sur un thème dans des bases légales et
         gratuites (Internet Archive, Open Library, DOAJ, arXiv, Crossref, Semantic Scholar, Europe PMC, PubMed, HAL,
@@ -181,7 +183,7 @@ def register(mcp: MCPServer) -> None:
         Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""
         with user_errors():
             return get_services().sources.discover(query, kind, open_access_only, language, limit, services, author,
-                                                   year_from, year_to, publication_type, discipline)
+                                                   year_from, year_to, publication_type, discipline, project_id)
 
     @mcp.tool(title="Télécharger un texte en libre accès",
               annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,

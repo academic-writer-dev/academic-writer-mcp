@@ -6,9 +6,9 @@ description:
   ru: "Механическая обработка, технологические процессы, метрология, качество поверхности."
   en: "Machining and forming processes, process planning, metrology, surface quality."
 keywords:
-  fr: ["usinage", "tournage", "fraisage", "perçage", "rectification", "outil* de coupe", "vitesse de coupe", "avance par tour", "profondeur de passe", "gamme d'usinage", "gamme de fabrication", "machine-outil*", "commande numérique", "rugosité", "état de surface", "brut", "posage", "isostatisme", "contrat de phase", "métrologie"]
-  ru: ["механическ* обработк*", "токарн*", "фрезерован*", "сверлен*", "шлифован*", "режущ* инструмент*", "скорост* резания", "подач*", "глубин* резания", "технологическ* процесс*", "маршрутн* карт*", "операционн* карт*", "станок", "станка", "станков", "чпу", "шероховатост*", "заготовк*", "базирован*", "припуск*"]
-  en: ["machining", "turning", "milling", "drilling", "grinding", "cutting tool*", "cutting speed", "feed rate", "depth of cut", "process plan*", "machine tool*", "cnc", "surface roughness", "workpiece*", "fixturing", "datum*", "tool life", "metrology"]
+  fr: ["usinage", "tournage", "fraisage", "perçage", "rectification", "outil* de coupe", "vitesse de coupe", "avance par tour", "profondeur de passe", "gamme d'usinage", "gamme de fabrication", "machine-outil*", "commande numérique", "rugosité", "état de surface", "brut", "posage", "isostatisme", "contrat de phase", "métrologie", "coupe des métaux"]
+  ru: ["механическ* обработк*", "токарн*", "фрезерован*", "сверлен*", "шлифован*", "режущ* инструмент*", "скорост* резания", "подач*", "глубин* резания", "технологическ* процесс*", "маршрутн* карт*", "операционн* карт*", "станок", "станка", "станков", "чпу", "шероховатост*", "заготовк*", "базирован*", "припуск*", "резани*", "металлорежущ*"]
+  en: ["machining", "turning", "milling", "drilling", "grinding", "cutting tool*", "cutting speed", "feed rate", "depth of cut", "process plan*", "machine tool*", "cnc", "surface roughness", "workpiece*", "fixturing", "datum*", "tool life", "metrology", "metal cutting"]
 terminology:
   - {id: cutting_speed, fr: "vitesse de coupe (Vc)", ru: "скорость резания (v)", en: "cutting speed (vc)", definition: {fr: "Vc = π·D·n / 1000 (m/min, D en mm, n en tr/min).", ru: "v = π·D·n / 1000 (м/мин, D в мм, n в об/мин).", en: "vc = π·D·n / 1000 (m/min, D in mm, n in rpm)."}}
   - {id: feed, fr: "avance", ru: "подача", en: "feed"}

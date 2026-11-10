@@ -331,15 +331,48 @@ class SourceService:
     def discover(self, query: str, kind: str = "all", open_access_only: bool = False, language: str | None = None,
                  limit: int = 10, services: list[str] | None = None, author: str | None = None,
                  year_from: int | None = None, year_to: int | None = None,
-                 publication_type: str | None = None, discipline: str | None = None) -> DiscoveryResult:
+                 publication_type: str | None = None, discipline: str | None = None,
+                 project_id: str | None = None) -> DiscoveryResult:
         if not query or len(query.strip()) < 3:
             raise ValidationFailed("Indiquez un thème de recherche (au moins 3 caractères).")
         self._require_connected("la recherche d'ouvrages par thème")
+        auto_domain = None
+        if discipline == "aucune":
+            discipline = None
+        elif discipline is None:  # reconnaissance automatique : domaine du projet, sinon vocabulaire de la recherche
+            if project_id:
+                auto_domain = self.projects.get(project_id).domain_id
+            if not auto_domain:
+                auto_domain = self._detect_domain(query)
         return find_by_topic(query.strip(), self.text_fetcher, kind, open_access_only, language,
                              max(1, min(limit, 25)), keys=self._service_keys(),
                              unpaywall_email=self.settings.unpaywall_email, services_filter=services,
                              author=author, year_from=year_from, year_to=year_to, publication_type=publication_type,
-                             local_records=self._cyberleninka_records(), discipline=discipline)
+                             local_records=self._cyberleninka_records(), discipline=discipline,
+                             auto_domain=auto_domain, auto_label=self._domain_label(auto_domain))
+
+    def _domain_label(self, domain_id: str | None) -> str | None:
+        from academic_writer.domains.registry import DomainRegistry
+
+        if not domain_id:
+            return None
+        try:
+            if getattr(self, "_domain_registry", None) is None:
+                self._domain_registry = DomainRegistry(self.settings)
+            return self._domain_registry.get(domain_id).names.get("fr")
+        except (NotFoundError, OSError, ValueError):  # libellé facultatif : jamais bloquant
+            return None
+
+    def _detect_domain(self, query: str) -> str | None:
+        from academic_writer.domains.registry import DomainRegistry
+        from academic_writer.research import disciplines
+
+        try:
+            if getattr(self, "_domain_registry", None) is None:
+                self._domain_registry = DomainRegistry(self.settings)
+            return disciplines.detect(query, self._domain_registry.all())
+        except (OSError, ValueError):
+            return None
 
     def download_open_access(self, project_id: str, item_id: str) -> OpenAccessDownload:
         self._require_external_sources(project_id, "Télécharger un texte externe")

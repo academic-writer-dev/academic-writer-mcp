@@ -20,9 +20,21 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 | `cyberleninka_journals`, `cyberleninka_harvest` | Revues russes en libre accès : moissonnage OAI-PMH officiel, index local, recherche via `find_works_by_topic` | КиберЛенинка |
 | `list_source_providers` | Registre des 51 fournisseurs et statuts | — |
 
+## Reconnaissance automatique du domaine
+
+Sans paramètre `discipline`, `find_works_by_topic` reconnaît le domaine : celui du projet (`project_id`), sinon
+le vocabulaire de la recherche (40 profils, fr / ru / en). Les sources spécialisées du domaine sont AJOUTÉES
+(aucune base retirée) et leurs résultats classés en premier, à pertinence égale :
+
+- génie mécanique (programme principal, prioritaire en cas de quasi-égalité) : tout le dispositif ci-dessous ;
+- autres domaines : OpenAlex filtré sur le champ ou le sous-domaine correspondant (médecine, droit, informatique,
+  génie civil, histoire, économie…).
+
+`discipline="aucune"` : recherche générale sans spécialisation.
+
 ## Recherche spécialisée génie mécanique
 
-`find_works_by_topic(..., discipline="genie_mecanique")` (aussi `fabrication_mecanique`, `materiaux_metallurgie`,
+Mode STRICT `find_works_by_topic(..., discipline="genie_mecanique")` (aussi `fabrication_mecanique`, `materiaux_metallurgie`,
 `automobile_engins`, `maintenance_industrielle`) :
 
 | Source | Filtre |

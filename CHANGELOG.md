@@ -2,6 +2,9 @@
 
 ## Non publié
 
+- Reconnaissance automatique du domaine de chaque recherche (projet ou vocabulaire, 40 disciplines) : sources
+  spécialisées ajoutées sans retirer de base, classées en premier ; priorité au génie mécanique.
+
 - Recherche spécialisée génie mécanique (`discipline`) : OpenAlex et DOAJ filtrés, revues JSME, NASA NTRS,
   18 revues russes de machinostroenie (outil `cyberleninka_harvest_discipline`) ; bases hors sujet retirées.
 

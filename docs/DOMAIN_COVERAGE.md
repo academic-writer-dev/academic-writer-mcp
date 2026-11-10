@@ -22,22 +22,22 @@ Opérationnel = détection par mots-clés testée, terminologie transmise au ré
 | `education` | Sciences de l'éducation | sciences_humaines | normal | 4 | 1 | 0 | 0 | 11/11/11 |
 | `electronique` | Électronique et électrotechnique | generaliste | normal | 7 | 2 | 2 | 7 | 20/20/20 |
 | `environnement` | Environnement et écologie | generaliste | normal | 5 | 1 | 1 | 3 | 12/12/12 |
-| `fabrication_mecanique` | Fabrication mécanique | genie_mecanique | normal | 10 | 2 | 2 | 7 | 20/20/18 |
+| `fabrication_mecanique` | Fabrication mécanique | genie_mecanique | normal | 10 | 2 | 2 | 7 | 21/22/19 |
 | `finance_comptabilite` | Finance et comptabilité | economie | high | 6 | 2 | 2 | 3 | 13/12/12 |
 | `generaliste` | Généraliste | — | normal | 4 | 6 | 2 | 12 | 0/0/0 |
 | `genie_civil` | Génie civil | generaliste | normal | 7 | 2 | 2 | 10 | 19/18/17 |
 | `genie_electrique` | Génie électrique et électrotechnique | generaliste | high | 5 | 2 | 2 | 3 | 13/12/12 |
-| `genie_mecanique` | Génie mécanique | generaliste | normal | 17 | 4 | 4 | 12 | 23/25/20 |
+| `genie_mecanique` | Génie mécanique | generaliste | normal | 17 | 4 | 4 | 12 | 25/27/22 |
 | `geologie` | Géologie et géosciences | generaliste | normal | 5 | 1 | 1 | 1 | 13/13/13 |
 | `gestion` | Gestion et management | generaliste | normal | 5 | 2 | 2 | 6 | 18/17/18 |
-| `histoire` | Histoire | sciences_humaines | normal | 4 | 2 | 0 | 0 | 12/12/13 |
+| `histoire` | Histoire | sciences_humaines | normal | 4 | 2 | 0 | 0 | 13/12/13 |
 | `ia_data_science` | Intelligence artificielle et science des données | informatique | normal | 4 | 2 | 1 | 2 | 11/11/11 |
 | `informatique` | Informatique | generaliste | normal | 8 | 3 | 2 | 8 | 20/18/20 |
 | `langues_linguistique` | Langues et linguistique | sciences_humaines | normal | 4 | 1 | 0 | 0 | 12/12/12 |
 | `maintenance_industrielle` | Maintenance industrielle | genie_mecanique | normal | 11 | 2 | 3 | 8 | 20/18/20 |
 | `materiaux_metallurgie` | Science des matériaux et métallurgie | generaliste | normal | 5 | 2 | 1 | 3 | 14/15/14 |
 | `mathematiques` | Mathématiques | generaliste | normal | 6 | 2 | 2 | 2 | 19/19/20 |
-| `medecine` | Médecine et sciences de la santé | generaliste | high | 7 | 5 | 2 | 7 | 18/18/18 |
+| `medecine` | Médecine et sciences de la santé | generaliste | high | 7 | 5 | 2 | 7 | 22/21/23 |
 | `mode` | Mode et textile | design | normal | 4 | 1 | 0 | 1 | 12/11/11 |
 | `pharmacie` | Pharmacie et pharmacologie | medecine | high | 6 | 2 | 2 | 3 | 13/12/13 |
 | `philosophie` | Philosophie | sciences_humaines | normal | 4 | 1 | 0 | 0 | 12/12/12 |

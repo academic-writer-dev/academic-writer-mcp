@@ -60,7 +60,7 @@ _MECHANICAL_RU = {
 
 _MECHANICAL = Discipline(
     id="genie_mecanique", name="Génie mécanique",
-    openalex_subfields=("2210", "2211", "2209", "2203", "2202", "2206"),
+    openalex_subfields=("2210", "2211", "2209", "2203", "2202", "2206", "2506", "2503"),
     doaj_lcc=("TJ1-1570", "TL1-4050", "TS1-2301", "TA349-359", "TA401-492"),
     jstage_journals=("mej", "jamdsm", "transjsme"),
     ntrs=True, cyberleninka_journals=_MECHANICAL_RU, skip_services=("pubmed", "europe_pmc", "eric", "ndl"))
@@ -70,6 +70,59 @@ DISCIPLINES = {"genie_mecanique": _MECHANICAL}
 ALIASES = {"fabrication_mecanique": "genie_mecanique", "materiaux_metallurgie": "genie_mecanique",
            "automobile_engins": "genie_mecanique", "maintenance_industrielle": "genie_mecanique",
            "mecanique": "genie_mecanique", "mechanical_engineering": "genie_mecanique"}
+
+
+# Autres domaines (profils du serveur) : filtre OpenAlex par champ ou sous-domaine (vérifiés le 2026-11-10)
+_F, _S = "primary_topic.field.id:", "primary_topic.subfield.id:"
+DOMAIN_OPENALEX = {
+    "agriculture": _F + "11", "architecture": _S + "2216|2215", "arts": _S + "1213|1210",
+    "audiovisuel": _S + "2214|1213", "automatisation": _S + "2207", "biologie": _F + "13|11|24",
+    "chimie": _F + "16|15", "design": _S + "1213|1704", "droit": _S + "3308", "economie": _F + "20",
+    "education": _S + "3304", "electronique": _S + "2208|1708|1711", "environnement": _F + "23",
+    "finance_comptabilite": _F + "14|20", "genie_civil": _S + "2205|2215", "genie_electrique": _S + "2208",
+    "geologie": _F + "19", "gestion": _F + "14", "histoire": _S + "1202", "ia_data_science": _S + "1702|1707|1710",
+    "informatique": _F + "17", "langues_linguistique": _S + "1203|3310", "mathematiques": _F + "26",
+    "medecine": _F + "27", "pharmacie": _F + "30", "philosophie": _S + "1211", "physique": _F + "31",
+    "psychologie": _F + "32", "sciences_humaines": _F + "33|12", "sciences_politiques": _S + "3320|3312",
+    "sociologie": _S + "3312", "sport": _S + "3612", "tourisme": _S + "1409",
+}
+
+
+def openalex_filter(profile: Discipline) -> str:
+    return _S + "|".join(profile.openalex_subfields)
+
+
+def resolve(domain_id: str | None) -> tuple[Discipline | None, str | None]:
+    """Profil spécialisé (génie mécanique) et filtre OpenAlex d'un domaine du serveur ; (None, None) si inconnu."""
+    if not domain_id:
+        return None, None
+    key = ALIASES.get(domain_id, domain_id)
+    if key in DISCIPLINES:
+        return DISCIPLINES[key], openalex_filter(DISCIPLINES[key])
+    return None, DOMAIN_OPENALEX.get(key)
+
+
+PRIORITY = "genie_mecanique"
+
+
+def detect(query: str, profiles: list) -> str | None:
+    """Domaine d'une recherche d'après le vocabulaire des profils (fr, ru, en) ; None si incertain."""
+    from academic_writer.domains.detection import score_profiles
+
+    scores, _ = score_profiles(query, [p for p in profiles if p.id != "generaliste"])
+    if not scores or scores[0].score <= 0:
+        return None
+    # programme principal de l'utilisateur : le génie mécanique l'emporte s'il est presque à égalité (≥ 80 %)
+    close = [s for s in scores if ALIASES.get(s.profile.id, s.profile.id) == PRIORITY
+             and s.score >= 0.8 * scores[0].score]
+    if close:
+        return close[0].profile.id
+    top = [s for s in scores if s.score == scores[0].score]
+    targets = {ALIASES.get(s.profile.id, s.profile.id) for s in top}
+    if len(targets) != 1:
+        return None
+    domain = top[0].profile.id
+    return domain if resolve(domain) != (None, None) else None
 
 
 def get(discipline: str | None) -> Discipline | None:
