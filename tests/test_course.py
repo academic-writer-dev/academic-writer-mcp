@@ -129,3 +129,50 @@ async def test_course_tools_exposed() -> None:
         names = {t.name for t in (await client.list_tools()).tools}
     assert {"create_teacher_profile", "list_teacher_profiles", "update_teacher_profile", "set_project_teaching",
             "check_course_coverage", "extract_course_notations"} <= names
+
+
+def test_structured_teacher_profile_in_brief(services: Services, course_project) -> None:
+    """G3 : définitions, structure, style, règles et barème du profil transmis au rédacteur."""
+    from academic_writer.core.teaching import Criterion, TermDefinition
+
+    profile = services.course.create_profile(
+        "M. Durand", subject="Mécanique", source_policy="course_only",
+        details={"definitions": [TermDefinition(term="vitesse moyenne", definition="rapport distance / durée",
+                                                source="cours2.txt")],
+                 "expected_structure": ["Données", "Formule littérale", "Application numérique", "Conclusion"],
+                 "writing_style": "phrases courtes, unités SI", "bibliography_rules": "aucune source externe",
+                 "evaluation_criteria": [Criterion(criterion="Exactitude des calculs", points=6)],
+                 "work_types": ["td"]})
+    assert profile.definitions[0].term == "vitesse moyenne" and profile.evaluation_criteria[0].points == 6
+    services.course.set_project_teaching(course_project.id, teacher_profile_id=profile.id)
+    services.writing.analyze_assignment(course_project.id)
+    outline = services.writing.create_outline(course_project.id)
+    outline = services.writing.validate_outline(outline.id, approve=True, force=True).outline
+    brief = services.writing.build_brief(course_project.id, outline.sections[0].id).brief
+    for expected in ("Définition du cours : vitesse moyenne — rapport distance / durée [cours2.txt]",
+                     "Structure attendue : Données → Formule littérale", "Style attendu : phrases courtes",
+                     "Critères d'évaluation : Exactitude des calculs (6 pts)"):
+        assert expected in brief
+    updated = services.course.update_profile(profile.id, {"detail_level": "détaillé"})
+    assert updated.detail_level == "détaillé" and updated.definitions  # les autres champs sont conservés
+    with pytest.raises(ValidationFailed, match="inconnus"):
+        services.course.create_profile("X", details={"couleur": "bleu"})
+
+
+def test_extract_rubric_and_definitions(services: Services, inbox: Path) -> None:
+    project = services.projects.create("TP", DocumentType.TP, Language.RU)
+    rubric = inbox / "bareme.txt"
+    rubric.write_text("Критерии оценки\n- Правильность расчётов (6 баллов)\n- Оформление отчёта – 2 балла\n"
+                      "- Ответы на вопросы: 2 балла\n", encoding="utf-8")
+    course = inbox / "lecture.txt"
+    course.write_text("Кинематическая пара — это соединение двух звеньев, допускающее их относительное движение. "
+                      "Подвижное соединение звеньев называется шарниром.", encoding="utf-8")
+    services.documents.import_document(project.id, str(rubric), DocumentRole.RUBRIC)
+    services.documents.import_document(project.id, str(course), DocumentRole.COURSE)
+    material = services.course.extract_teacher_material(project.id)
+    assert [(c.criterion, c.points) for c in material.criteria] == [
+        ("Правильность расчётов", 6.0), ("Оформление отчёта", 2.0), ("Ответы на вопросы", 2.0)]
+    assert material.total_points == 10.0
+    terms = {d.term: d for d in material.definitions}
+    assert terms["Кинематическая пара"].definition.startswith("соединение двух звеньев")
+    assert terms["шарниром"].document == "lecture.txt"

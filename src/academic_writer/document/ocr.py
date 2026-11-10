@@ -29,6 +29,58 @@ class OcrError(RuntimeError):
     pass
 
 
+UNCERTAIN_WORD = 60  # confiance (0-100) en dessous de laquelle un mot est douteux
+RELIABLE_PAGE = 85  # confiance moyenne au-dessus de laquelle une page est jugée fiable
+
+
+class OcrText(str):
+    """Texte reconnu (se comporte comme une chaîne) + confiance moyenne et mots douteux."""
+
+    confidence: float | None
+    uncertain: list[str]
+
+    def __new__(cls, text: str, confidence: float | None = None, uncertain: list[str] | None = None) -> "OcrText":
+        obj = super().__new__(cls, text)
+        obj.confidence = confidence
+        obj.uncertain = uncertain or []
+        return obj
+
+    def strip(self, chars: str | None = None) -> "OcrText":  # conserve la confiance
+        return OcrText(str.strip(self, chars), self.confidence, self.uncertain)
+
+
+def parse_tsv(tsv: str) -> OcrText:
+    """Reconstitue le texte (lignes, paragraphes) à partir de la sortie TSV de Tesseract."""
+    lines: dict[tuple, list[str]] = {}
+    paragraphs: list[tuple] = []
+    confidences: list[float] = []
+    uncertain: list[str] = []
+    for row in tsv.splitlines()[1:]:
+        cells = row.split("\t")
+        if len(cells) < 12 or cells[0] != "5":
+            continue
+        word = cells[11].strip()
+        if not word:
+            continue
+        try:
+            confidence = float(cells[10])
+        except ValueError:
+            confidence = -1
+        key = (int(cells[2]), int(cells[3]), int(cells[4]))  # bloc, paragraphe, ligne
+        lines.setdefault(key, []).append(word)
+        if key[:2] not in paragraphs:
+            paragraphs.append(key[:2])
+        if confidence >= 0:
+            confidences.append(confidence)
+            if confidence < UNCERTAIN_WORD and len(word) > 1 and word not in uncertain:
+                uncertain.append(word)
+    out: list[str] = []
+    for paragraph in paragraphs:
+        out.append("\n".join(" ".join(words) for key, words in lines.items() if key[:2] == paragraph))
+    mean = round(sum(confidences) / len(confidences), 1) if confidences else None
+    return OcrText("\n\n".join(out), mean, uncertain[:30])
+
+
 class OcrEngine:
     def __init__(self, executable: Path, tessdata_dir: Path | None, timeout: int) -> None:
         self.executable = executable
@@ -85,17 +137,23 @@ class OcrEngine:
         chosen = [code for code in ordered if code in available]
         return "+".join(chosen) if chosen else "eng"
 
-    def recognize_file(self, image_path: Path, languages: str) -> str:
-        args = self._base_args() + [str(image_path), "stdout", "-l", languages, "--psm", "3"]
-        return self._run(args)
+    def recognize_file(self, image_path: Path, languages: str) -> OcrText:
+        # tessedit_create_tsv plutôt que le fichier de configuration « tsv » (absent d'un tessdata personnalisé)
+        args = self._base_args() + [str(image_path), "stdout", "-l", languages, "--psm", "3",
+                                    "-c", "tessedit_create_tsv=1", "-c", "tessedit_create_txt=0"]
+        raw = self._run(args)
+        parsed = parse_tsv(raw)
+        if not parsed.strip() and raw.strip() and not raw.startswith("level	"):
+            return OcrText(raw)  # sortie texte simple : confiance non mesurée
+        return parsed
 
-    def recognize_pil(self, image: object, languages: str) -> str:
+    def recognize_pil(self, image: object, languages: str) -> OcrText:
         with tempfile.TemporaryDirectory(prefix="aw-ocr-") as tmp:
             path = Path(tmp) / "page.png"
             image.save(path, format="PNG")  # type: ignore[attr-defined]
             return self.recognize_file(path, languages)
 
-    def recognize_bytes(self, data: bytes, suffix: str, languages: str) -> str:
+    def recognize_bytes(self, data: bytes, suffix: str, languages: str) -> OcrText:
         with tempfile.TemporaryDirectory(prefix="aw-ocr-") as tmp:
             path = Path(tmp) / f"image{suffix}"
             path.write_bytes(data)

@@ -256,3 +256,25 @@ def test_evaluate_formula_points_to_solve_math(services: Services) -> None:
 
     with pytest.raises(ValidationFailed, match="solve_math"):
         services.quality.evaluate_formula("y = integrate(x**2, x)", {})
+
+
+def test_compare_documents_versions(services: Services, inbox: Path) -> None:
+    """G5 : comparaison de deux versions : passages modifiés, nombres et symboles divergents."""
+    project = services.projects.create("Rapport", DocumentType.RAPPORT_LABORATOIRE, Language.FR)
+    v1 = inbox / "v1.md"
+    v1.write_text("# Introduction\n\nÉtude du ressort.\n\n# Résultats\n\nOn mesure k = 120 N/m.\n\nL'allongement "
+                  "maximal est de 35 mm.\n", encoding="utf-8")
+    v2 = inbox / "v2.md"
+    v2.write_text("# Introduction\n\nÉtude du ressort.\n\n# Mesures\n\nOn mesure k = 150 N/m.\n\nL'allongement "
+                  "maximal est de 35 mm.\n\nUne incertitude de 5 % est estimée.\n", encoding="utf-8")
+    a = services.documents.import_document(project.id, str(v1), DocumentRole.DRAFT)
+    b = services.documents.import_document(project.id, str(v2), DocumentRole.DRAFT)
+    ida = a.document.id if hasattr(a, "document") else a.id
+    idb = b.document.id if hasattr(b, "document") else b.id
+    result = services.quality.compare_documents(ida, idb)
+    assert result.headings_only_in_a == ["Résultats"] and result.headings_only_in_b == ["Mesures"]
+    assert any(c.kind == "modified" and "120" in c.before and "150" in c.after for c in result.changes)
+    assert any(c.kind == "added" and "incertitude" in c.after for c in result.changes)
+    assert "120" in result.numbers_only_in_a and "150" in result.numbers_only_in_b
+    assert [(c.symbol, c.value_a, c.value_b) for c in result.symbol_conflicts] == [("k", "120 N/m", "150 N/m")]
+    assert 0.5 < result.similarity < 1

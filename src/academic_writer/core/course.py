@@ -24,6 +24,7 @@ from academic_writer.core.history import record_event
 from academic_writer.core.models import SOURCE_POLICY_LABELS, TEACHER_ROLES, Project, new_id, utc_now
 from academic_writer.core.projects import ProjectService
 from academic_writer.core.teaching import (
+    DETAIL_FIELDS,
     Notation,
     TeacherProfile,
     TeacherProfileList,
@@ -100,6 +101,28 @@ class NotationExtraction(BaseModel):
                    "de l'enseignant (update_teacher_profile notations=...).")
 
 
+class RubricProposal(BaseModel):
+    criterion: str
+    points: float | None
+    document: str
+    page: int | None
+
+
+class DefinitionProposal(BaseModel):
+    term: str
+    definition: str
+    document: str
+    page: int | None
+
+
+class TeacherMaterialExtraction(BaseModel):
+    project_id: str
+    criteria: list[RubricProposal]
+    total_points: float | None
+    definitions: list[DefinitionProposal]
+    notices: list[str]
+
+
 class ProjectTeaching(BaseModel):
     project: Project
     source_policy_label: str
@@ -131,7 +154,8 @@ class CourseService:
     # --- profils d'enseignants ------------------------------------------------------------------
     def create_profile(self, name: str, *, subject: str | None = None, course: str | None = None,
                        institution: str | None = None, source_policy: str = "course_only",
-                       notations: list[Notation] | None = None, methods: str = "", expectations: str = "") -> TeacherProfile:
+                       notations: list[Notation] | None = None, methods: str = "", expectations: str = "",
+                       details: dict | None = None) -> TeacherProfile:
         if not name or not name.strip():
             raise ValidationFailed("Nom de l'enseignant obligatoire.")
         if source_policy not in POLICIES:
@@ -140,11 +164,21 @@ class CourseService:
         with self.db.transaction() as conn:
             conn.execute(
                 "INSERT INTO teacher_profiles (id, name, subject, course, institution, source_policy, notations, "
-                "methods, expectations, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "methods, expectations, details, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (profile_id, name.strip()[:200], subject, course, institution, source_policy,
                  json.dumps([n.model_dump() for n in notations or []], ensure_ascii=False), methods[:5000],
-                 expectations[:5000], now, now))
+                 expectations[:5000], self._details_json(details or {}), now, now))
         return self.get_profile(profile_id)
+
+    @staticmethod
+    def _details_json(details: dict) -> str:
+        unknown = set(details) - set(DETAIL_FIELDS)
+        if unknown:
+            raise ValidationFailed(f"Champs inconnus : {', '.join(sorted(unknown))}.")
+        probe = TeacherProfile(id="x", name="x", created_at="", updated_at="", **details)  # validation
+        return json.dumps({k: getattr(probe, k) if not isinstance(getattr(probe, k), list) else
+                           [i.model_dump() if hasattr(i, "model_dump") else i for i in getattr(probe, k)]
+                           for k in DETAIL_FIELDS}, ensure_ascii=False)
 
     def get_profile(self, profile_id: str) -> TeacherProfile:
         with self.db.read() as conn:
@@ -161,7 +195,8 @@ class CourseService:
 
     def update_profile(self, profile_id: str, changes: dict) -> TeacherProfile:
         current = self.get_profile(profile_id)
-        allowed = {"name", "subject", "course", "institution", "source_policy", "notations", "methods", "expectations"}
+        allowed = {"name", "subject", "course", "institution", "source_policy", "notations", "methods", "expectations",
+                   *DETAIL_FIELDS}
         unknown = set(changes) - allowed
         if unknown:
             raise ValidationFailed(f"Champs inconnus : {', '.join(sorted(unknown))}.")
@@ -174,10 +209,11 @@ class CourseService:
         with self.db.transaction() as conn:
             conn.execute(
                 "UPDATE teacher_profiles SET name = ?, subject = ?, course = ?, institution = ?, source_policy = ?, "
-                "notations = ?, methods = ?, expectations = ?, updated_at = ? WHERE id = ?",
+                "notations = ?, methods = ?, expectations = ?, details = ?, updated_at = ? WHERE id = ?",
                 (merged["name"].strip()[:200], merged["subject"], merged["course"], merged["institution"],
                  merged["source_policy"], json.dumps([n.model_dump() for n in notations], ensure_ascii=False),
-                 (merged["methods"] or "")[:5000], (merged["expectations"] or "")[:5000], utc_now(), profile_id))
+                 (merged["methods"] or "")[:5000], (merged["expectations"] or "")[:5000],
+                 self._details_json({k: merged[k] for k in DETAIL_FIELDS}), utc_now(), profile_id))
         return self.get_profile(profile_id)
 
     # --- rattachement à un projet -----------------------------------------------------------------
@@ -320,3 +356,36 @@ class CourseService:
                                                                   document=document.original_filename,
                                                                   page=block.page))
         return NotationExtraction(project_id=project_id, proposals=list(proposals.values())[:80])
+
+    # --- barème et définitions -------------------------------------------------------------------------------
+    def extract_teacher_material(self, project_id: str) -> TeacherMaterialExtraction:
+        """Critères du barème (rôle rubric, ou consignes) et définitions du cours, à faire confirmer."""
+        from academic_writer.writing.teacher_extract import definitions, rubric_from_table, rubric_lines
+
+        self.projects.get(project_id)
+        documents = self._teacher_documents(project_id)
+        if not documents:
+            raise ValidationFailed("Aucun document de l'enseignant (rôles course, rubric, instructions…) dans le projet.")
+        criteria: list[RubricProposal] = []
+        found_definitions: dict[str, DefinitionProposal] = {}
+        for document in documents:
+            result, _ = self.extraction.extract(document.id)
+            for table in result.tables:
+                for criterion, points in rubric_from_table(table.rows):
+                    criteria.append(RubricProposal(criterion=criterion, points=points,
+                                                   document=document.original_filename, page=table.page))
+            for block in result.blocks:
+                if block.type in ("paragraph", "list_item", "note"):
+                    for criterion, points in rubric_lines(block.text):
+                        criteria.append(RubricProposal(criterion=criterion, points=points,
+                                                       document=document.original_filename, page=block.page))
+                    for term, definition in definitions(block.text):
+                        found_definitions.setdefault(term.casefold(), DefinitionProposal(
+                            term=term, definition=definition, document=document.original_filename, page=block.page))
+        total = sum(c.points for c in criteria if c.points is not None) if criteria else None
+        notices = ["Propositions automatiques : les faire confirmer, puis les enregistrer dans le profil de l'enseignant "
+                   "(update_teacher_profile evaluation_criteria / definitions). Rien n'est enregistré automatiquement."]
+        if not criteria:
+            notices.append("Aucun barème reconnu (lignes « critère — 4 points » ou tableau critère / points).")
+        return TeacherMaterialExtraction(project_id=project_id, criteria=criteria[:80], total_points=total,
+                                         definitions=list(found_definitions.values())[:80], notices=notices)

@@ -188,3 +188,19 @@ def test_pdf_hex_metadata_decoded() -> None:
     raw = "<4D6963726F736F667420576F7264202D20CBE0E1EEF0E0F2EEF0EDE0FF20F0E0E1EEF2E020B9342E646F63>"
     assert decode_pdf_string(raw) == "Microsoft Word - Лабораторная работа №4.doc"
     assert decode_pdf_string("<FEFF0410>") == "А" and decode_pdf_string("Titre normal") == "Titre normal"
+
+
+def test_ocr_tsv_confidence_and_uncertain_words() -> None:
+    """G4 : la confiance OCR est mesurée et les passages douteux sont signalés, jamais présentés comme exacts."""
+    from academic_writer.document.model import ocr_quality, ocr_warning
+    from academic_writer.document.ocr import parse_tsv
+
+    header = "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext"
+    rows = ["5\t1\t1\t1\t1\t1\t0\t0\t1\t1\t96\tVitesse", "5\t1\t1\t1\t1\t2\t0\t0\t1\t1\t41\tmoblde",
+            "5\t1\t1\t1\t2\t1\t0\t0\t1\t1\t90\t15", "5\t1\t2\t1\t1\t1\t0\t0\t1\t1\t88\tFin"]
+    text = parse_tsv("\n".join([header, *rows]))
+    assert str(text) == "Vitesse moblde\n15\n\nFin" and text.uncertain == ["moblde"]
+    assert text.confidence == pytest.approx(78.8, abs=0.1)
+    quality = ocr_quality(3, text)
+    assert quality.level == "à vérifier" and "moblde" in ocr_warning(quality, "Page 3")
+    assert ocr_warning(ocr_quality(1, parse_tsv("\n".join([header, rows[0]]))), "Page 1") is None

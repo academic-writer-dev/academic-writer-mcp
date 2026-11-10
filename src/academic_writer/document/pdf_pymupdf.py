@@ -11,7 +11,7 @@ from pathlib import Path
 from academic_writer.core.errors import ValidationFailed
 from academic_writer.document.base import ExtractionContext, clean_cell, trim_table
 from academic_writer.document.layout import blocks_from_lines, heading_levels_from_sizes, normalize
-from academic_writer.document.model import Block, ExtractedDocument, TableData
+from academic_writer.document.model import Block, ExtractedDocument, TableData, ocr_quality, ocr_warning
 from academic_writer.document.ocr import OcrError
 
 
@@ -39,6 +39,7 @@ class PyMuPdfExtractor:
 
         page_lines: list[list[tuple[str, float]]] = []
         ocr_pages: list[int] = []
+        ocr_qualities = []
         outline: dict[int, dict[str, int]] = {}
         tables_by_page: dict[int, list[tuple[list[list[str]], bool]]] = {}
         try:
@@ -65,6 +66,10 @@ class PyMuPdfExtractor:
                         text = ctx.ocr.recognize_bytes(png, ".png", ctx.ocr_languages)
                         lines = [(line, 0.0) for line in text.split("\n")]
                         ocr_pages.append(number)
+                        quality = ocr_quality(number, text)
+                        ocr_qualities.append(quality)
+                        if (message := ocr_warning(quality, f"Page {number}")):
+                            warnings.append(message)
                     except OcrError as exc:
                         warnings.append(f"OCR impossible page {number} : {exc}")
                 elif needs_ocr and ctx.ocr_mode != "never" and text_len == 0:
@@ -114,7 +119,7 @@ class PyMuPdfExtractor:
             warnings.append("Titres déduits de la taille des caractères (heuristique, à vérifier).")
         return ExtractedDocument(format="pdf", extractor=self.name, page_count=page_count, metadata=metadata,
                                  blocks=blocks, tables=tables, images=list(ctx.images), warnings=list(warnings),
-                                 ocr_pages=ocr_pages)
+                                 ocr_pages=ocr_pages, ocr_quality=ocr_qualities)
 
 
 def _page_lines(page) -> list[tuple[str, float]]:

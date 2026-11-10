@@ -25,6 +25,22 @@ class Notation(BaseModel):
     unit: str | None = Field(default=None, max_length=40)
 
 
+class TermDefinition(BaseModel):
+    term: str = Field(max_length=120)
+    definition: str = Field(max_length=1000)
+    source: str | None = Field(default=None, max_length=200, description="Document et page du cours.")
+
+
+class Criterion(BaseModel):
+    criterion: str = Field(max_length=300)
+    points: float | None = None
+    source: str | None = Field(default=None, max_length=200)
+
+
+DETAIL_FIELDS = ("definitions", "expected_structure", "detail_level", "writing_style", "allowed_sources",
+                 "bibliography_rules", "layout_rules", "evaluation_criteria", "work_types")
+
+
 class TeacherProfile(BaseModel):
     id: str
     name: str
@@ -36,6 +52,15 @@ class TeacherProfile(BaseModel):
     notations: list[Notation] = Field(default_factory=list)
     methods: str = Field(default="", description="Méthodes et démarches imposées par l'enseignant.")
     expectations: str = Field(default="", description="Attentes : présentation, niveau de détail, barème…")
+    definitions: list[TermDefinition] = Field(default_factory=list, description="Définitions données dans le cours.")
+    expected_structure: list[str] = Field(default_factory=list, description="Plan attendu par l'enseignant.")
+    detail_level: str = Field(default="", description="Niveau de détail attendu.")
+    writing_style: str = Field(default="", description="Style rédactionnel attendu.")
+    allowed_sources: str = Field(default="", description="Sources autorisées ou recommandées.")
+    bibliography_rules: str = Field(default="", description="Règles bibliographiques de l'enseignant.")
+    layout_rules: str = Field(default="", description="Exigences de mise en page.")
+    evaluation_criteria: list[Criterion] = Field(default_factory=list, description="Critères et barème.")
+    work_types: list[str] = Field(default_factory=list, description="Types de travaux concernés (td, tp, memoire…).")
     created_at: str
     updated_at: str
 
@@ -46,7 +71,9 @@ class TeacherProfileList(BaseModel):
 
 
 def profile_from_row(row: sqlite3.Row) -> TeacherProfile:
+    details = json.loads(row["details"]) if "details" in row.keys() and row["details"] else {}
     return TeacherProfile(
+        **{k: v for k, v in details.items() if k in DETAIL_FIELDS},
         id=row["id"], name=row["name"], subject=row["subject"], course=row["course"], institution=row["institution"],
         source_policy=row["source_policy"], source_policy_label=SOURCE_POLICY_LABELS[row["source_policy"]],
         notations=[Notation.model_validate(n) for n in json.loads(row["notations"] or "[]")],

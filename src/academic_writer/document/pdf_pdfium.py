@@ -18,7 +18,7 @@ import pypdfium2.raw as pdfium_c
 from academic_writer.core.errors import ValidationFailed
 from academic_writer.document.base import ExtractionContext, clean_cell, trim_table
 from academic_writer.document.layout import blocks_from_lines, heading_levels_from_sizes, normalize
-from academic_writer.document.model import Block, ExtractedDocument, TableData
+from academic_writer.document.model import Block, ExtractedDocument, TableData, ocr_quality, ocr_warning
 from academic_writer.document.ocr import OcrError
 
 logger = logging.getLogger("academic_writer.pdf")
@@ -57,6 +57,7 @@ class PdfiumExtractor:
         warnings = ctx.warnings
         page_texts: list[str] = []
         ocr_pages: list[int] = []
+        ocr_qualities = []
         outline: dict[int, dict[str, int]] = {}
         try:
             page_count = len(pdf)
@@ -88,6 +89,10 @@ class PdfiumExtractor:
                             image = page.render(scale=settings.ocr_dpi / 72).to_pil()
                             text = ctx.ocr.recognize_pil(image, ctx.ocr_languages)
                             ocr_pages.append(index + 1)
+                            quality = ocr_quality(index + 1, text)
+                            ocr_qualities.append(quality)
+                            if (message := ocr_warning(quality, f"Page {index + 1}")):
+                                warnings.append(message)
                         except OcrError as exc:
                             warnings.append(f"OCR impossible page {index + 1} : {exc}")
                     elif needs_ocr and ctx.ocr_mode != "never" and not text.strip():
@@ -128,7 +133,7 @@ class PdfiumExtractor:
                             "le PDF ne contient pas de signets.")
         return ExtractedDocument(format="pdf", extractor=self.name, page_count=page_count, metadata=metadata,
                                  blocks=blocks, tables=tables, images=list(ctx.images), warnings=list(warnings),
-                                 ocr_pages=ocr_pages)
+                                 ocr_pages=ocr_pages, ocr_quality=ocr_qualities)
 
     def _extract_images(self, page, page_number: int, ctx: ExtractionContext) -> None:
         if not ctx.can_store_image():

@@ -357,6 +357,21 @@ class QualityService:
                          (result.audit_id, target.project_id, target.document_id, result.verdict,
                           json.dumps(summary, ensure_ascii=False), result.report_path, utc_now()))
 
+    # --- comparaison de documents ---------------------------------------------------------------------
+    def compare_documents(self, document_a: str, document_b: str):
+        from academic_writer.quality.compare import compare
+
+        parts = []
+        for document_id in (document_a, document_b):
+            document = self.documents.get(document_id)
+            result, _ = self.extraction.extract(document_id)
+            headings = [b.text for b in result.blocks if b.type == "heading"]
+            paragraphs = [b.text for b in result.blocks if b.type in ("paragraph", "list_item", "note") and b.text.strip()]
+            parts.append((document.original_filename, headings, paragraphs))
+        if self.documents.get(document_a).project_id != self.documents.get(document_b).project_id:
+            raise ValidationFailed("Les deux documents doivent appartenir au même projet.")
+        return compare(*parts[0], *parts[1])
+
 
 def _markdown_segments(text: str, section: str, level: int) -> list[Segment]:
     segments: list[Segment] = []

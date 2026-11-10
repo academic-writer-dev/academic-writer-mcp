@@ -11,6 +11,7 @@ from pydantic import Field
 from academic_writer.core.quality import FinalAudit
 from academic_writer.quality.calculations import CalculationReport, ConversionResult, FormulaResult
 from academic_writer.quality.claims import ClaimsReport
+from academic_writer.quality.compare import DocumentComparison
 from academic_writer.quality.consistency import ConsistencyReport
 from academic_writer.quality.structure import StructureReport
 from academic_writer.quality.symbolic import MatrixOperation, Operation, SymbolicResult
@@ -105,3 +106,11 @@ def register(mcp: MCPServer) -> None:
         à corriger / prêt pour la relecture humaine (jamais « validé »). Rapport Markdown dans le dossier exports."""
         with user_errors():
             return get_services().quality.final_audit(project_id, document_id, save_report)
+
+    @mcp.tool(title="Comparer deux documents", annotations=_READ)
+    def compare_documents(document_a: str, document_b: str) -> DocumentComparison:
+        """Compare deux documents d'un projet (deux versions d'un rapport, consigne et rendu, deux supports de cours) :
+        similarité, titres présents d'un seul côté, passages ajoutés / supprimés / modifiés, nombres présents d'un seul
+        côté, symboles définis avec des valeurs différentes. Constats seulement, aucune modification."""
+        with user_errors():
+            return get_services().quality.compare_documents(document_a, document_b)

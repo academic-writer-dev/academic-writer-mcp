@@ -535,6 +535,20 @@ class WritingService:
                 conventions.append(f"Méthodes imposées : {teacher.methods[:1500]}")
             if teacher.expectations:
                 conventions.append(f"Attentes de l'enseignant : {teacher.expectations[:1500]}")
+            conventions += [f"Définition du cours : {d.term} — {d.definition[:400]}"
+                            + (f" [{d.source}]" if d.source else "") for d in teacher.definitions[:30]]
+            if teacher.expected_structure:
+                conventions.append("Structure attendue : " + " → ".join(teacher.expected_structure[:25]))
+            for label, value in (("Niveau de détail", teacher.detail_level), ("Style attendu", teacher.writing_style),
+                                 ("Sources autorisées", teacher.allowed_sources),
+                                 ("Règles bibliographiques", teacher.bibliography_rules),
+                                 ("Mise en page", teacher.layout_rules)):
+                if value:
+                    conventions.append(f"{label} : {value[:800]}")
+            if teacher.evaluation_criteria:
+                conventions.append("Critères d'évaluation : " + "; ".join(
+                    c.criterion + (f" ({c.points:g} pts)" if c.points is not None else "")
+                    for c in teacher.evaluation_criteria[:20]))
 
         def describe(req: Requirement) -> str:
             source = f" [{req.source_filename}" + (f", p. {req.page}" if req.page else "") + "]" if req.source_filename else ""

@@ -24,7 +24,7 @@ from academic_writer.core.history import record_event
 from academic_writer.core.models import Document, utc_now
 from academic_writer.core.projects import ProjectService
 from academic_writer.document.base import ExtractionContext, OcrMode, get_extractor
-from academic_writer.document.model import ExtractedDocument, Heading, ImageInfo, TableData
+from academic_writer.document.model import ExtractedDocument, Heading, ImageInfo, OcrQuality, TableData
 from academic_writer.document.ocr import OcrEngine, OcrError
 from academic_writer.document.render import block_to_markdown, build_chunks
 from academic_writer.security.files import sha256_file
@@ -53,6 +53,8 @@ class ExtractionSummary(BaseModel):
     table_count: int
     image_count: int
     ocr_pages: list[int]
+    ocr_quality: list[OcrQuality] = Field(default_factory=list,
+                                          description="Confiance OCR par page : fiable, à vérifier ou douteux.")
     detected_encoding: str | None = None
     headings: list[Heading] = Field(description="Plan détecté (200 titres maximum).")
     metadata: dict[str, str]
@@ -269,7 +271,7 @@ class ExtractionService:
             document_id=document.id, original_filename=document.original_filename, format=result.format,
             extractor=result.extractor, page_count=result.page_count, char_count=result.char_count,
             block_count=len(result.blocks), table_count=len(result.tables), image_count=len(result.images),
-            ocr_pages=result.ocr_pages, detected_encoding=result.detected_encoding,
+            ocr_pages=result.ocr_pages, ocr_quality=result.ocr_quality, detected_encoding=result.detected_encoding,
             headings=result.headings[:200], metadata=result.metadata, warnings=result.warnings,
             injection_warnings=injection, from_cache=from_cache,
         )
@@ -324,7 +326,13 @@ class ExtractionService:
                         continue
                     path = safe_child(self.settings.data_dir, *image.stored_path.split("/"))
                     try:
-                        image.ocr_text = engine.recognize_file(path, languages).strip()
+                        recognized = engine.recognize_file(path, languages).strip()
+                        image.ocr_text = str(recognized)
+                        image.ocr_confidence = getattr(recognized, "confidence", None)
+                        from academic_writer.document.model import ocr_quality, ocr_warning
+
+                        if (message := ocr_warning(ocr_quality(image.page, recognized), f"Image {image.index}")):
+                            warnings.append(message)
                     except OcrError as exc:
                         warnings.append(f"OCR image {image.index} : {exc}")
                 if len(images) > self.settings.ocr_max_pages:

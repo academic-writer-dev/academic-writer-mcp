@@ -427,6 +427,13 @@ ALTER TABLE requirements_v10 RENAME TO requirements;
 CREATE INDEX idx_requirements_project ON requirements(project_id, kind);
 """,
     ),
+    Migration(
+        version=11,
+        description="Profils d'enseignants : définitions, structure, style, critères d'évaluation (JSON)",
+        sql="""
+ALTER TABLE teacher_profiles ADD COLUMN details TEXT NOT NULL DEFAULT '{}';
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

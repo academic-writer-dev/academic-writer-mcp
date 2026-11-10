@@ -8,8 +8,8 @@ from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 from pydantic import Field
 
-from academic_writer.core.course import CourseCoverage, NotationExtraction, ProjectTeaching
-from academic_writer.core.teaching import Notation, TeacherProfile, TeacherProfileList
+from academic_writer.core.course import CourseCoverage, NotationExtraction, ProjectTeaching, TeacherMaterialExtraction
+from academic_writer.core.teaching import Criterion, Notation, TeacherProfile, TeacherProfileList, TermDefinition
 from academic_writer.server.services import get_services, user_errors
 
 _READ = ToolAnnotations(read_only_hint=True, open_world_hint=False, idempotent_hint=True)
@@ -17,6 +17,16 @@ _WRITE = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempoten
 Policy = Literal["course_only", "project_sources", "external_allowed"]
 _POLICY_HELP = ("course_only : uniquement les documents de l'enseignant (aucune source externe) ; project_sources : "
                 "documents et sources du projet ; external_allowed : sources externes permises mais signalées.")
+
+
+def _details(definitions, expected_structure, detail_level, writing_style, allowed_sources, bibliography_rules,
+             layout_rules, evaluation_criteria, work_types) -> dict:
+    values = {"definitions": definitions, "expected_structure": expected_structure, "detail_level": detail_level,
+              "writing_style": writing_style, "allowed_sources": allowed_sources,
+              "bibliography_rules": bibliography_rules, "layout_rules": layout_rules,
+              "evaluation_criteria": evaluation_criteria, "work_types": work_types}
+    return {k: ([i.model_dump() if hasattr(i, "model_dump") else i for i in v] if isinstance(v, list) else v)
+            for k, v in values.items() if v is not None}
 
 
 def register(mcp: MCPServer) -> None:
@@ -31,13 +41,24 @@ def register(mcp: MCPServer) -> None:
         methods: Annotated[str, Field(description="Méthodes et démarches imposées (ex. « méthode des plans de "
                                                   "vitesses », « unités SI uniquement »).")] = "",
         expectations: Annotated[str, Field(description="Attentes : présentation, niveau de détail, barème.")] = "",
+        definitions: list[TermDefinition] | None = None,
+        expected_structure: Annotated[list[str] | None, Field(description="Plan attendu (titres).")] = None,
+        detail_level: str | None = None,
+        writing_style: str | None = None,
+        allowed_sources: str | None = None,
+        bibliography_rules: str | None = None,
+        layout_rules: str | None = None,
+        evaluation_criteria: Annotated[list[Criterion] | None, Field(description="Barème : critère et points.")] = None,
+        work_types: Annotated[list[str] | None, Field(description="Types de travaux (td, tp, memoire_master…).")] = None,
     ) -> TeacherProfile:
         """Profil réutilisable par enseignant, matière et cours : notations, méthodes, attentes et politique de sources
         appliquées aux projets rattachés. Uniquement avec les informations fournies par l'utilisateur ou le cours."""
         with user_errors():
+            details = _details(definitions, expected_structure, detail_level, writing_style, allowed_sources,
+                               bibliography_rules, layout_rules, evaluation_criteria, work_types)
             return get_services().course.create_profile(
                 name, subject=subject, course=course, institution=institution, source_policy=source_policy,
-                notations=notations, methods=methods, expectations=expectations)
+                notations=notations, methods=methods, expectations=expectations, details=details)
 
     @mcp.tool(title="Lister les profils d'enseignants", annotations=_READ)
     def list_teacher_profiles() -> TeacherProfileList:
@@ -57,6 +78,15 @@ def register(mcp: MCPServer) -> None:
             description="Remplace la liste des notations (ex. confirmées après extract_course_notations).")] = None,
         methods: str | None = None,
         expectations: str | None = None,
+        definitions: list[TermDefinition] | None = None,
+        expected_structure: Annotated[list[str] | None, Field(description="Plan attendu (titres).")] = None,
+        detail_level: str | None = None,
+        writing_style: str | None = None,
+        allowed_sources: str | None = None,
+        bibliography_rules: str | None = None,
+        layout_rules: str | None = None,
+        evaluation_criteria: Annotated[list[Criterion] | None, Field(description="Barème : critère et points.")] = None,
+        work_types: Annotated[list[str] | None, Field(description="Types de travaux (td, tp, memoire_master…).")] = None,
     ) -> TeacherProfile:
         """Modifie les champs indiqués d'un profil d'enseignant ; les autres sont conservés."""
         changes = {k: v for k, v in {"name": name, "subject": subject, "course": course, "institution": institution,
@@ -64,6 +94,8 @@ def register(mcp: MCPServer) -> None:
                                      "expectations": expectations}.items() if v is not None}
         if notations is not None:
             changes["notations"] = [n.model_dump() for n in notations]
+        changes |= _details(definitions, expected_structure, detail_level, writing_style, allowed_sources,
+                            bibliography_rules, layout_rules, evaluation_criteria, work_types)
         with user_errors():
             return get_services().course.update_profile(profile_id, changes)
 
@@ -95,3 +127,11 @@ def register(mcp: MCPServer) -> None:
         masse »…), à faire confirmer puis enregistrer dans le profil de l'enseignant."""
         with user_errors():
             return get_services().course.extract_notations(project_id)
+
+    @mcp.tool(title="Barème et définitions du cours", annotations=_READ)
+    def extract_teacher_material(project_id: str) -> TeacherMaterialExtraction:
+        """Propose les critères d'évaluation (barème : « critère — 4 points », tableau critère / points) et les
+        définitions données dans les documents de l'enseignant (« X désigne… », « X — это… », « … называется X »),
+        avec document et page. À faire confirmer, puis enregistrer dans le profil (update_teacher_profile)."""
+        with user_errors():
+            return get_services().course.extract_teacher_material(project_id)
