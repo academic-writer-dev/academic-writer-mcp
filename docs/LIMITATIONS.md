@@ -1,8 +1,9 @@
 # Limites connues
 
 ## Recherche documentaire
-- Sources russes (eLIBRARY, КиберЛенинка, РГБ, НЭБ, РНБ, ГПНТБ, ВИНИТИ) : pas d'API autorisant l'automatisation →
-  liens manuels seulement.
+- Sources russes : КиберЛенинка par OAI-PMH (métadonnées, sans année ni résumé ; pas de recherche distante :
+  moissonner les revues utiles) ; eLIBRARY, РГБ, НЭБ, РНБ, ГПНТБ, ВИНИТИ : pas d'API autorisée → liens manuels ;
+  РГБ / НЭБ / УрФУ injoignables depuis l'adresse IP actuelle (à retester sans VPN).
 - BASE (refus par IP), OAPEN et Gallica (HTTP 403), DART-Europe (pas d'API) : non intégrés.
 - Semantic Scholar sans clé : quota public souvent saturé ; clé réservée aux adresses institutionnelles.
 - OpenAlex sans clé : budget gratuit partagé par adresse IP.

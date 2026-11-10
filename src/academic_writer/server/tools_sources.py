@@ -284,3 +284,22 @@ def register(mcp: MCPServer) -> None:
         licence (réutilisation libre seulement si open_license). Clé personnelle gratuite requise ; mode connecté."""
         with user_errors():
             return get_services().sources.heritage(query, media_type, rows)
+
+    @mcp.tool(title="Revues КиберЛенинка", annotations=_READ)
+    def cyberleninka_journals(query: Annotated[str, Field(description="Mot du titre de la revue (russe).")]) -> dict:
+        """Cherche parmi les ~4 000 revues de КиберЛенинка (liste officielle OAI-PMH, en cache 30 jours) pour obtenir
+        l'identifiant à moissonner."""
+        with user_errors():
+            return get_services().sources.cyberleninka_journals(query)
+
+    @mcp.tool(title="Moissonner une revue КиберЛенинка",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True,
+                                          open_world_hint=True))
+    def cyberleninka_harvest(set_spec: Annotated[str, Field(description="Identifiant de revue, ex. journal_14539.")],
+                             max_pages: Annotated[int, Field(ge=1, le=300, description="10 articles par page ; une "
+                                                                                       "page par seconde.")] = 60):
+        """Récupère les métadonnées (titre, auteurs, éditeur, lien) des articles d'une revue par l'interface OFFICIELLE
+        OAI-PMH de КиберЛенинка et les garde dans un index local ; ils sont ensuite trouvés par find_works_by_topic.
+        Aucun PDF téléchargé (interdit aux robots) : les articles se lisent par leur lien."""
+        with user_errors():
+            return get_services().sources.cyberleninka_harvest(set_spec, max_pages)

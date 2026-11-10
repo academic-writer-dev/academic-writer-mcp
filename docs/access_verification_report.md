@@ -36,7 +36,7 @@ Date : 2026-11-10. Méthode : requête réelle depuis le poste (seuls des termes
 - **Open Library** — OK (`PUBLIC_FREE`)
 - **Internet Archive** — OK (`PUBLIC_FREE`)
 - **eLIBRARY.RU / РИНЦ** — lien de recherche (via Яндекс) ; aucune extraction (`UNAVAILABLE`)
-- **КиберЛенинка** — lien de recherche ; aucune extraction (`UNVERIFIED_EXCLUDED`)
+- **КиберЛенинка** — OK : OAI-PMH autorisé par robots.txt ; moissonnage par revue + index local (`PUBLIC_FREE`)
 - **РГБ (dont Электронная библиотека диссертаций)** — lien de recherche (`UNAVAILABLE`)
 - **РНБ** — non intégré (`UNAVAILABLE`)
 - **НЭБ** — non intégré (`UNVERIFIED_EXCLUDED`)

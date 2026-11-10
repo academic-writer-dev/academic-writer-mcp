@@ -2,7 +2,7 @@
 
 # Statut des fournisseurs documentaires
 
-Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 6, PAID_EXCLUDED : 1, PUBLIC_FREE : 18, UNAVAILABLE : 10, UNVERIFIED_EXCLUDED : 3.
+Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 6, PAID_EXCLUDED : 1, PUBLIC_FREE : 19, UNAVAILABLE : 10, UNVERIFIED_EXCLUDED : 2.
 
 Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVERIFIED_EXCLUDED, UNAVAILABLE.
 
@@ -40,7 +40,7 @@ Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVER
 | [Open Library](https://openlibrary.org) | international | livres | `PUBLIC_FREE` | aucune | prêt / domaine public | api | OK |
 | [Internet Archive](https://archive.org) | international | livres numérisés | `PUBLIC_FREE` | aucune | seulement licence libre déclarée | api | OK |
 | [eLIBRARY.RU / РИНЦ](https://elibrary.ru) | Russie | articles russes | `UNAVAILABLE` | pas d'API publique | selon revue | manual_link | lien de recherche (via Яндекс) ; aucune extraction |
-| [КиберЛенинка](https://cyberleninka.ru) | Russie | articles en libre accès | `UNVERIFIED_EXCLUDED` | pas d'API officielle documentée | oui (CC BY) sur le site | manual_link | lien de recherche ; aucune extraction |
+| [КиберЛенинка](https://cyberleninka.ru/oai) | Russie | articles en libre accès (≈ 4 000 revues) | `PUBLIC_FREE` | aucune (OAI-PMH officiel) | sur le site (PDF interdits aux robots) | api | OK : OAI-PMH autorisé par robots.txt ; moissonnage par revue + index local |
 | [РГБ (dont Электронная библиотека диссертаций)](https://search.rsl.ru) | Russie | catalogue, thèses | `UNAVAILABLE` | pas d'API publique | consultation sur place / payante pour certaines thèses | manual_link | lien de recherche |
 | [РНБ](https://nlr.ru) | Russie | catalogue | `UNAVAILABLE` | pas d'API publique | — | manual_link | non intégré |
 | [НЭБ](https://rusneb.ru) | Russie | bibliothèque numérique | `UNVERIFIED_EXCLUDED` | API sur demande (conditions non vérifiées) | selon document | manual_link | non intégré |

@@ -217,7 +217,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                   language: str | None = None, limit: int = 10, keys: dict[str, str] | None = None,
                   unpaywall_email: str | None = None, services_filter: list[str] | None = None,
                   author: str | None = None, year_from: int | None = None, year_to: int | None = None,
-                  publication_type: str | None = None) -> DiscoveryResult:
+                  publication_type: str | None = None, local_records: list | None = None) -> DiscoveryResult:
     from academic_writer.research import openscience as osc
     from academic_writer.research import openscience_more as more
 
@@ -269,8 +269,8 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
     openalex_type = {"article": "article", "book": "book", "thesis": "dissertation", "preprint": "preprint",
                      "dataset": "dataset", "chapter": "book-chapter"}.get(publication_type or "")
     if kind in ("books", "articles", "all"):
-        plans.append(("openalex", more.openalex_url(query, per, year_from, year_to, openalex_type, keys.get("openalex")),
-                      more.parse_openalex))
+        plans.append(("openalex", more.openalex_url(query, per, year_from, year_to, openalex_type, keys.get("openalex"),
+                                                    language), more.parse_openalex))
     if kind in ("articles", "all"):
         plans.append(("openaire", more.openaire_url(query, per), more.parse_openaire))
         plans.append(("eric", more.eric_url(query, per), more.parse_eric))
@@ -279,6 +279,18 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
     if kind == "datasets":
         plans.append(("datacite", osc.datacite_url(query, per), osc.parse_datacite))
         plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))
+    if local_records and kind in ("articles", "all"):
+        def cyberleninka_local(_text, query, _records=local_records):
+            return [DiscoveredWork(
+                item_id=f"cyberleninka:{r.url.rsplit('/', 1)[-1]}", service="cyberleninka", title=r.title,
+                authors=r.authors, year=None, source_type="article", container=r.journal, publisher=r.publisher,
+                language="ru", landing_url=r.url,
+                license="КиберЛенинка : texte en accès ouvert sur le site (licence selon la revue) — à consulter "
+                        "dans le navigateur ; pas de téléchargement automatique (robots.txt)",
+                open_access=False, relevance=relevance(query, r.title),  # titre seul : le nom de la revue fausserait le tri
+                data=SourceData(authors=[_person(a) for a in r.authors[:10]], title=r.title, container=r.journal,
+                                publisher=r.publisher, url=r.url, language="ru")) for r in _records]
+        plans.append(("cyberleninka", "", cyberleninka_local))
     if services_filter:
         plans = [plan for plan in plans if plan[0] in services_filter]
     works: list[DiscoveredWork] = []

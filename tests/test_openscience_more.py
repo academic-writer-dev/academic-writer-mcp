@@ -75,7 +75,9 @@ def test_open_data_parsers() -> None:
 def test_provider_registry_is_honest() -> None:
     by_id = {p.id: p for p in PROVIDERS}
     assert by_id["base"].integration == "excluded" and by_id["viniti"].access == "PAID_EXCLUDED"
-    assert all(p.integration != "api" for p in PROVIDERS if p.region == "Russie")  # aucune extraction automatique
+    russian_api = [p for p in PROVIDERS if p.region == "Russie" and p.integration == "api"]
+    # seule КиберЛенинка, et seulement par son interface officielle OAI-PMH (autorisée par robots.txt)
+    assert [p.id for p in russian_api] == ["cyberleninka"] and "OAI-PMH" in russian_api[0].verification
     assert all(p.integration != "api" or p.access in ("PUBLIC_FREE", "FREE_API_KEY", "FREE_ACCOUNT") for p in PROVIDERS)
 
 
@@ -112,3 +114,40 @@ def test_europeana_parser_and_licence() -> None:
         {"title": ["Locomotive"], "type": "IMAGE", "rights": ["http://creativecommons.org/publicdomain/mark/1.0/"]}]})
     assert not items[0].open_license and items[0].url == "https://www.europeana.eu/item/1"  # NC : non libre
     assert items[1].open_license
+
+
+OAI_PAGE = """<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"><ListRecords>
+<record><header><identifier>x</identifier></header><metadata>
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<dc:title>Кинематический анализ кривошипно-ползунного механизма</dc:title><dc:creator>Иванов И. И.</dc:creator>
+<dc:publisher>МГТУ</dc:publisher><dc:identifier>https://cyberleninka.ru/article/n/kinematicheskiy-analiz</dc:identifier>
+</oai_dc:dc></metadata></record>
+<resumptionToken cursor="10">TOKEN1</resumptionToken></ListRecords></OAI-PMH>"""
+OAI_LAST = OAI_PAGE.replace("<resumptionToken cursor=\"10\">TOKEN1</resumptionToken>", "").replace(
+    "kinematicheskiy-analiz", "dinamika-mashin").replace("Кинематический анализ кривошипно-ползунного механизма",
+                                                          "Динамика машин с упругими звеньями")
+
+
+def test_cyberleninka_oai_harvest_and_local_search(tmp_path) -> None:
+    """КиберЛенинка : moissonnage OAI-PMH (avec reprise), index local, recherche sur le titre ; aucun PDF."""
+    from academic_writer.research import cyberleninka as cl
+
+    calls: list[str] = []
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        return OAI_PAGE if "set=journal_1" in url else OAI_LAST
+
+    result = cl.harvest(tmp_path, fetch, "journal_1", "Динамика систем, механизмов и машин", sleep=lambda _s: None)
+    assert result.records == 2 and result.complete and "resumptionToken=TOKEN1" in calls[1]
+    assert all("/oai?" in c for c in calls)  # seule l'interface OAI-PMH autorisée est interrogée
+    records = cl.harvested(tmp_path)
+    found = find_by_topic("кинематический анализ механизма", lambda _u: None, "articles", services_filter=["cyberleninka"],
+                          local_records=records)
+    assert [w.title for w in found.works] == ["Кинематический анализ кривошипно-ползунного механизма"]
+    assert not found.works[0].open_access and found.works[0].landing_url.startswith("https://cyberleninka.ru/article/")
+    import pytest
+    with pytest.raises(ValueError):
+        cl.harvest(tmp_path, fetch, "../etc", "x")
+    assert "language:ru" in more.openalex_url("x", 5, language="ru")

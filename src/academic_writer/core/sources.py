@@ -338,7 +338,8 @@ class SourceService:
         return find_by_topic(query.strip(), self.text_fetcher, kind, open_access_only, language,
                              max(1, min(limit, 25)), keys=self._service_keys(),
                              unpaywall_email=self.settings.unpaywall_email, services_filter=services,
-                             author=author, year_from=year_from, year_to=year_to, publication_type=publication_type)
+                             author=author, year_from=year_from, year_to=year_to, publication_type=publication_type,
+                             local_records=self._cyberleninka_records())
 
     def download_open_access(self, project_id: str, item_id: str) -> OpenAccessDownload:
         self._require_external_sources(project_id, "Télécharger un texte externe")
@@ -671,3 +672,39 @@ class SourceService:
         return {"query": query, "count": len(items), "items": [i.model_dump() for i in items],
                 "notice": "Licence propre à chaque objet (rights) : réutilisation libre seulement si open_license ; "
                           "citer l'institution (provider)."}
+
+    # --- КиберЛенинка (OAI-PMH officiel, index local) -------------------------------------------------------
+    def _cyberleninka_records(self) -> list:
+        from academic_writer.research.cyberleninka import harvested
+
+        try:
+            return harvested(self.settings.data_dir)
+        except OSError:
+            return []
+
+    def cyberleninka_journals(self, query: str):
+        from academic_writer.research.cyberleninka import find_journals, journals
+
+        if not query or len(query.strip()) < 3:
+            raise ValidationFailed("Indiquez un mot du titre de la revue (ex. « машиностроение », « Бауман »).")
+        try:
+            listing = journals(self.settings.data_dir, self.text_fetcher, self.settings.mode == "connected")
+        except (ValueError, OSError) as exc:
+            raise ValidationFailed(str(exc)) from exc
+        found = find_journals(listing, query)
+        return {"query": query, "total_journals": len(listing), "journals": [j.model_dump() for j in found],
+                "next_step": "Moissonner une revue avec cyberleninka_harvest(set_spec) ; ses articles apparaissent ensuite "
+                             "dans find_works_by_topic (base « cyberleninka »)."}
+
+    def cyberleninka_harvest(self, set_spec: str, max_pages: int = 60):
+        from academic_writer.research.cyberleninka import harvest, journals
+
+        self._require_connected("le moissonnage КиберЛенинка (OAI-PMH)")
+        listing = {j.set_spec: j.name for j in journals(self.settings.data_dir, self.text_fetcher, True)}
+        if set_spec not in listing:
+            raise ValidationFailed("Revue inconnue : chercher d'abord son identifiant avec cyberleninka_journals.")
+        try:
+            return harvest(self.settings.data_dir, self.text_fetcher, set_spec, listing[set_spec],
+                           max(1, min(max_pages, 300)))
+        except (ValueError, OSError) as exc:
+            raise ValidationFailed(f"Moissonnage interrompu : {exc}") from exc

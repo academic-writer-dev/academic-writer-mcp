@@ -102,9 +102,9 @@ PROVIDERS: tuple[Provider, ...] = (
     # sources russes : pas d'API publique autorisant l'automatisation → liens manuels uniquement
     _p("elibrary", "eLIBRARY.RU / РИНЦ", "Russie", "articles russes", "UNAVAILABLE", "pas d'API publique",
        "selon revue", "manual_link", "lien de recherche (via Яндекс) ; aucune extraction", "https://elibrary.ru"),
-    _p("cyberleninka", "КиберЛенинка", "Russie", "articles en libre accès", "UNVERIFIED_EXCLUDED",
-       "pas d'API officielle documentée", "oui (CC BY) sur le site", "manual_link", "lien de recherche ; aucune extraction",
-       "https://cyberleninka.ru"),
+    _p("cyberleninka", "КиберЛенинка", "Russie", "articles en libre accès (≈ 4 000 revues)", "PUBLIC_FREE",
+       "aucune (OAI-PMH officiel)", "sur le site (PDF interdits aux robots)", "api",
+       "OK : OAI-PMH autorisé par robots.txt ; moissonnage par revue + index local", "https://cyberleninka.ru/oai"),
     _p("rsl", "РГБ (dont Электронная библиотека диссертаций)", "Russie", "catalogue, thèses", "UNAVAILABLE",
        "pas d'API publique", "consultation sur place / payante pour certaines thèses", "manual_link",
        "lien de recherche", "https://search.rsl.ru"),

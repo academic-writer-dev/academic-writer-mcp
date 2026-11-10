@@ -13,7 +13,6 @@ Aucun de ces services n'est interrogé automatiquement. Ceux marqués `manual_li
 | Gallica / BnF | `UNAVAILABLE` | HTTP 403 (SRU) depuis ce poste ; — | manual_link |
 | DART-Europe | `UNAVAILABLE` | pages web uniquement ; pas d'API | manual_link |
 | eLIBRARY.RU / РИНЦ | `UNAVAILABLE` | lien de recherche (via Яндекс) ; aucune extraction ; pas d'API publique | manual_link |
-| КиберЛенинка | `UNVERIFIED_EXCLUDED` | lien de recherche ; aucune extraction ; pas d'API officielle documentée | manual_link |
 | РГБ (dont Электронная библиотека диссертаций) | `UNAVAILABLE` | lien de recherche ; pas d'API publique | manual_link |
 | РНБ | `UNAVAILABLE` | non intégré ; pas d'API publique | manual_link |
 | НЭБ | `UNVERIFIED_EXCLUDED` | non intégré ; API sur demande (conditions non vérifiées) | manual_link |
