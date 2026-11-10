@@ -16,7 +16,6 @@ from academic_writer.core.sources import SourceService
 from academic_writer.core.teaching import allowed_roles
 from academic_writer.core.writing import WritingService
 from academic_writer.presentations import planner, powerpoint
-from academic_writer.presentations.builder import Builder
 from academic_writer.presentations.models import Deck, PresentationPlan, PresentationResult, SlideCheck
 from academic_writer.writing.checks import numbers_in
 
@@ -200,6 +199,8 @@ class PresentationService:
         stem = (_SAFE.sub("_", deck.title).strip("_") or "presentation")[:60]
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         pptx = folder / f"{stem}-{stamp}.pptx"
+        from academic_writer.presentations.builder import Builder  # python-pptx : chargé au premier usage
+
         checks = Builder(deck, images).build(pptx) + self._content_checks(project_id, deck, duration_minutes)
         messages: list[str] = []
         pdf = odp = None

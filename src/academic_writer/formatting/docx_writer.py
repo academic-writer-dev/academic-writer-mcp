@@ -19,6 +19,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Mm, Pt, RGBColor
 
+from academic_writer.formatting.models import REQUIRED_TITLE_FIELDS, TITLE_FIELDS, ExportSection  # noqa: F401
 from academic_writer.formatting.presets import STRUCTURAL_IDS, STRUCTURAL_TITLES, FormatPreset, HeadingStyle
 from academic_writer.writing.checks import _PLACEHOLDER
 
@@ -42,20 +43,6 @@ TITLE_LABELS = {
            "unwritten": "[Section not written]", "toc": "Update the table of contents (F9)",
            "image": "[Insert figure]"},
 }
-TITLE_FIELDS = ("ministry", "organization", "faculty", "department", "document_kind", "discipline", "title",
-                "variant", "author", "group", "supervisor", "supervisor_title", "city", "year")
-REQUIRED_TITLE_FIELDS = ("organization", "document_kind", "title", "author", "city", "year")
-
-
-@dataclass
-class ExportSection:
-    key: str | None
-    title: str
-    level: int
-    text: str | None  # None = non rédigée
-    kind: str = "body"  # body, title_page, contents, bibliography
-
-
 @dataclass
 class BuildStats:
     placeholders: int = 0

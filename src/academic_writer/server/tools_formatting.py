@@ -6,7 +6,7 @@ from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 
 from academic_writer.core.formatting import ExportResult, PresetList
-from academic_writer.formatting.checker import FormattingApplied, FormattingCheck
+from academic_writer.formatting.models import FormattingApplied, FormattingCheck
 from academic_writer.server.services import get_services, user_errors
 
 _READ = ToolAnnotations(read_only_hint=True, open_world_hint=False, idempotent_hint=True)

@@ -16,42 +16,12 @@ from docx.shared import Cm
 from pydantic import BaseModel, Field
 
 from academic_writer.formatting.docx_writer import _add_page_numbers, _set_run_font, apply_margins, has_page_numbers
+from academic_writer.formatting.models import FormattingApplied, FormattingCheck, PropertyCheck  # noqa: F401
 from academic_writer.formatting.presets import FormatPreset
 from academic_writer.quality.models import QualityIssue, excerpt
 
 _ALIGN_NAMES = {WD_ALIGN_PARAGRAPH.JUSTIFY: "justify", WD_ALIGN_PARAGRAPH.LEFT: "left",
                 WD_ALIGN_PARAGRAPH.CENTER: "center", WD_ALIGN_PARAGRAPH.RIGHT: "right", None: "left"}
-
-
-class PropertyCheck(BaseModel):
-    property: str
-    expected: str
-    dominant: str = Field(description="Valeur la plus fréquente dans le corps du texte.")
-    conforming_ratio: float = Field(description="Part des paragraphes du corps conformes (0 à 1).")
-    examples: list[str] = Field(default_factory=list, description="Paragraphes non conformes (extraits).")
-
-
-class FormattingCheck(BaseModel):
-    document_id: str
-    filename: str
-    preset: str
-    body_paragraphs: int
-    margins_mm: dict[str, float]
-    properties: list[PropertyCheck]
-    issues: list[QualityIssue]
-    notice: str = "Gabarit indicatif : vérifier les exigences de la кафедра / de l'établissement."
-
-
-class FormattingApplied(BaseModel):
-    document_id: str
-    output_path: str
-    pdf_path: str | None = None
-    preset: str
-    paragraphs_formatted: int
-    headings_kept: int
-    page_numbers_added: bool
-    messages: list[str]
-    notice: str = "Copie mise en forme : l'original est inchangé. Relire la copie (tableaux, figures, listes)."
 
 
 def _is_heading(paragraph) -> bool:

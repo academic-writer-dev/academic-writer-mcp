@@ -25,8 +25,7 @@ from academic_writer.core.projects import ProjectService
 from academic_writer.core.sources import SourceService
 from academic_writer.core.writing import WritingService
 from academic_writer.formatting import word
-from academic_writer.formatting.checker import FormattingApplied, FormattingCheck, apply_to_copy, check_docx
-from academic_writer.formatting.docx_writer import TITLE_FIELDS, ExportSection, build_docx
+from academic_writer.formatting.models import TITLE_FIELDS, ExportSection, FormattingApplied, FormattingCheck
 from academic_writer.formatting.presets import DEFAULT_PRESET, PRESETS, FormatPreset
 from academic_writer.research import styles
 from academic_writer.storage.db import Database
@@ -223,6 +222,7 @@ class FormattingService:
                                      messages)
         charts = self.settings.projects_dir / project_id / "charts"
         images = {f"chart:{p.stem}": p for p in charts.glob("*.png")} if charts.exists() else {}
+        from academic_writer.formatting.docx_writer import build_docx  # python-docx : au premier usage
         stats = build_docx(docx_path, sections, preset, outline.language, fields, images)
         messages += stats.warnings
         if bibliography:
@@ -262,6 +262,7 @@ class FormattingService:
     def check(self, document_id: str, preset_id: str | None = None) -> FormattingCheck:
         document, path = self._docx(document_id)
         preset = self.preset(preset_id, document.project_id)
+        from academic_writer.formatting.checker import check_docx  # python-docx : au premier usage
         return check_docx(path, document_id, document.original_filename, preset)
 
     def apply(self, document_id: str, preset_id: str | None = None, pdf: bool = False) -> FormattingApplied:
@@ -274,6 +275,7 @@ class FormattingService:
         working = output.with_suffix(".tmp.docx")
         shutil.copyfile(path, working)  # l'original protégé n'est jamais ouvert en écriture
         try:
+            from academic_writer.formatting.checker import apply_to_copy  # python-docx : au premier usage
             formatted, headings, added = apply_to_copy(working, output, preset)
         finally:
             working.unlink(missing_ok=True)
