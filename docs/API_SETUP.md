@@ -13,11 +13,8 @@ uv run academic-writer secrets delete <service>
 |---|---|---|---|
 | `openalex` | FREE_API_KEY | https://openalex.org/settings/api (e-mail, gratuit) | Quota personnel (~1 000 requêtes/jour au lieu d'un budget partagé par adresse IP) |
 | `google_books` | FREE_API_KEY | Console Google Cloud, API « Books » (sans facturation) | Recherche de livres |
-| `core` | FREE_API_KEY | https://core.ac.uk/services/api (inscription) | Agrégateur de dépôts en libre accès |
-| `semantic_scholar` | FREE_API_KEY | Formulaire du site (adresse institutionnelle exigée) | Lève le quota public saturé |
-| `europeana` | FREE_API_KEY | https://pro.europeana.eu/page/get-api (e-mail, gratuit) | Patrimoine numérisé européen (`search_heritage`) |
 | `anthropic`, `openai` | PAID_EXCLUDED | — | Fournisseurs payants : facultatifs, désactivés par défaut |
 
-Unpaywall n'a pas de clé : il exige une adresse e-mail dans chaque requête (`unpaywall_email` dans config.toml).
+Semantic Scholar, CORE, Europeana et Unpaywall ont été retirés le 2026-11-10 (non opérationnels : voir excluded_paid_providers.md).
 
 Aucun service ne demande de moyen de paiement ; aucune mise à niveau payante n'est déclenchée.

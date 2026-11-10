@@ -69,5 +69,3 @@ languagetool_url = 'http://localhost:8081'
 software_execution = false
 software_timeout_s = 180
 
-# Adresse e-mail exigée par Unpaywall (facultative ; jamais envoyée si absente).
-# unpaywall_email = 'prenom.nom@exemple.org'

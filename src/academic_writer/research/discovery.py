@@ -1,7 +1,7 @@
 """Recherche d'ouvrages et d'articles PAR THÈME dans des bases légales et ouvertes.
 
-Bases interrogées (accès automatisé autorisé ; voir aussi research/openscience.py : Semantic Scholar,
-Europe PMC, PubMed, HAL, Zenodo, DataCite, CORE avec clé gratuite, Unpaywall avec adresse e-mail) :
+Bases interrogées (accès automatisé autorisé ; voir aussi research/openscience.py : Europe PMC, PubMed,
+HAL, Zenodo, DataCite ; openscience_more.py ; world_sources.py ; disciplines.py) :
 - Internet Archive (livres et manuels numérisés, dont russes et soviétiques) ;
 - DOAJ (revues en libre accès) ;
 - arXiv (prépublications) ;
@@ -215,7 +215,7 @@ def archive_query(query: str) -> str:
 
 def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access_only: bool = False,
                   language: str | None = None, limit: int = 10, keys: dict[str, str] | None = None,
-                  unpaywall_email: str | None = None, services_filter: list[str] | None = None,
+                  services_filter: list[str] | None = None,
                   author: str | None = None, year_from: int | None = None, year_to: int | None = None,
                   publication_type: str | None = None, local_records: list | None = None,
                   discipline: str | None = None, auto_domain: str | None = None,
@@ -249,29 +249,11 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                       + q(f"all:{query}"), parse_arxiv))
         if not open_access_only:
             plans.append(("crossref", f"https://api.crossref.org/works?rows={per}&query=" + q(query), parse_crossref))
-        s2_key = keys.get("semantic_scholar")
-        if s2_key and getattr(fetch, "__name__", "") == "http_text":
-            from academic_writer.research.fulltext import http_text as _http
-
-            def s2(_text, query, _key=s2_key):  # clé transmise en en-tête x-api-key
-                return osc.parse_semantic_scholar(_http(osc.semantic_scholar_url(query, per),
-                                                        headers={"x-api-key": _key}), query)
-            plans.append(("semantic_scholar", "", s2))
-        elif getattr(fetch, "__name__", "") == "http_text":
-            from academic_writer.research.fulltext import http_text as _http
-
-            def s2_public(_text, query):  # sans clé : une seule tentative (quota public souvent saturé)
-                return osc.parse_semantic_scholar(_http(osc.semantic_scholar_url(query, per), retries=0), query)
-            plans.append(("semantic_scholar", "", s2_public))
-        else:
-            plans.append(("semantic_scholar", osc.semantic_scholar_url(query, per), osc.parse_semantic_scholar))
         plans.append(("europe_pmc", osc.europe_pmc_url(query, per), osc.parse_europe_pmc))
         plans.append(("hal", osc.hal_url(query, per), osc.parse_hal))
         plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))
         if not open_access_only:
             plans.append(("pubmed", "", lambda _text, query: osc.search_pubmed(query, fetch, per)))
-        if keys.get("core"):
-            plans.append(("core", osc.core_url(query, per, keys["core"]), osc.parse_core))
     openalex_type = {"article": "article", "book": "book", "thesis": "dissertation", "preprint": "preprint",
                      "dataset": "dataset", "chapter": "book-chapter"}.get(publication_type or "")
     if kind in ("books", "articles", "all"):
@@ -357,21 +339,6 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
             works.extend(found)
             if error:
                 notices.append(error)
-    if unpaywall_email:
-        enriched = 0
-        for work in sorted((w for w in works if w.doi and not w.open_access), key=lambda w: -w.relevance)[:8]:
-            try:
-                url, license_name = osc.unpaywall_location(work.doi, unpaywall_email, fetch)
-            except OSError:
-                break
-            if url and license_name and osc._open_license(license_name):
-                work.open_access, work.license = True, f"{license_name} (localisé par Unpaywall)"
-                work.item_id = f"unpaywall:{work.doi}"
-                enriched += 1
-        if "unpaywall" not in services:
-            services.append("unpaywall")
-        if enriched:
-            notices.append(f"{enriched} texte(s) intégral(aux) en libre accès légal localisé(s) par Unpaywall.")
     if open_access_only:
         works = [w for w in works if w.open_access]
     if author:

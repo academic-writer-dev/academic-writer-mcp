@@ -346,7 +346,7 @@ class SourceService:
                 auto_domain = self._detect_domain(query)
         return find_by_topic(query.strip(), self.text_fetcher, kind, open_access_only, language,
                              max(1, min(limit, 25)), keys=self._service_keys(),
-                             unpaywall_email=self.settings.unpaywall_email, services_filter=services,
+                             services_filter=services,
                              author=author, year_from=year_from, year_to=year_to, publication_type=publication_type,
                              local_records=self._cyberleninka_records(), discipline=discipline,
                              auto_domain=auto_domain, auto_label=self._domain_label(auto_domain))
@@ -379,8 +379,7 @@ class SourceService:
         self.writing._active_project(project_id)
         self._require_connected("le téléchargement en libre accès")
         try:
-            url, license_text, filename = resolve_pdf(item_id, self.text_fetcher, self._service_keys(),
-                                                      self.settings.unpaywall_email)
+            url, license_text, filename = resolve_pdf(item_id, self.text_fetcher, self._service_keys())
             data = self.bytes_fetcher(url, self.settings.max_file_size_bytes)
         except DownloadRefused as exc:
             raise ValidationFailed(str(exc)) from exc
@@ -671,7 +670,7 @@ class SourceService:
             raise ValidationFailed(str(exc)) from exc
         raise ValidationFailed("Fournisseur : worldbank ou eurostat.")
 
-    # --- données de référence : constantes CODATA (NIST), patrimoine (Europeana) -----------------------------
+    # --- données de référence : constantes CODATA (NIST) -----------------------------
     def physical_constants(self, query: str):
         from academic_writer.research.reference_data import load_codata, search_constants
 
@@ -685,26 +684,6 @@ class SourceService:
         found = search_constants(constants, query)
         return {"query": query, "origin": origin, "constants": [c.model_dump() for c in found],
                 "notice": "Valeurs officielles CODATA publiées par le NIST (noms en anglais) ; citer l'édition CODATA."}
-
-    def heritage(self, query: str, media_type: str | None = None, rows: int = 10):
-        import json as _json
-
-        from academic_writer.research.reference_data import europeana_url, parse_europeana
-
-        self._require_connected("la recherche Europeana")
-        key = self._service_keys().get("europeana")
-        if not key:
-            raise ValidationFailed("Europeana nécessite une clé personnelle GRATUITE : la demander sur "
-                                   "https://pro.europeana.eu/page/get-api puis : uv run academic-writer secrets set "
-                                   "europeana --clipboard")
-        try:
-            data = _json.loads(self.text_fetcher(europeana_url(query, key, max(1, min(rows, 50)), media_type)) or "{}")
-        except (OSError, ValueError) as exc:
-            raise ValidationFailed(f"Europeana indisponible : {exc}") from exc
-        items = parse_europeana(data)
-        return {"query": query, "count": len(items), "items": [i.model_dump() for i in items],
-                "notice": "Licence propre à chaque objet (rights) : réutilisation libre seulement si open_license ; "
-                          "citer l'institution (provider)."}
 
     # --- КиберЛенинка (OAI-PMH officiel, index local) -------------------------------------------------------
     def _cyberleninka_records(self) -> list:

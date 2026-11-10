@@ -60,9 +60,6 @@ class Settings(BaseSettings):
         description="'local' : aucun accès réseau. 'connected' : services externes autorisés "
         "(vérification bibliographique, fournisseurs IA) après consentement.",
     )
-    unpaywall_email: str | None = Field(
-        default=None, description="Adresse e-mail exigée par Unpaywall (localisation légale du texte intégral). "
-        "Facultative ; jamais envoyée si elle n'est pas renseignée par l'utilisateur.")
     software_execution: bool = Field(
         default=False, description="Autorise le lancement de traitements dans les logiciels détectés (Python, Excel, "
         "Octave, R, Scilab, CalculiX…), toujours avec confirmation à chaque lancement. Désactivé par défaut.")

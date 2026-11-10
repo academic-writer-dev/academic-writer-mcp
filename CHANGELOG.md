@@ -2,6 +2,13 @@
 
 ## Non publié
 
+- Bilan général (docs/BILAN.md) : 27 bibliothèques et services testés en réel sur 9 thèmes ; services non
+  opérationnels retirés (Semantic Scholar, CORE, Europeana — outil search_heritage —, Unpaywall) ; registre réduit
+  aux bases connectées ; liens manuels РГБ retirés.
+- Sécurité renforcée : HTTPS obligatoire, redirections non chiffrées refusées, réponses limitées à 25 Mo ; audit des
+  dépendances (aucune faille connue) et des secrets (aucune fuite).
+- Guide d'utilisation et procédure d'installation sur un autre ordinateur.
+
 - Consignes de l'enseignant appliquées automatiquement : mise en forme (police, taille, interligne, marges,
   retrait, alignement, pagination), style des références, format de remise, plan imposé ; priorité consignes >
   profil de l'enseignant > gabarit.

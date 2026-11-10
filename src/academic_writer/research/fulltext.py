@@ -32,13 +32,13 @@ def http_text(url: str, retries: int = 2, headers: dict[str, str] | None = None)
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, **(headers or {})})
     for attempt in range(retries + 1):
         try:
-            with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 (URL https construite)
-                return response.read().decode("utf-8", "replace")
+            with online.secure_open(request, timeout=30) as response:
+                return online.read_limited(response).decode("utf-8", "replace")
         except urllib.error.HTTPError as exc:
             if exc.code == 404:
                 return None
             if exc.code == 429 and attempt < retries:
-                time.sleep(2 * (attempt + 1))  # quota partagé (Semantic Scholar sans clé)
+                time.sleep(2 * (attempt + 1))  # quota momentanément atteint
                 continue
             raise OSError(f"HTTP {exc.code}" + (" (quota dépassé : réessayer plus tard ou ajouter une clé gratuite)"
                                                 if exc.code == 429 else "")) from exc
@@ -50,7 +50,7 @@ def http_bytes(url: str, max_bytes: int) -> bytes:
         raise DownloadRefused("Seuls les téléchargements HTTPS sont autorisés.")
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     try:
-        with urllib.request.urlopen(request, timeout=120) as response:  # noqa: S310
+        with online.secure_open(request, timeout=120) as response:  # redirections non HTTPS refusées avant suivi
             if not response.geturl().lower().startswith("https://"):
                 raise DownloadRefused("Redirection vers une adresse non sécurisée : téléchargement refusé.")
             data = response.read(max_bytes + 1)
@@ -61,21 +61,13 @@ def http_bytes(url: str, max_bytes: int) -> bytes:
     return data
 
 
-def resolve_pdf(item_id: str, fetch_text=http_text, keys: dict[str, str] | None = None,
-                unpaywall_email: str | None = None) -> tuple[str, str, str]:
+def resolve_pdf(item_id: str, fetch_text=http_text, keys: dict[str, str] | None = None) -> tuple[str, str, str]:
     """(adresse du PDF, licence, nom de fichier) pour un identifiant de résultat en libre accès."""
     from academic_writer.research import openscience
 
     service, _, identifier = item_id.partition(":")
     if not identifier or not re.fullmatch(r"[\w.\-/:]{1,200}", identifier):
         raise DownloadRefused("Identifiant de résultat invalide.")
-    if service == "unpaywall":
-        if not unpaywall_email:
-            raise DownloadRefused("Unpaywall nécessite une adresse e-mail (unpaywall_email dans config.toml).")
-        url, license_name = openscience.unpaywall_location(identifier, unpaywall_email, fetch_text)
-        if not url or not openscience._open_license(license_name) or not url.lower().startswith("https://"):
-            raise DownloadRefused("Unpaywall ne localise pas de version HTTPS sous licence libre : téléchargement refusé.")
-        return url, f"{license_name} (Unpaywall)", f"{identifier.replace('/', '_')[:60]}.pdf"
     try:
         resolved = openscience.resolve(service, identifier, fetch_text, keys)
     except ValueError as exc:

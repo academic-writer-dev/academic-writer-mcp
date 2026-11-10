@@ -11,7 +11,6 @@ Priorité : variables d'environnement `ACADEMIC_WRITER_*` > fichier > valeurs pa
 | `max_file_size_mb` | 100 | Taille maximale d'un import |
 | `software_execution` | `false` | Autorise `run_software_job` (avec `confirm=true` à chaque lancement) |
 | `software_timeout_s` | 180 | Durée maximale d'un traitement logiciel |
-| `unpaywall_email` | vide | Adresse exigée par Unpaywall ; jamais envoyée si vide |
 | `writing_engine` | `auto` | Moteur de rédaction : cloud autorisé, modèle local, ou assistant MCP |
 | `pdf_backend` | `pdfium` | `pymupdf` possible (licence AGPL, installation séparée) |
 | `log_level` | `INFO` | Niveau des journaux (jamais de contenu de document ni de clé) |

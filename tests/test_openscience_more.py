@@ -74,7 +74,9 @@ def test_open_data_parsers() -> None:
 
 def test_provider_registry_is_honest() -> None:
     by_id = {p.id: p for p in PROVIDERS}
-    assert by_id["base"].integration == "excluded" and by_id["viniti"].access == "PAID_EXCLUDED"
+    # le registre ne contient que des bases connectées et vérifiées ; les autres ont été retirées
+    assert all(p.integration == "api" and p.verification.startswith("OK") for p in PROVIDERS)
+    assert not {"base", "viniti", "semantic_scholar", "core", "unpaywall", "europeana", "elibrary"} & set(by_id)
     russian_api = [p for p in PROVIDERS if p.region == "Russie" and p.integration == "api"]
     # seule КиберЛенинка, et seulement par son interface officielle OAI-PMH (autorisée par robots.txt)
     assert [p.id for p in russian_api] == ["cyberleninka"] and "OAI-PMH" in russian_api[0].verification
@@ -103,17 +105,6 @@ def test_codata_constants_offline_cache(tmp_path) -> None:
     assert origin.startswith("téléchargée") and len(loaded) == 3
     again, origin = load_codata(tmp_path, lambda _url: None, allow_network=False)  # hors connexion : copie locale
     assert origin == "copie locale" and len(again) == 3
-
-
-def test_europeana_parser_and_licence() -> None:
-    from academic_writer.research.reference_data import parse_europeana
-
-    items = parse_europeana({"items": [
-        {"title": ["Engine, steam"], "type": "IMAGE", "dataProvider": ["Royal Museums Greenwich"],
-         "rights": ["http://creativecommons.org/licenses/by-nc-sa/4.0/"], "guid": "https://www.europeana.eu/item/1?x=y"},
-        {"title": ["Locomotive"], "type": "IMAGE", "rights": ["http://creativecommons.org/publicdomain/mark/1.0/"]}]})
-    assert not items[0].open_license and items[0].url == "https://www.europeana.eu/item/1"  # NC : non libre
-    assert items[1].open_license
 
 
 OAI_PAGE = """<?xml version="1.0" encoding="UTF-8"?>

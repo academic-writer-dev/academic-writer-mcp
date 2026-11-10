@@ -170,3 +170,24 @@ def test_cp1251_text_accepted_with_warning(settings: Settings, inbox: Path) -> N
     f.write_bytes("Пример текста".encode("cp1251"))
     result = inspect_file(f, settings)
     assert any("UTF-8" in w for w in result.warnings)
+
+
+def test_network_https_only_and_size_limit() -> None:
+    import io
+    import urllib.error
+    import urllib.request
+
+    from academic_writer.research import online
+    from academic_writer.research.fulltext import http_text
+
+    with pytest.raises(OSError, match="non HTTPS"):
+        http_text("http://example.org/api", retries=0)
+    with pytest.raises(OSError, match="non HTTPS"):
+        online.http_fetch("ftp://example.org/x")
+    handler = online._HttpsOnlyRedirect()
+    request = urllib.request.Request("https://api.example.org/")
+    with pytest.raises(urllib.error.URLError, match="non HTTPS"):
+        handler.redirect_request(request, None, 302, "Found", {}, "http://evil.example/")
+    assert online.read_limited(io.BytesIO(b"x" * 10), limit=10) == b"x" * 10
+    with pytest.raises(urllib.error.URLError, match="trop volumineuse"):
+        online.read_limited(io.BytesIO(b"x" * 11), limit=10)

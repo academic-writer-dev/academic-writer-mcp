@@ -61,7 +61,7 @@ def test_russian_mechanical_journals_and_registry() -> None:
     assert "journal_11101" in journals  # Вестник МГТУ им. Баумана. Серия «Машиностроение»
     by_id = {p.id: p for p in PROVIDERS}
     assert by_id["ntrs"].integration == "api" and by_id["ntrs"].access == "PUBLIC_FREE"
-    assert by_id["engrxiv"].integration == "manual_link" and "robots.txt" in by_id["engrxiv"].verification
+    assert "engrxiv" not in by_id  # API interdite aux robots : retirée
 
 
 def _profiles():

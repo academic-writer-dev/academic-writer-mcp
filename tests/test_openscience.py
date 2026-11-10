@@ -63,20 +63,18 @@ def fetch(url: str) -> str | None:
 
 
 def test_new_services_merged_with_strict_open_access() -> None:
-    result = find_by_topic(Q, fetch, "articles", keys={"core": "k" * 20})
+    result = find_by_topic(Q, fetch, "articles", keys={"core": "k" * 20, "semantic_scholar": "k" * 20})
     by_service = {}
     for work in result.works:
         by_service.setdefault(work.service, []).append(work)
-    assert {"semantic_scholar", "europe_pmc", "hal", "zenodo", "pubmed", "core"} <= set(result.services)
-    s2 = {w.item_id: w for w in by_service["semantic_scholar"]}
-    assert s2["s2:abc"].open_access and not s2["s2:def"].open_access  # lecture gratuite ≠ licence libre
-    assert "licence non précisée" in s2["s2:def"].license
+    assert {"europe_pmc", "hal", "zenodo", "pubmed"} <= set(result.services)
+    # services retirés le 2026-11-10 (non opérationnels) : jamais interrogés, même avec une clé
+    assert not {"semantic_scholar", "core", "unpaywall"} & set(result.services)
     epmc = {w.item_id: w for w in by_service["europe_pmc"]}
     assert epmc["epmc:PMC1"].open_access and not epmc["epmc:MED/123"].open_access
     assert by_service["hal"][0].open_access and by_service["hal"][0].source_type == "thesis"
     pubmed = by_service["pubmed"][0]
     assert not pubmed.open_access and pubmed.doi == "10.1/pm" and "PMC9" in pubmed.license
-    assert by_service["core"][0].open_access
 
 
 def test_core_requires_key_and_datasets_kind() -> None:
@@ -92,28 +90,6 @@ def test_services_filter() -> None:
     assert set(result.services) == {"hal", "pubmed"}
 
 
-def test_unpaywall_only_with_user_email_and_open_license() -> None:
-    crossref = {"message": {"items": [{"DOI": "10.1/x", "title": ["Fatigue of welded joints handbook"],
-                                        "type": "journal-article", "author": [{"family": "Roe", "given": "R."}]}]}}
-    calls: list[str] = []
-
-    def fetch_up(url: str) -> str | None:
-        calls.append(url)
-        if "api.unpaywall.org" in url:
-            return json.dumps({"best_oa_location": {"url_for_pdf": "https://repo.org/x.pdf", "license": "cc-by"}})
-        if "crossref" in url:
-            return json.dumps(crossref)
-        return fetch(url)
-
-    without = find_by_topic(Q, fetch_up, "articles", services_filter=["crossref"])
-    assert not any("unpaywall" in c for c in calls) and not without.works[0].open_access
-    with_email = find_by_topic(Q, fetch_up, "articles", services_filter=["crossref"], unpaywall_email="me@example.org")
-    work = with_email.works[0]
-    assert work.open_access and work.item_id == "unpaywall:10.1/x"
-    url, license_text, _ = resolve_pdf(work.item_id, fetch_up, unpaywall_email="me@example.org")
-    assert url == "https://repo.org/x.pdf" and "cc-by" in license_text
-
-
 def test_resolvers_refuse_without_open_license() -> None:
     def fetch_closed(url: str) -> str | None:
         if "graph/v1/paper/def" in url:
@@ -125,18 +101,14 @@ def test_resolvers_refuse_without_open_license() -> None:
                                "files": [{"key": "data.pdf", "links": {"self": "https://zenodo.org/f/data.pdf"}}]})
         return fetch(url)
 
-    with pytest.raises(DownloadRefused, match="licence libre"):
-        resolve_pdf("s2:def", fetch_closed)
-    assert resolve_pdf("s2:abc", fetch_closed)[0] == "https://example.org/a.pdf"
     assert resolve_pdf("epmc:PMC1", fetch)[0] == "https://europepmc.org/x.pdf"
     with pytest.raises(DownloadRefused, match="Open Access"):
         resolve_pdf("epmc:MED/123", fetch)
     assert resolve_pdf("hal:hal-01", fetch)[0] == "https://hal.science/hal-01/document"
     assert resolve_pdf("zenodo:77", fetch_closed)[0] == "https://zenodo.org/f/data.pdf"
-    with pytest.raises(DownloadRefused, match="clé API"):
-        resolve_pdf("core:5", fetch)
-    with pytest.raises(DownloadRefused, match="Unpaywall"):
-        resolve_pdf("unpaywall:10.1/x", fetch)
+    for removed in ("s2:abc", "core:5", "unpaywall:10.1/x"):  # services retirés : refus explicite
+        with pytest.raises(DownloadRefused, match="non pris en charge"):
+            resolve_pdf(removed, fetch_closed)
 
 
 def test_service_catalogue_is_free() -> None:

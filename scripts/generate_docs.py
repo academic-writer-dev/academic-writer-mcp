@@ -39,6 +39,24 @@ def software_catalog() -> None:
     write("SOFTWARE_CATALOG.md", "\n".join(lines))
 
 
+REMOVED = (
+    ("Semantic Scholar", "quota public saturé : refus (HTTP 429) pour 9 recherches sur 9 ; clé réservée aux adresses "
+                         "institutionnelles"),
+    ("CORE", "clé gratuite obligatoire, jamais obtenue (formulaire refusé à l'automatisation)"),
+    ("Europeana", "clé gratuite obligatoire, jamais obtenue"),
+    ("Unpaywall", "adresse e-mail obligatoire dans chaque requête : non configurée"),
+    ("BASE (Bielefeld)", "accès refusé par adresse IP"),
+    ("OAPEN, Gallica, Library of Congress", "HTTP 403 aux requêtes automatisées (jamais contourné)"),
+    ("OECD", "requêtes de données refusées au client automatisé (HTTP 403)"),
+    ("CiNii Research, Research Data Australia, engrXiv", "recherche interdite aux robots par robots.txt"),
+    ("DPLA, Trove, DDB", "clé personnelle obligatoire, non obtenue"),
+    ("Redalyc", "interface OAI-PMH sans résultat (revues présentes dans DOAJ et OpenAlex)"),
+    ("DART-Europe, RePEc, IMF", "pas d'interface automatisée exploitable"),
+    ("eLIBRARY, РГБ, НЭБ, РНБ, ГПНТБ, ФЭМБ", "pas d'API publique autorisée ; РГБ et НЭБ injoignables depuis le poste"),
+    ("ВИНИТИ РАН", "accès payant"),
+)
+
+
 def providers() -> None:
     from academic_writer.research.providers import PROVIDERS, VERIFIED_ON, summary
 
@@ -51,11 +69,11 @@ def providers() -> None:
           f"Vérification réelle le {VERIFIED_ON} depuis le poste de l'utilisateur (mode connecté). Répartition : {counts}.\n\n"
           "Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVERIFIED_EXCLUDED, "
           "UNAVAILABLE.\n\n" + "\n".join(rows))
-    excluded = [p for p in PROVIDERS if p.access in ("PAID_EXCLUDED", "UNVERIFIED_EXCLUDED", "UNAVAILABLE")]
-    write("excluded_paid_providers.md", "# Fournisseurs exclus ou non automatisés\n\n"
-          "Aucun de ces services n'est interrogé automatiquement. Ceux marqués `manual_link` sont proposés comme "
-          "liens à ouvrir par l'utilisateur.\n\n| Fournisseur | Statut | Raison | Traitement |\n|---|---|---|---|\n"
-          + "\n".join(f"| {p.name} | `{p.access}` | {p.verification} ; {p.key} | {p.integration} |" for p in excluded)
+    removed = "\n".join(f"| {name} | {reason} |" for name, reason in REMOVED)
+    write("excluded_paid_providers.md", "# Services retirés du serveur\n\n"
+          f"Retirés le {VERIFIED_ON} après test réel : ils ne sont plus ni interrogés, ni listés comme connectés. "
+          "Ils pourront être rebranchés si leur situation change (clé gratuite obtenue, accès autorisé).\n\n"
+          "| Service | Raison du retrait |\n|---|---|\n" + removed
           + "\n\nFournisseurs d'IA payants (Anthropic, OpenAI) : présents mais **désactivés par défaut** "
             "(mode connecté + clé + consentement écrit du projet) ; jamais obligatoires.")
     write("access_verification_report.md", "# Rapport de vérification des accès\n\n"
@@ -64,9 +82,9 @@ def providers() -> None:
           + "\n".join(f"- **{p.name}** — {p.verification} (`{p.access}`)" for p in PROVIDERS)
           + "\n\nPoints notables :\n- OpenAlex : sans clé, budget gratuit partagé par adresse IP ; une clé gratuite "
             "(sans paiement) relève la limite. La réponse contenait une invitation adressée aux « agents IA » à "
-            "envoyer l'adresse e-mail de l'utilisateur : non suivie.\n- Semantic Scholar : quota public saturé (HTTP 429) ;"
-            " clé gratuite délivrée seulement aux adresses institutionnelles.\n- BASE : refus par adresse IP. OAPEN, "
-            "Gallica : HTTP 403 pour les requêtes automatisées.")
+            "envoyer l'adresse e-mail de l'utilisateur : non suivie.\n- Test du 2026-11-10 : 9 thèmes (mécanique, "
+            "médecine, droit, histoire, informatique, économie, agronomie, en français et en russe) ; une coupure "
+            "de la connexion pendant le premier passage a été écartée par un second test.")
 
 
 def libraries() -> None:

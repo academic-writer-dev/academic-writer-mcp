@@ -3,18 +3,49 @@
 Chemin du projet utilisé dans les exemples : `D:\MCP\academic-writer-mcp` (à adapter).
 Chemin de uv : en général `C:\Users\<utilisateur>\.local\bin\uv.exe` (vérifier avec `(Get-Command uv).Source`).
 
-## 0. Installation sur un nouveau PC
+## 0. Installation sur un nouveau PC (pas à pas)
+
+Prérequis : Windows 10 ou 11, une connexion Internet, environ 2 Go d'espace disque, et Claude Desktop (ou Claude
+Code, ou VS Code) installé. Ouvrir **PowerShell** (touche Windows, taper « PowerShell », Entrée), puis :
 
 ```powershell
+# 1. Outils : uv (Python) et Git
 winget install --id astral-sh.uv --exact
 winget install --id Git.Git --exact
-git clone <URL du dépôt> D:\MCP\academic-writer-mcp
+# fermer puis rouvrir PowerShell pour que les commandes soient reconnues
+
+# 2. Récupérer le serveur (dépôt GitHub)
+git clone https://github.com/academic-writer-dev/academic-writer-mcp.git D:\MCP\academic-writer-mcp
 cd D:\MCP\academic-writer-mcp
+
+# 3. Installer Python 3.12 et les dépendances verrouillées (uv.lock)
 uv python install 3.12
-uv sync                                        # dépendances verrouillées (uv.lock)
-uv run academic-writer doctor                  # état de l'installation
-uv run academic-writer setup-desktop --apply   # déclarer le serveur dans Claude Desktop
+uv sync
+
+# 4. Vérifier l'installation, puis déclarer le serveur dans Claude Desktop
+uv run academic-writer doctor
+uv run academic-writer setup-desktop --apply
 ```
+
+5. **Configuration** : créer `%APPDATA%\AcademicWriter\config.toml` à partir de
+   [config.example.toml](config.example.toml) ; au minimum :
+   ```toml
+   data_dir = 'D:\AcademicWriter-Data'          # dossier des projets
+   mode = 'connected'                            # recherche dans les bibliothèques
+   allowed_import_dirs = ['C:\Users\<VotreNom>', 'D:\']   # dossiers d'où importer des documents
+   ```
+6. **Clés gratuites** (facultatives, elles ne sont jamais copiées d'un PC à l'autre) :
+   `uv run academic-writer secrets set openalex --clipboard` et `… secrets set google_books --clipboard`
+   (copier la clé avant ; le presse-papiers est effacé ensuite).
+7. **Index russe de génie mécanique** (facultatif, ≈ 20 minutes) : dans Claude, « Moissonne les revues russes de
+   génie mécanique » (outil `cyberleninka_harvest_discipline`).
+8. Quitter complètement Claude Desktop (zone de notification → Quitter), le relancer, puis écrire
+   « Ping le serveur academic-writer ».
+
+Mise à jour ultérieure du serveur : `cd D:\MCP\academic-writer-mcp`, `git pull`, `uv sync`, puis relancer Claude.
+
+Le dépôt est publié « tous droits réservés » : l'installation est réservée aux ordinateurs autorisés par son
+propriétaire.
 
 Les données (base, projets, sauvegardes) vont par défaut dans `%LOCALAPPDATA%\AcademicWriter` ;
 pour un autre emplacement, définir `data_dir` dans `%APPDATA%\AcademicWriter\config.toml`

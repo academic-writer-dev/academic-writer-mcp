@@ -7,18 +7,17 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 
 | Outil | Rôle | Bases |
 |---|---|---|
-| `find_works_by_topic` | Recherche par thème ; filtres auteur, années, type ; `services` pour restreindre | Internet Archive, Open Library, DOAJ, arXiv, Crossref, OpenAlex, Semantic Scholar, Europe PMC, PubMed, HAL, Zenodo, OpenAIRE, ERIC, DNB, CORE (clé), DataCite (données) ; J-STAGE et NDL Search (Japon), OSTI.GOV (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Brésil, Chili, Afrique du Sud) |
+| `find_works_by_topic` | Recherche par thème ; filtres auteur, années, type ; `services` pour restreindre | Internet Archive, Open Library, DOAJ, arXiv, Crossref, OpenAlex, Europe PMC, PubMed, HAL, Zenodo, OpenAIRE, ERIC, DNB, DataCite (données) ; J-STAGE et NDL Search (Japon), OSTI.GOV (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Brésil, Chili, Afrique du Sud) |
 | `search_sources` | Fiche d'un ouvrage précis (titre, ISBN) | Google Books (clé), OpenAlex, Crossref |
 | `verify_source_metadata` | Vérifie auteurs, titre, année, DOI d'une source enregistrée | Crossref, Open Library, Google Books |
 | `check_retractions` | Rétractations, retraits, corrections, avis d'inquiétude | Crossref (updates) ; OpenAlex marque `[RÉTRACTÉ]` |
-| `download_open_access` | Télécharge un texte intégral en libre accès LÉGAL (licence revérifiée) | arXiv, Internet Archive (licence libre), DOAJ, HAL, Europe PMC (OA), Zenodo, Semantic Scholar, CORE, Unpaywall |
+| `download_open_access` | Télécharge un texte intégral en libre accès LÉGAL (licence revérifiée) | arXiv, Internet Archive (licence libre), DOAJ, HAL, Europe PMC (OA), Zenodo |
 | `find_researcher` | Identifiants ORCID | ORCID |
 | `fetch_open_data` | Séries statistiques officielles | World Bank, Eurostat |
 | `lookup_constant` | Constantes physiques fondamentales (copie locale hors connexion) | NIST — CODATA 2022 |
-| `search_heritage` | Objets numérisés des musées, archives, bibliothèques (licence par objet) | Europeana (clé gratuite) |
 | `cyberleninka_harvest_discipline` | Moissonne les 18 revues russes de génie mécanique (OAI-PMH officiel) | КиберЛенинка |
 | `cyberleninka_journals`, `cyberleninka_harvest` | Revues russes en libre accès : moissonnage OAI-PMH officiel, index local, recherche via `find_works_by_topic` | КиберЛенинка |
-| `list_source_providers` | Registre des 51 fournisseurs et statuts | — |
+| `list_source_providers` | Registre des 27 bibliothèques connectées et statuts | — |
 
 ## Reconnaissance automatique du domaine
 

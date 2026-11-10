@@ -8,10 +8,10 @@
   NDL Search répond parfois lentement (attente maximale 30 s, sans bloquer les autres bases) ; CiNii, Research
   Data Australia (robots.txt), Library of Congress (403), DPLA et Trove (clé), Redalyc : non intégrés.
 - BASE (refus par IP), OAPEN et Gallica (HTTP 403), DART-Europe (pas d'API) : non intégrés.
-- Semantic Scholar sans clé : quota public souvent saturé ; clé réservée aux adresses institutionnelles.
 - OpenAlex sans clé : budget gratuit partagé par adresse IP.
 - OECD : requêtes de données refusées au client automatisé (HTTP 403) ; IMF et DDB : non intégrés.
-- Europeana, CORE : intégrés mais inactifs sans clé personnelle gratuite.
+- Retirés le 2026-11-10 car non opérationnels : Semantic Scholar (quota saturé), CORE et Europeana (clé non obtenue),
+  Unpaywall (adresse non configurée) ; liste complète et raisons : excluded_paid_providers.md.
 - Pertinence par mots-clés : des résultats hors sujet peuvent subsister ; des résultats pertinents peuvent être écartés.
 
 ## Documents et OCR

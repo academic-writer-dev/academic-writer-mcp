@@ -30,11 +30,8 @@ def manual_links(data: SourceData) -> dict[str, str]:
     if data.doi:
         links["DOI (page de l'éditeur)"] = "https://doi.org/" + quote(data.doi, safe="/")
     if isbn:
-        links["РГБ — catalogue (ISBN)"] = "https://search.rsl.ru/ru/search#q=" + quote(isbn)
         links["Google Книги (ISBN)"] = "https://www.google.com/search?tbm=bks&q=isbn:" + isbn
     if query:
-        links["РГБ — catalogue (Российская государственная библиотека)"] = \
-            "https://search.rsl.ru/ru/search#q=" + quote(query)
         links["eLIBRARY / РИНЦ (via Яндекс)"] = "https://yandex.ru/search/?text=" + quote_plus(f"{query} site:elibrary.ru")
         links["КиберЛенинка"] = "https://cyberleninka.ru/search?q=" + quote_plus(query)
         links["Google Академия (Scholar)"] = "https://scholar.google.com/scholar?q=" + quote_plus(query)

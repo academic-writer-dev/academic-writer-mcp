@@ -1,28 +1,23 @@
 <!-- Fichier généré par scripts/generate_docs.py : ne pas modifier à la main. -->
 
-# Fournisseurs exclus ou non automatisés
+# Services retirés du serveur
 
-Aucun de ces services n'est interrogé automatiquement. Ceux marqués `manual_link` sont proposés comme liens à ouvrir par l'utilisateur.
+Retirés le 2026-11-10 après test réel : ils ne sont plus ni interrogés, ni listés comme connectés. Ils pourront être rebranchés si leur situation change (clé gratuite obtenue, accès autorisé).
 
-| Fournisseur | Statut | Raison | Traitement |
-|---|---|---|---|
-| BASE (Bielefeld) | `UNVERIFIED_EXCLUDED` | refus « Access denied for IP address » ; accès API sur autorisation par adresse IP | excluded |
-| RePEc / IDEAS | `UNAVAILABLE` | non intégré ; pas d'API publique de recherche | manual_link |
-| OECD Data (SDMX) | `UNAVAILABLE` | liste des jeux accessible ; requêtes de données refusées au client automatisé (HTTP 403) ; aucune | manual_link |
-| OAPEN Library | `UNAVAILABLE` | HTTP 403 pour les requêtes automatisées ; — | manual_link |
-| Gallica / BnF | `UNAVAILABLE` | HTTP 403 (SRU) depuis ce poste ; — | manual_link |
-| DART-Europe | `UNAVAILABLE` | pages web uniquement ; pas d'API | manual_link |
-| CiNii Research (NII) | `UNAVAILABLE` | recherche interdite aux robots (robots.txt) ; ses notices passent par NDL Search ; — | manual_link |
-| engrXiv (prépublications d'ingénierie) | `UNAVAILABLE` | API OSF interdite aux robots (robots.txt) ; — | manual_link |
-| Library of Congress | `UNAVAILABLE` | HTTP 403 au client automatisé (non contourné) ; — | manual_link |
-| Redalyc | `UNAVAILABLE` | OAI-PMH sans résultat ; revues souvent présentes dans DOAJ et OpenAlex ; — | manual_link |
-| Research Data Australia | `UNAVAILABLE` | API sous /registry/, interdite aux robots (robots.txt) ; — | manual_link |
-| eLIBRARY.RU / РИНЦ | `UNAVAILABLE` | lien de recherche (via Яндекс) ; aucune extraction ; pas d'API publique | manual_link |
-| РГБ (dont Электронная библиотека диссертаций) | `UNAVAILABLE` | lien de recherche ; pas d'API publique | manual_link |
-| РНБ | `UNAVAILABLE` | non intégré ; pas d'API publique | manual_link |
-| НЭБ | `UNVERIFIED_EXCLUDED` | non intégré ; API sur demande (conditions non vérifiées) | manual_link |
-| ГПНТБ России | `UNAVAILABLE` | non intégré ; pas d'API publique | manual_link |
-| ВИНИТИ РАН | `PAID_EXCLUDED` | non intégré ; accès sur abonnement | excluded |
-| Федеральная электронная медицинская библиотека | `UNAVAILABLE` | non intégré ; pas d'API publique | manual_link |
+| Service | Raison du retrait |
+|---|---|
+| Semantic Scholar | quota public saturé : refus (HTTP 429) pour 9 recherches sur 9 ; clé réservée aux adresses institutionnelles |
+| CORE | clé gratuite obligatoire, jamais obtenue (formulaire refusé à l'automatisation) |
+| Europeana | clé gratuite obligatoire, jamais obtenue |
+| Unpaywall | adresse e-mail obligatoire dans chaque requête : non configurée |
+| BASE (Bielefeld) | accès refusé par adresse IP |
+| OAPEN, Gallica, Library of Congress | HTTP 403 aux requêtes automatisées (jamais contourné) |
+| OECD | requêtes de données refusées au client automatisé (HTTP 403) |
+| CiNii Research, Research Data Australia, engrXiv | recherche interdite aux robots par robots.txt |
+| DPLA, Trove, DDB | clé personnelle obligatoire, non obtenue |
+| Redalyc | interface OAI-PMH sans résultat (revues présentes dans DOAJ et OpenAlex) |
+| DART-Europe, RePEc, IMF | pas d'interface automatisée exploitable |
+| eLIBRARY, РГБ, НЭБ, РНБ, ГПНТБ, ФЭМБ | pas d'API publique autorisée ; РГБ et НЭБ injoignables depuis le poste |
+| ВИНИТИ РАН | accès payant |
 
 Fournisseurs d'IA payants (Anthropic, OpenAI) : présents mais **désactivés par défaut** (mode connecté + clé + consentement écrit du projet) ; jamais obligatoires.

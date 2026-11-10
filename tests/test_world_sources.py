@@ -91,10 +91,9 @@ def test_world_registry_matches_integration() -> None:
     assert {"jstage", "ndl", "osti", "erudit", "ajol", "scielo"} <= planned
     assert {"jstage", "ndl", "osti", "erudit", "ajol", "scielo"} <= world_api
     by_id = {p.id: p for p in PROVIDERS}
-    # interdits aux robots ou refusés : jamais interrogés automatiquement
+    # interdits aux robots ou refusés : retirés du registre et jamais interrogés
     for excluded in ("cinii", "rda", "loc", "dpla", "trove", "redalyc"):
-        assert by_id[excluded].integration == "manual_link" and excluded not in planned
-    assert "robots.txt" in by_id["cinii"].verification and "robots.txt" in by_id["rda"].verification
+        assert excluded not in by_id and excluded not in planned
     # recherche « libre accès seulement » : ces notices ne sont pas présentées comme libres
     assert not {p for p in planned if p in {"jstage", "ndl"}} & set(find_by_topic(
         "x", lambda _u: None, "articles", open_access_only=True).services)

@@ -34,11 +34,40 @@ USER_AGENT = f"AcademicWriterMCP/{__version__} (local academic writing tool)"
 Fetcher = Callable[[str], dict | None]  # JSON, None si 404 ; lève OSError si réseau indisponible ou quota
 
 
+MAX_RESPONSE_BYTES = 25 * 1_048_576  # au-delà, une réponse de catalogue est anormale
+
+
+class _HttpsOnlyRedirect(urllib.request.HTTPRedirectHandler):
+    """Refuse toute redirection vers une adresse non chiffrée (HTTPS uniquement, de bout en bout)."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not newurl.lower().startswith("https://"):
+            raise urllib.error.URLError("redirection vers une adresse non HTTPS refusée")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_HttpsOnlyRedirect)
+
+
+def secure_open(request: urllib.request.Request, timeout: float):
+    """Ouvre une adresse HTTPS (certificat vérifié, redirections HTTPS seulement)."""
+    if urllib.parse.urlsplit(request.full_url).scheme.lower() != "https":
+        raise urllib.error.URLError("adresse non HTTPS refusée")
+    return _OPENER.open(request, timeout=timeout)
+
+
+def read_limited(response, limit: int = MAX_RESPONSE_BYTES) -> bytes:
+    data = response.read(limit + 1)
+    if len(data) > limit:
+        raise urllib.error.URLError(f"réponse trop volumineuse (plus de {limit // 1_048_576} Mo) : refusée")
+    return data
+
+
 def http_fetch(url: str) -> dict | None:
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
     try:
-        with urllib.request.urlopen(request, timeout=20) as response:  # noqa: S310 (URL https fixes)
-            return json.loads(response.read().decode("utf-8"))
+        with secure_open(request, timeout=20) as response:
+            return json.loads(read_limited(response).decode("utf-8"))
     except urllib.error.HTTPError as exc:
         if exc.code == 404:
             return None

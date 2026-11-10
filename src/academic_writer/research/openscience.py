@@ -2,14 +2,11 @@
 
 | Base            | Accès                                   | Contenu                                         |
 |-----------------|-----------------------------------------|-------------------------------------------------|
-| Semantic Scholar| public (clé gratuite facultative)       | métadonnées, PDF en libre accès signalés        |
 | Europe PMC      | public                                  | biomédecine ; sous-ensemble Open Access (CC)    |
 | PubMed (NCBI)   | public (E-utilities, 3 requêtes/s)      | biomédecine : métadonnées seulement             |
 | HAL             | public                                  | archive ouverte française : dépôts en libre accès|
 | DataCite        | public                                  | jeux de données, logiciels (DOI) : métadonnées  |
 | Zenodo          | public                                  | publications et données, licence par dépôt      |
-| CORE            | clé API gratuite obligatoire            | agrégateur de dépôts en libre accès             |
-| Unpaywall       | adresse e-mail obligatoire (paramètre)  | localisation légale du texte intégral d'un DOI  |
 
 Règle constante : ``open_access`` (téléchargeable) n'est vrai que si une licence libre (Creative Commons,
 domaine public) ou un dépôt en archive ouverte est attesté par la base. « Lecture gratuite » sans licence
@@ -29,14 +26,11 @@ from academic_writer.research.online import _person, _year
 _CC = re.compile(r"^(?:cc[\s\-_]?|creative\s*commons|public[\s\-_]?domain|pd\b|cc0)", re.IGNORECASE)
 
 SERVICE_INFO = {
-    "semantic_scholar": ("PUBLIC_FREE", "https://api.semanticscholar.org", "Clé gratuite facultative (quota plus élevé)."),
     "europe_pmc": ("PUBLIC_FREE", "https://www.ebi.ac.uk/europepmc/webservices/rest", "Sans compte."),
     "pubmed": ("PUBLIC_FREE", "https://eutils.ncbi.nlm.nih.gov", "Sans compte ; 3 requêtes/s sans clé."),
     "hal": ("PUBLIC_FREE", "https://api.archives-ouvertes.fr", "Sans compte."),
     "datacite": ("PUBLIC_FREE", "https://api.datacite.org", "Sans compte."),
     "zenodo": ("PUBLIC_FREE", "https://zenodo.org/api", "Sans compte pour la recherche."),
-    "core": ("FREE_API_KEY", "https://api.core.ac.uk/v3", "Clé API gratuite obligatoire (inscription)."),
-    "unpaywall": ("FREE_ACCOUNT", "https://api.unpaywall.org/v2", "Adresse e-mail obligatoire dans chaque requête."),
 }
 
 
@@ -49,39 +43,6 @@ def _json(text: str | None) -> dict:
 
 def _open_license(value: str | None) -> bool:
     return bool(value) and bool(_CC.search(value) or OPEN_LICENSE.search(value))
-
-
-# --- Semantic Scholar -------------------------------------------------------------------------------
-
-S2_FIELDS = "title,authors,year,venue,externalIds,isOpenAccess,openAccessPdf,publicationTypes"
-
-
-def semantic_scholar_url(query: str, limit: int, api_key: str | None = None) -> str:
-    return (f"https://api.semanticscholar.org/graph/v1/paper/search?limit={limit}&fields={S2_FIELDS}&query="
-            + urllib.parse.quote(query))
-
-
-def parse_semantic_scholar(text: str | None, query: str) -> list[DiscoveredWork]:
-    works = []
-    for paper in _json(text).get("data", []) or []:
-        title, paper_id = paper.get("title"), paper.get("paperId")
-        if not title or not paper_id:
-            continue
-        authors = [a.get("name", "") for a in paper.get("authors", []) if a.get("name")]
-        doi = (paper.get("externalIds") or {}).get("DOI")
-        pdf = paper.get("openAccessPdf") or {}
-        license_name = pdf.get("license")
-        is_open = bool(pdf.get("url")) and _open_license(license_name)
-        note = (f"licence {license_name}" if license_name else
-                "lecture gratuite signalée, licence non précisée" if pdf.get("url") else None)
-        works.append(DiscoveredWork(
-            item_id=f"s2:{paper_id}", service="semantic_scholar", title=title, authors=authors, year=paper.get("year"),
-            source_type="article", container=paper.get("venue") or None, doi=doi,
-            landing_url=f"https://www.semanticscholar.org/paper/{paper_id}", license=note, open_access=is_open,
-            relevance=relevance(query, title),
-            data=SourceData(authors=[_person(a) for a in authors[:10]], title=title, container=paper.get("venue") or None,
-                            year=paper.get("year"), doi=doi)))
-    return works
 
 
 # --- Europe PMC ---------------------------------------------------------------------------------------
@@ -253,58 +214,12 @@ def parse_zenodo(text: str | None, query: str) -> list[DiscoveredWork]:
     return works
 
 
-# --- CORE (clé gratuite obligatoire) --------------------------------------------------------------------
-
-def core_url(query: str, limit: int, api_key: str) -> str:
-    return (f"https://api.core.ac.uk/v3/search/works?limit={limit}&apiKey={urllib.parse.quote(api_key)}&q="
-            + urllib.parse.quote(query))
-
-
-def parse_core(text: str | None, query: str) -> list[DiscoveredWork]:
-    works = []
-    for item in _json(text).get("results", []) or []:
-        title, core_id = item.get("title"), item.get("id")
-        if not title or not core_id:
-            continue
-        authors = [a.get("name", "") for a in item.get("authors", []) if a.get("name")]
-        download = item.get("downloadUrl") or ""
-        is_open = download.lower().startswith("https://")
-        journal = next((j.get("title") for j in item.get("journals", []) or [] if j.get("title")), None)
-        works.append(DiscoveredWork(
-            item_id=f"core:{core_id}", service="core", title=title, authors=authors, year=item.get("yearPublished"),
-            source_type="article", container=journal, publisher=item.get("publisher"),
-            language=(item.get("language") or {}).get("code") if isinstance(item.get("language"), dict) else None,
-            doi=item.get("doi"), landing_url=f"https://core.ac.uk/works/{core_id}",
-            license="dépôt en libre accès (agrégé par CORE)" if is_open else None, open_access=is_open,
-            relevance=relevance(query, title, item.get("abstract")),
-            data=SourceData(authors=[_person(a) for a in authors[:10]], title=title, container=journal,
-                            publisher=item.get("publisher"), year=item.get("yearPublished"), doi=item.get("doi"))))
-    return works
-
-
-# --- Unpaywall (enrichissement par DOI) ------------------------------------------------------------------
-
-def unpaywall_location(doi: str, email: str, fetch: TextFetcher) -> tuple[str | None, str | None]:
-    """(adresse légale du PDF, licence) d'après Unpaywall ; (None, None) si aucune version ouverte."""
-    record = _json(fetch(f"https://api.unpaywall.org/v2/{urllib.parse.quote(doi)}?email={urllib.parse.quote(email)}"))
-    best = record.get("best_oa_location") or {}
-    return best.get("url_for_pdf") or None, best.get("license") or None
-
-
 # --- résolution du texte intégral --------------------------------------------------------------------------
 
 def resolve(service: str, identifier: str, fetch: TextFetcher, keys: dict[str, str] | None = None) -> tuple[str, str, str] | None:
     """(PDF, licence, nom de fichier) pour les nouvelles bases ; None si le service n'est pas concerné.
     Lève ValueError avec un message destiné à l'utilisateur si le libre accès n'est pas attesté."""
     keys = keys or {}
-    if service == "s2":
-        paper = _json(fetch(f"https://api.semanticscholar.org/graph/v1/paper/{urllib.parse.quote(identifier)}"
-                            "?fields=openAccessPdf"))
-        pdf = paper.get("openAccessPdf") or {}
-        if not pdf.get("url") or not _open_license(pdf.get("license")):
-            raise ValueError("Semantic Scholar ne déclare pas de licence libre pour ce texte : téléchargement refusé, "
-                             "consultez le lien de la notice.")
-        return pdf["url"], f"licence {pdf.get('license')}", f"s2-{identifier[:20]}.pdf"
     if service == "epmc":
         if not identifier.upper().startswith("PMC"):
             raise ValueError("Seuls les articles du sous-ensemble Open Access de PubMed Central sont téléchargeables.")
@@ -337,14 +252,4 @@ def resolve(service: str, identifier: str, fetch: TextFetcher, keys: dict[str, s
         if not url:
             raise ValueError("Aucun fichier PDF dans ce dépôt Zenodo.")
         return url, f"licence {license_id}", pdf["key"].rsplit("/", 1)[-1]
-    if service == "core":
-        key = keys.get("core")
-        if not key:
-            raise ValueError("CORE nécessite une clé API gratuite : uv run academic-writer secrets set core --clipboard")
-        record = _json(fetch(f"https://api.core.ac.uk/v3/works/{urllib.parse.quote(identifier)}"
-                             f"?apiKey={urllib.parse.quote(key)}"))
-        url = record.get("downloadUrl") or ""
-        if not url.lower().startswith("https://"):
-            raise ValueError("Pas de texte intégral HTTPS déclaré par CORE.")
-        return url, "dépôt en libre accès (CORE)", f"core-{identifier}.pdf"
     return None

@@ -422,10 +422,10 @@ def test_metadata_service_keys_accepted() -> None:
 def test_manual_links_cover_russian_catalogues() -> None:
     from academic_writer.research.manual import manual_links
     links = manual_links(BOOK)
-    assert any(url.startswith("https://search.rsl.ru/") for url in links.values())  # РГБ
+    assert not any("rsl.ru" in url for url in links.values())  # РГБ injoignable depuis le poste : retirée
     assert any("site%3Aelibrary.ru" in url for url in links.values())  # eLIBRARY via Яндекс
     assert any(url.startswith("https://cyberleninka.ru/search") for url in links.values())
-    assert "РГБ — catalogue (ISBN)" in links and "9780306406157" in links["РГБ — catalogue (ISBN)"]
+    assert "9780306406157" in links["Google Книги (ISBN)"]
     assert "DOI (page de l'éditeur)" in manual_links(ARTICLE)
 
 

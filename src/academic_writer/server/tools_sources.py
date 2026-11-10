@@ -151,7 +151,7 @@ def register(mcp: MCPServer) -> None:
                                                 "Essayer aussi la formulation en anglais pour plus de résultats.")],
         kind: Annotated[Literal["books", "articles", "datasets", "all"], Field(
             description="books : Internet Archive, Open Library, DNB, NDL (Japon) ; articles : DOAJ, arXiv, Crossref, "
-                        "Semantic Scholar, Europe PMC, PubMed, HAL, Zenodo, OpenAlex, OpenAIRE, ERIC, CORE (clé), "
+                        "Europe PMC, PubMed, HAL, Zenodo, OpenAlex, OpenAIRE, ERIC, "
                         "J-STAGE (Japon), OSTI (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Amérique "
                         "latine, Afrique du Sud) ; datasets : DataCite, Zenodo.")] = "all",
         open_access_only: Annotated[bool, Field(description="Seulement les textes intégraux légalement téléchargeables.")] = False,
@@ -176,9 +176,9 @@ def register(mcp: MCPServer) -> None:
         project_id: Annotated[str | None, Field(description="Projet dont le domaine guide la recherche.")] = None,
     ) -> DiscoveryResult:
         """Trouve des livres, manuels, articles et jeux de données RÉELS sur un thème dans des bases légales et
-        gratuites (Internet Archive, Open Library, DOAJ, arXiv, Crossref, Semantic Scholar, Europe PMC, PubMed, HAL,
+        gratuites (Internet Archive, Open Library, DOAJ, arXiv, Crossref, Europe PMC, PubMed, HAL,
         J-STAGE et NDL (Japon), OSTI (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Amérique latine),
-        Zenodo, DataCite, CORE), classés par pertinence, avec lien, licence et fiche pré-remplie. open_access = texte
+        Zenodo, DataCite, OpenAlex, OpenAIRE), classés par pertinence, avec lien, licence et fiche pré-remplie. open_access = texte
         intégral sous licence libre attestée (une simple lecture gratuite n'est pas présentée comme libre accès).
         Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""
         with user_errors():
@@ -191,8 +191,7 @@ def register(mcp: MCPServer) -> None:
     def download_open_access(
         project_id: str,
         item_id: Annotated[str, Field(description="item_id d'un résultat de find_works_by_topic marqué open_access "
-                                                  "(arxiv:…, ia:…, doaj:…, hal:…, epmc:PMC…, zenodo:…, s2:…, core:…, "
-                                                  "unpaywall:DOI).")],
+                                                  "(arxiv:…, ia:…, doaj:…, hal:…, epmc:PMC…, zenodo:…).")],
     ) -> OpenAccessDownload:
         """Télécharge le texte intégral d'un résultat en LIBRE ACCÈS LÉGAL et l'importe dans le projet comme
         document source (copie protégée, lisible et cherchable). Licence revérifiée par le serveur ; refusé pour
@@ -286,16 +285,6 @@ def register(mcp: MCPServer) -> None:
         unité. Copie locale : utilisable hors connexion après le premier téléchargement (mode connecté)."""
         with user_errors():
             return get_services().sources.physical_constants(query)
-
-    @mcp.tool(title="Patrimoine numérisé (Europeana)",
-              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
-    def search_heritage(query: str,
-                        media_type: Literal["TEXT", "IMAGE", "SOUND", "VIDEO", "3D"] | None = None,
-                        rows: Annotated[int, Field(ge=1, le=50)] = 10) -> dict:
-        """Objets numérisés des musées, archives et bibliothèques européens (Europeana) : titre, institution, pays,
-        licence (réutilisation libre seulement si open_license). Clé personnelle gratuite requise ; mode connecté."""
-        with user_errors():
-            return get_services().sources.heritage(query, media_type, rows)
 
     @mcp.tool(title="Revues КиберЛенинка", annotations=_READ)
     def cyberleninka_journals(query: Annotated[str, Field(description="Mot du titre de la revue (russe).")]) -> dict:

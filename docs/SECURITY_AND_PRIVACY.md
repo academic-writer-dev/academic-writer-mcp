@@ -2,6 +2,9 @@
 
 | Mesure | Mise en œuvre |
 |---|---|
+| Réseau (renforcé le 2026-11-10) | HTTPS obligatoire, certificats vérifiés (magasin Windows), redirections vers une adresse non chiffrée refusées AVANT d'être suivies, réponses limitées à 25 Mo, téléchargements limités et revérifiés ; User-Agent honnête ; robots.txt respecté ; aucun contournement de refus (403, quotas) |
+| Contrôle du 2026-11-10 | 235 dépendances auditées (pip-audit) : aucune faille connue ; aucune clé dans les journaux, les données ni l'historique Git |
+| Services réduits | Seules les 27 bases opérationnelles sont contactées ; les services non opérationnels ont été retirés (moins de surface d'exposition) |
 | Local par défaut | `mode = local` : aucun accès réseau ; `connected` : seuls termes de recherche et identifiants envoyés |
 | Consentement | Fournisseurs d'IA : mode connecté + clé + consentement écrit par projet ; politique de sources par projet |
 | Clés | Gestionnaire d'identification Windows (keyring) ; jamais dans les fichiers ni les journaux ; saisie masquée ou presse-papiers effacé |
