@@ -421,6 +421,13 @@ class QualityService:
                                    "l'utilisateur ou du cours).")
         return solve(data, unknown, formulas, **options)
 
+    # --- normes ----------------------------------------------------------------------------------------
+    def check_standards(self, project_id: str | None = None, document_id: str | None = None):
+        from academic_writer.quality.standards import check
+
+        target = self.target(project_id, document_id)
+        return check(target.label, "\n".join(s.text for s in target.segments))
+
 
 
 def _markdown_segments(text: str, section: str, level: int) -> list[Segment]:

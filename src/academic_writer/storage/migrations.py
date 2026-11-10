@@ -434,6 +434,13 @@ CREATE INDEX idx_requirements_project ON requirements(project_id, kind);
 ALTER TABLE teacher_profiles ADD COLUMN details TEXT NOT NULL DEFAULT '{}';
 """,
     ),
+    Migration(
+        version=12,
+        description="Projets interdisciplinaires : profils disciplinaires secondaires",
+        sql="""
+ALTER TABLE projects ADD COLUMN secondary_domains TEXT NOT NULL DEFAULT '[]';
+""",
+    ),
 )
 
 LATEST_VERSION: int = MIGRATIONS[-1].version

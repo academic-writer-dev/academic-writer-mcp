@@ -9,6 +9,7 @@ from mcp.types import ToolAnnotations
 from pydantic import Field
 
 from academic_writer.core.domains import DomainAssignment, DomainIdentification, DomainList, TermLookup
+from academic_writer.core.models import Project
 from academic_writer.domains.model import DomainProfile
 from academic_writer.domains.structures import StructureTemplate
 from academic_writer.server.services import get_services, user_errors
@@ -93,3 +94,16 @@ def register(mcp: MCPServer) -> None:
         """Relit les fichiers de profils (après ajout ou modification d'un profil personnalisé)."""
         with user_errors():
             return get_services().domains.reload()
+
+    @mcp.tool(title="Profils secondaires (interdisciplinaire)",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True,
+                                          open_world_hint=False))
+    def set_secondary_domains(
+        project_id: str,
+        domain_ids: Annotated[list[str], Field(description="Jusqu'à 4 profils complémentaires (ex. "
+                                                           "[\"genie_electrique\", \"economie\"]) ; [] pour retirer.")],
+    ) -> Project:
+        """Travail interdisciplinaire : ajoute des profils secondaires au profil principal du projet. Leur terminologie
+        et leurs règles de validation sont ajoutées au dossier du rédacteur. À faire sur décision de l'utilisateur."""
+        with user_errors():
+            return get_services().domains.set_secondary(project_id, domain_ids)

@@ -59,6 +59,10 @@ class DocumentType(StrEnum):
     FICHE_DE_LECTURE = "fiche_de_lecture"
     SYNTHESE_BIBLIOGRAPHIQUE = "synthese_bibliographique"
     RAPPORT_DE_STAGE = "rapport_de_stage"
+    COMPTE_RENDU_TP = "compte_rendu_tp"
+    RAPPORT_DE_COURS = "rapport_de_cours"
+    PROJET_TECHNIQUE = "projet_technique"
+    PROJET_RECHERCHE = "projet_recherche"
     AUTRE = "autre"
 
 
@@ -88,6 +92,10 @@ DOCUMENT_TYPE_LABELS: dict[DocumentType, str] = {
     DocumentType.FICHE_DE_LECTURE: "Fiche de lecture",
     DocumentType.SYNTHESE_BIBLIOGRAPHIQUE: "Synthèse bibliographique",
     DocumentType.RAPPORT_DE_STAGE: "Rapport de stage",
+    DocumentType.COMPTE_RENDU_TP: "Compte rendu de TP",
+    DocumentType.RAPPORT_DE_COURS: "Rapport de cours / travail de cours",
+    DocumentType.PROJET_TECHNIQUE: "Projet technique",
+    DocumentType.PROJET_RECHERCHE: "Projet de recherche",
     DocumentType.AUTRE: "Autre",
 }
 
@@ -132,6 +140,8 @@ class Project(BaseModel):
     convention: str | None = Field(default=None, description="Convention de présentation : ru, fr ou intl.")
     source_policy: SourcePolicy = Field(default="project_sources", description="Sources autorisées pour la rédaction.")
     teacher_profile_id: str | None = Field(default=None, description="Profil d'enseignant rattaché.")
+    secondary_domain_ids: list[str] = Field(default_factory=list,
+                                            description="Profils secondaires (travail interdisciplinaire).")
     created_at: str
     updated_at: str
 

@@ -178,6 +178,32 @@ class DomainService:
         return DomainAssignment(project=project, domain_name=profile.names.get(language),
                                 risk_level=profile.risk_level, risk_notice=notice, message=message)
 
+    def set_secondary(self, project_id: str, domain_ids: list[str]) -> Project:
+        """Profils secondaires d'un travail interdisciplinaire (le profil principal reste celui du projet)."""
+        import json
+
+        from academic_writer.core.models import utc_now
+
+        project = self.projects.get(project_id)
+        unique = list(dict.fromkeys(d for d in domain_ids if d and d != project.domain_id))[:4]
+        for domain_id in unique:
+            self.registry.get(domain_id)  # profil inexistant → erreur explicite
+        with self.db.transaction() as conn:
+            conn.execute("UPDATE projects SET secondary_domains = ?, updated_at = ? WHERE id = ?",
+                         (json.dumps(unique), utc_now(), project_id))
+        return self.projects.get(project_id)
+
+    def project_profiles(self, project_id: str) -> list:
+        """Profil principal puis profils secondaires (ignorés s'ils n'existent plus)."""
+        project = self.projects.get(project_id)
+        profiles = []
+        for domain_id in [project.domain_id or "generaliste", *project.secondary_domain_ids]:
+            try:
+                profiles.append(self.registry.get(domain_id))
+            except Exception:  # noqa: BLE001 — profil supprimé depuis
+                continue
+        return profiles
+
     # --- gabarits ----------------------------------------------------------
     def effective_convention(self, project: Project) -> str:
         return project.convention or _DEFAULT_CONVENTION.get(project.language.value, "intl")

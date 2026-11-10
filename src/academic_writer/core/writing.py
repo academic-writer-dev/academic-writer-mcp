@@ -515,7 +515,12 @@ class WritingService:
                 relevant.append(f"{line} — définition de référence : {term.definition.get(language)}")
             else:
                 others.append(line)
-        terms = relevant + others  # définitions des termes concernés en premier
+        secondary_terms: list[str] = []
+        for secondary in self.domains.project_profiles(project_id)[1:]:
+            names = [getattr(t, language) or t.fr or t.en for t in secondary.terminology]
+            secondary_terms += [f"{n} ({secondary.names.get(language)})" for n in names if n][:6]
+        # définitions des termes concernés d'abord ; une place réservée aux profils secondaires (30 termes au plus)
+        terms = (relevant + others)[: max(10, 30 - len(secondary_terms))] + secondary_terms
         with self.db.read() as conn:
             previous = [(r["title"], r["text"]) for r in conn.execute(
                 "SELECT s.title, v.text FROM section_revisions v JOIN outline_sections s ON s.id = v.section_id "
@@ -565,7 +570,10 @@ class WritingService:
         system = briefs.system_prompt(
             language=language, document_type=DOCUMENT_TYPE_LABELS[project.document_type],
             domain_name=profile.names.get(language), convention_label=template.convention_label,
-            rules=policy_rules(policy, language) + template.validation_rules,
+            rules=policy_rules(policy, language) + template.validation_rules[:9] + [
+                f"[{p.names.get(language)}] {rule.description.get(language)}"
+                for p in self.domains.project_profiles(project_id)[1:]
+                for rule in self.domains.registry.raw(p.id).validation_rules[:2]],  # règles propres, non héritées
             risk_notice=profile.risk_notice.get(language) if profile.risk_level == "high" and profile.risk_notice else None,
             mode="rewrite" if base_text else "draft")
         return SectionBrief(project_id=project_id, section_id=section_id, section_title=section.title, language=language,

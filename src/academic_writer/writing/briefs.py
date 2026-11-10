@@ -37,7 +37,7 @@ def system_prompt(*, language: str, document_type: str, domain_name: str, conven
         lines.append("8. Tu réécris un texte existant : conserve tous les faits, chiffres et termes techniques ; "
                      "ne modifie que ce que demandent les instructions.")
     if rules:
-        lines += ["", "Règles de la discipline :"] + [f"- {rule}" for rule in rules[:12]]
+        lines += ["", "Règles de la discipline :"] + [f"- {rule}" for rule in rules[:20]]
     if risk_notice:
         lines += ["", f"DOMAINE À HAUT RISQUE : {risk_notice}"]
     return "\n".join(lines)

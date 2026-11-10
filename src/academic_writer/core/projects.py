@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import logging
 import sqlite3
 
@@ -57,6 +59,7 @@ def _row_to_project(row: sqlite3.Row) -> Project:
         convention=row["convention"],
         source_policy=row["source_policy"] if "source_policy" in row.keys() else "project_sources",
         teacher_profile_id=row["teacher_profile_id"] if "teacher_profile_id" in row.keys() else None,
+        secondary_domain_ids=json.loads(row["secondary_domains"]) if "secondary_domains" in row.keys() else [],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )

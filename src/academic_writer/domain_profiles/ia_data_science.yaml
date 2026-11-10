@@ -1,0 +1,30 @@
+id: ia_data_science
+parent: informatique
+names: {fr: "Intelligence artificielle et science des données", ru: "Искусственный интеллект и наука о данных", en: "Artificial intelligence and data science"}
+description:
+  fr: "Apprentissage automatique, apprentissage profond, traitement des données, évaluation des modèles, éthique des données."
+  ru: "Машинное обучение, глубокое обучение, обработка данных, оценка моделей, этика данных."
+  en: "Machine learning, deep learning, data processing, model evaluation, data ethics."
+keywords:
+  fr: ["apprentissage automatique", "apprentissage profond", "réseau* de neurones", "jeu de données", "classification", "régression logistique", "surapprentissage", "validation croisée", "hyperparamètre*", "modèle de langage", "science des données"]
+  ru: ["машинн* обучени*", "глубок* обучени*", "нейронн* сет*", "набор* данных", "датасет*", "классификаци*", "переобучени*", "кросс-валидаци*", "гиперпараметр*", "языков* модел*", "анализ данных"]
+  en: ["machine learning", "deep learning", "neural network*", "dataset*", "classification", "logistic regression", "overfitting", "cross-validation", "hyperparameter*", "language model*", "data science"]
+terminology:
+  - {id: overfitting, fr: "surapprentissage", ru: "переобучение", en: "overfitting"}
+  - {id: train_test, fr: "jeux d'entraînement / de test", ru: "обучающая / тестовая выборка", en: "training / test sets"}
+  - {id: precision_recall, fr: "précision / rappel", ru: "точность / полнота", en: "precision / recall"}
+  - {id: baseline, fr: "modèle de référence", ru: "базовая модель", en: "baseline"}
+methodology:
+  fr: ["Décrire les données (origine, licence, taille, prétraitement) et le découpage entraînement / validation / test.", "Comparer à un modèle de référence ; rapporter la variance (graines, validation croisée)."]
+  ru: ["Описывать данные (источник, лицензия, объём, предобработка) и разбиение на выборки.", "Сравнивать с базовой моделью; приводить разброс (seed, кросс-валидация)."]
+  en: ["Describe data (source, licence, size, preprocessing) and train / validation / test split.", "Compare with a baseline; report variance (seeds, cross-validation)."]
+validation_rules:
+  - {id: no_test_leak, severity: error, description: {fr: "Aucune information du jeu de test utilisée pour l'entraînement ou le réglage.", ru: "Тестовая выборка не используется при обучении и подборе параметров.", en: "No test-set information used for training or tuning."}}
+  - {id: reproducibility, severity: warning, description: {fr: "Versions des bibliothèques, graines et paramètres indiqués.", ru: "Указаны версии библиотек, seed и параметры.", en: "Library versions, seeds and parameters stated."}}
+calculations:
+  - {id: metrics, tools: [numpy, scipy], description: {fr: "Métriques d'évaluation, intervalles de confiance, tests de comparaison", ru: "Метрики качества, доверительные интервалы, сравнение моделей", en: "Evaluation metrics, confidence intervals, model comparison tests"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["IEEE", "APA 7"], intl: ["IEEE", "ACM"]}
+standards:
+  - {code: "ISO/IEC 22989", convention: intl, title: {fr: "Intelligence artificielle — Concepts et terminologie", ru: "Искусственный интеллект — понятия и терминология", en: "Artificial intelligence concepts and terminology"}}
+  - {code: "ISO/IEC 23053", convention: intl, title: {fr: "Cadre pour les systèmes d'IA utilisant l'apprentissage automatique", ru: "Структура систем ИИ на основе машинного обучения", en: "Framework for AI systems using machine learning"}}

@@ -1,0 +1,26 @@
+id: sociologie
+parent: sciences_humaines
+names: {fr: "Sociologie", ru: "Социология", en: "Sociology"}
+description:
+  fr: "Enquêtes quantitatives et qualitatives, groupes sociaux, institutions, inégalités, méthodes d'entretien."
+  ru: "Количественные и качественные исследования, социальные группы, институты, неравенство, интервью."
+  en: "Quantitative and qualitative surveys, social groups, institutions, inequality, interview methods."
+keywords:
+  fr: ["sociolog*", "enquête de terrain", "entretien* semi-directif*", "échantillon représentatif", "catégorie* socioprofessionnelle*", "inégalité* sociale*", "socialisation", "stratification sociale", "questionnaire*", "observation participante"]
+  ru: ["социолог*", "полев* исследовани*", "полуструктурированн* интервью", "репрезентативн* выборк*", "социальн* неравенств*", "социализаци*", "социальн* стратификаци*", "анкетировани*", "включённ* наблюдени*"]
+  en: ["sociolog*", "fieldwork", "semi-structured interview*", "representative sample", "social inequalit*", "socialization", "social stratification", "survey questionnaire*", "participant observation"]
+terminology:
+  - {id: sample, fr: "échantillon", ru: "выборка", en: "sample"}
+  - {id: interview, fr: "entretien semi-directif", ru: "полуструктурированное интервью", en: "semi-structured interview"}
+  - {id: indicator, fr: "indicateur", ru: "показатель (индикатор)", en: "indicator"}
+methodology:
+  fr: ["Justifier la méthode (quantitative, qualitative, mixte), l'échantillonnage et le guide d'entretien.", "Anonymiser les enquêtés ; consentement éclairé."]
+  ru: ["Обосновывать метод (количественный, качественный, смешанный), выборку и гайд интервью.", "Анонимизация респондентов; информированное согласие."]
+  en: ["Justify method (quantitative, qualitative, mixed), sampling and interview guide.", "Anonymise respondents; informed consent."]
+validation_rules:
+  - {id: anonymisation, severity: error, description: {fr: "Aucune donnée permettant d'identifier un enquêté.", ru: "Никаких данных, позволяющих идентифицировать респондента.", en: "No data allowing a respondent to be identified."}}
+  - {id: representativeness, severity: warning, description: {fr: "Ne pas généraliser au-delà de ce que permet l'échantillon.", ru: "Не обобщать за пределы возможностей выборки.", en: "Do not generalise beyond what the sample allows."}}
+calculations:
+  - {id: survey_stats, tools: [numpy, scipy], description: {fr: "Tris croisés, khi-deux, marges d'erreur", ru: "Таблицы сопряжённости, хи-квадрат, погрешность выборки", en: "Cross-tabulations, chi-square, margins of error"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["APA 7", "Chicago"], intl: ["APA 7", "ASA"]}

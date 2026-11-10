@@ -15,6 +15,7 @@ from academic_writer.quality.compare import DocumentComparison
 from academic_writer.quality.numeric import NumericOperation, NumericResult
 from academic_writer.quality.problem import ProblemSolution
 from academic_writer.quality.similarity import SimilarityReport
+from academic_writer.quality.standards import StandardEntry, StandardsReport
 from academic_writer.quality.consistency import ConsistencyReport
 from academic_writer.quality.structure import StructureReport
 from academic_writer.quality.symbolic import MatrixOperation, Operation, SymbolicResult
@@ -178,3 +179,20 @@ def register(mcp: MCPServer) -> None:
             return get_services().quality.solve_problem(data, unknown, formulas, hypotheses=hypotheses,
                                                         target_unit=target_unit, plausible_range=plausible_range,
                                                         values_as_written=values_as_written)
+
+    @mcp.tool(title="Rechercher une norme", annotations=_READ)
+    def lookup_standard(query: Annotated[str, Field(description="Code ou mot-clé : « ISO 690 », « ГОСТ 7.32 », "
+                                                                "« tolérances », « sécurité des machines ».")]) -> list[StandardEntry]:
+        """Catalogue vérifié de normes (ISO, IEC, IEEE, ASME, EN, ГОСТ, SI) : dernière édition connue, organisme, domaine
+        et conditions d'accès (la plupart sont PAYANTES ; ГОСТ : consultation gratuite du texte officiel). Une norme
+        absente n'est pas fausse : elle est hors catalogue."""
+        from academic_writer.quality.standards import lookup
+
+        return lookup(query)
+
+    @mcp.tool(title="Contrôler les normes citées", annotations=_READ)
+    def check_standards(project_id: str | None = None, document_id: str | None = None) -> StandardsReport:
+        """Repère les normes citées dans la rédaction ou un document (ГОСТ, ISO, IEC, EN, DIN…) et compare leur édition
+        au catalogue : à jour, édition antérieure, sans année, non vérifiée. Aucune norme n'est inventée ni corrigée."""
+        with user_errors():
+            return get_services().quality.check_standards(project_id, document_id)

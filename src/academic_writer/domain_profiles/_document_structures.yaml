@@ -8,12 +8,12 @@
 
 families:
   travaux_courts: [td, tp, devoir]
-  rapport_laboratoire: [rapport_laboratoire]
-  projet: [projet_universitaire]
-  memoire: [memoire_licence, memoire_master]
+  rapport_laboratoire: [rapport_laboratoire, compte_rendu_tp]
+  projet: [projet_universitaire, projet_technique]
+  memoire: [memoire_licence, memoire_master, projet_recherche]
   these: [these_doctorat]
   article: [article_scientifique, communication_scientifique]
-  rapport_technique: [rapport_technique, etude_technique, document_conception]
+  rapport_technique: [rapport_technique, etude_technique, document_conception, rapport_de_cours]
   rapport_intervention: [rapport_inspection, rapport_maintenance, rapport_audit]
   cahier_des_charges: [cahier_des_charges]
   procedure: [procedure_operationnelle, documentation_professionnelle]

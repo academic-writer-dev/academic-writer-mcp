@@ -1,0 +1,38 @@
+id: genie_electrique
+parent: generaliste
+names: {fr: "Génie électrique et électrotechnique", ru: "Электротехника и электроэнергетика", en: "Electrical engineering and power systems"}
+description:
+  fr: "Machines électriques, réseaux et installations, électronique de puissance, protection, qualité de l'énergie."
+  ru: "Электрические машины, сети и установки, силовая электроника, релейная защита, качество электроэнергии."
+  en: "Electrical machines, networks and installations, power electronics, protection, power quality."
+risk_level: high
+risk_notice:
+  fr: "Installations électriques : aucun schéma ou réglage de protection ne doit être appliqué sans vérification par une personne habilitée et selon les normes en vigueur."
+  ru: "Электроустановки: схемы и уставки защиты применяются только после проверки допущенным персоналом и по действующим нормам (ПУЭ, ГОСТ)."
+  en: "Electrical installations: no diagram or protection setting may be applied without verification by an authorised person under current standards."
+keywords:
+  fr: ["électrotechni*", "machine asynchrone", "moteur asynchrone", "machine synchrone", "transformateur*", "réseau électrique", "puissance réactive", "facteur de puissance", "court-circuit", "disjoncteur*", "régime de neutre", "variateur*", "onduleur*"]
+  ru: ["электротехни*", "асинхронн* двигател*", "синхронн* машин*", "трансформатор*", "электрическ* сет*", "реактивн* мощност*", "коэффициент мощности", "коротк* замыкани*", "автоматическ* выключател*", "релейн* защит*", "частотн* преобразовател*", "пуэ"]
+  en: ["electrical engineering", "induction motor", "synchronous machine", "transformer*", "power grid", "reactive power", "power factor", "short circuit", "circuit breaker*", "protection relay*", "variable frequency drive*", "inverter*"]
+terminology:
+  - {id: power_factor, fr: "facteur de puissance", ru: "коэффициент мощности", en: "power factor"}
+  - {id: slip, fr: "glissement", ru: "скольжение", en: "slip"}
+  - {id: short_circuit_current, fr: "courant de court-circuit", ru: "ток короткого замыкания", en: "short-circuit current"}
+  - {id: rated, fr: "valeur nominale", ru: "номинальное значение", en: "rated value"}
+  - {id: earthing, fr: "schéma de liaison à la terre", ru: "система заземления", en: "earthing system"}
+methodology:
+  fr: ["Distinguer valeurs nominales, mesurées et calculées ; préciser efficace / crête.", "Schémas selon IEC 60617 ; unités SI."]
+  ru: ["Различать номинальные, измеренные и расчётные значения; указывать действующее / амплитудное.", "Схемы по ГОСТ 2.702 / IEC 60617."]
+  en: ["Separate rated, measured and calculated values; state RMS / peak.", "Diagrams per IEC 60617; SI units."]
+validation_rules:
+  - {id: qualified_person, severity: error, description: {fr: "Toute intervention ou réglage réel relève d'une personne habilitée.", ru: "Любые работы и уставки — только допущенным персоналом.", en: "Any real intervention or setting is for an authorised person."}}
+  - {id: rms_peak, severity: warning, description: {fr: "Préciser valeur efficace ou crête pour les grandeurs alternatives.", ru: "Указывать действующее или амплитудное значение.", en: "State RMS or peak for AC quantities."}}
+calculations:
+  - {id: machines, tools: [sympy], description: {fr: "Machines électriques : couple, glissement, rendement", ru: "Электрические машины: момент, скольжение, КПД", en: "Electrical machines: torque, slip, efficiency"}}
+  - {id: networks, tools: [sympy, numpy], description: {fr: "Réseaux : chutes de tension, courants de court-circuit, puissances", ru: "Сети: потери напряжения, токи КЗ, мощности", en: "Networks: voltage drop, short-circuit currents, power"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["IEEE", "ISO 690"], intl: ["IEEE"]}
+standards:
+  - {code: "IEC 60617", convention: intl, title: {fr: "Symboles graphiques pour schémas", ru: "Графические символы для схем", en: "Graphical symbols for diagrams"}}
+  - {code: "IEC 60034-1", convention: intl, title: {fr: "Machines électriques tournantes — Caractéristiques assignées", ru: "Машины электрические вращающиеся — номинальные данные", en: "Rotating electrical machines — Rating and performance"}}
+  - {code: "IEC 60909-0", convention: intl, title: {fr: "Courants de court-circuit dans les réseaux triphasés", ru: "Токи короткого замыкания в трёхфазных сетях", en: "Short-circuit currents in three-phase a.c. systems"}}

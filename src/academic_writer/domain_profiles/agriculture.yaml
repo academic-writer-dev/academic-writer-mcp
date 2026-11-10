@@ -6,7 +6,7 @@ description:
   ru: "Агрономия, растениеводство и животноводство, почвоведение, сельскохозяйственная техника, экономика АПК."
   en: "Agronomy, crop and animal production, soil science, agricultural machinery, agricultural economics."
 keywords:
-  fr: ["agronomi*", "rendement*", "grandes cultures", "culture céréalière", "semis", "fertilisation", "engrais", "irrigation", "élevage", "cheptel", "parcelle*", "rotation des cultures", "phytosanitaire*", "récolte*"]
+  fr: ["agronomi*", "rendement à l'hectare", "rendement agricole", "grandes cultures", "culture céréalière", "semis", "fertilisation", "engrais", "irrigation", "élevage", "cheptel", "parcelle*", "rotation des cultures", "phytosanitaire*", "récolte*"]
   ru: ["агроном*", "урожайност*", "посев*", "удобрени*", "орошени*", "животноводств*", "поголовь*", "севооборот*", "растениеводств*", "уборк* урожа*", "агрохими*", "почв*"]
   en: ["agronom*", "crop yield*", "sowing", "fertili*", "irrigation", "livestock", "herd*", "crop rotation", "plant protection", "harvest*", "tillage", "agricultur*"]
 terminology:

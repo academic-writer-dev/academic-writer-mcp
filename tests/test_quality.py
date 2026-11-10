@@ -353,3 +353,22 @@ def test_solve_problem_eleven_steps(services: Services) -> None:
     assert chain.result_si == pytest.approx(1.875) and chain.unit_si == "m/s²" and chain.verified
     missing = services.quality.solve_problem({"F": "10 kN"}, "sigma", ["sigma = F/A"])
     assert missing.result_si is None and missing.steps[7].status == "erreur"
+
+
+def test_standards_catalog_and_citations(services: Services, inbox: Path) -> None:
+    """Lot 5 : normes citées comparées au catalogue ; aucune norme inventée ni présentée comme gratuite à tort."""
+    from academic_writer.quality.standards import CATALOG, lookup
+
+    project = services.projects.create("Rapport", DocumentType.RAPPORT_TECHNIQUE, Language.RU)
+    path = inbox / "rapport.txt"
+    path.write_text("Оформление по ГОСТ 7.32-2017 и ГОСТ 2.105-95. Допуски по ISO 1101:2012, ГОСТ 12345-2020.",
+                    encoding="utf-8")
+    imported = services.documents.import_document(project.id, str(path), DocumentRole.DRAFT)
+    document_id = imported.document.id if hasattr(imported, "document") else imported.id
+    report = services.quality.check_standards(document_id=document_id)
+    status = {c.code: c.status for c in report.citations}
+    assert status == {"ГОСТ 7.32": "à jour", "ГОСТ 2.105": "édition antérieure", "ISO 1101": "édition antérieure",
+                      "ГОСТ 12345": "non vérifiée"}
+    assert lookup("ISO 690")[0].edition == "2021"
+    assert all("payant" in e.access or "gratuit" in e.access or "libre" in e.access for e in CATALOG)
+    assert all("payant" in e.access for e in CATALOG if e.organization in ("ISO", "IEC", "IEEE", "ASME", "CEN"))

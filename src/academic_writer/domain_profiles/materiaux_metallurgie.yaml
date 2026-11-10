@@ -1,0 +1,32 @@
+id: materiaux_metallurgie
+parent: generaliste
+names: {fr: "Science des matériaux et métallurgie", ru: "Материаловедение и металлургия", en: "Materials science and metallurgy"}
+description:
+  fr: "Structure et propriétés des matériaux, essais mécaniques, traitements thermiques, diagrammes de phases, corrosion."
+  ru: "Структура и свойства материалов, механические испытания, термическая обработка, диаграммы состояния, коррозия."
+  en: "Structure and properties of materials, mechanical testing, heat treatment, phase diagrams, corrosion."
+keywords:
+  fr: ["microstructure*", "diagramme de phases", "diagramme fer-carbone", "traitement thermique", "trempe", "revenu", "recuit", "dureté", "essai de traction", "limite d'élasticité", "résilience", "métallographi*", "alliage*", "corrosion"]
+  ru: ["микроструктур*", "диаграмм* состояния", "железо-углерод", "термическ* обработк*", "закалк*", "отпуск*", "отжиг*", "твёрдост*", "твердост*", "испытани* на растяжение", "предел текучести", "ударн* вязкост*", "металлограф*", "сплав*", "коррози*"]
+  en: ["microstructure*", "phase diagram", "iron-carbon", "heat treatment", "quenching", "tempering", "annealing", "hardness", "tensile test", "yield strength", "impact toughness", "metallograph*", "alloy*", "corrosion"]
+terminology:
+  - {id: yield_strength, fr: "limite d'élasticité", ru: "предел текучести", en: "yield strength"}
+  - {id: tensile_strength, fr: "résistance à la traction", ru: "временное сопротивление (предел прочности)", en: "ultimate tensile strength"}
+  - {id: elongation, fr: "allongement à la rupture", ru: "относительное удлинение после разрыва", en: "elongation at break"}
+  - {id: hardness, fr: "dureté (HB, HRC, HV)", ru: "твёрдость (HB, HRC, HV)", en: "hardness (HB, HRC, HV)"}
+  - {id: martensite, fr: "martensite", ru: "мартенсит", en: "martensite"}
+methodology:
+  fr: ["Essais : éprouvette normalisée, vitesse, température ; courbe contrainte-déformation conservée.", "Préciser la nuance exacte du matériau (désignation normalisée) et son état (traitement)."]
+  ru: ["Испытания: стандартный образец, скорость, температура; диаграмма растяжения сохраняется.", "Указывать марку материала по стандарту и его состояние (обработку)."]
+  en: ["Tests: standard specimen, rate, temperature; stress-strain curve kept.", "State the exact material grade (standard designation) and condition."]
+validation_rules:
+  - {id: grade_designation, severity: warning, description: {fr: "Correspondances de nuances entre normes (ГОСТ / EN / AISI) signalées comme approximatives.", ru: "Соответствие марок разных стандартов отмечается как приблизительное.", en: "Grade equivalences across standards flagged as approximate."}}
+  - {id: test_conditions, severity: warning, description: {fr: "Toute propriété mesurée indique la norme d'essai et les conditions.", ru: "Для измеренных свойств указаны стандарт и условия испытания.", en: "Every measured property states the test standard and conditions."}}
+calculations:
+  - {id: tensile, tools: [numpy, scipy], description: {fr: "Exploitation d'essais de traction : module, limite d'élasticité (0,2 %), allongement", ru: "Обработка испытаний на растяжение: модуль, предел текучести σ0,2, удлинение", en: "Tensile test analysis: modulus, 0.2 % proof stress, elongation"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["ISO 690", "APA 7"], intl: ["APA 7", "IEEE"]}
+standards:
+  - {code: "ISO 6892-1", convention: intl, title: {fr: "Matériaux métalliques — Essai de traction à température ambiante", ru: "Металлические материалы — испытание на растяжение при комнатной температуре", en: "Metallic materials — Tensile testing at room temperature"}}
+  - {code: "ISO 6506-1", convention: intl, title: {fr: "Matériaux métalliques — Essai de dureté Brinell", ru: "Металлические материалы — определение твёрдости по Бринеллю", en: "Metallic materials — Brinell hardness test"}}
+  - {code: "ГОСТ 1497-84", convention: ru, title: {fr: "Métaux — Méthodes d'essai de traction", ru: "Металлы. Методы испытаний на растяжение", en: "Metals — Tensile test methods"}}

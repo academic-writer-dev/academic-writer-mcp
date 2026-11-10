@@ -22,6 +22,8 @@ EXPECTED = {
     "pharmacie", "agriculture", "geologie", "environnement", "finance_comptabilite", "sciences_politiques",
     "psychologie", "histoire", "philosophie", "langues_linguistique", "education", "architecture", "arts", "design",
     "mode", "audiovisuel", "sport", "tourisme",
+    # lot 5 : automobile / engins, génie électrique, IA / données, matériaux, sociologie
+    "automobile_engins", "genie_electrique", "ia_data_science", "materiaux_metallurgie", "sociologie",
 }
 
 MECHANICS_RU = (
@@ -67,7 +69,7 @@ def test_inheritance_merges_lists_but_not_keywords(registry: DomainRegistry) -> 
 
 def test_high_risk_profiles_have_notices(registry: DomainRegistry) -> None:
     high = {p.id for p in registry.all() if p.risk_level == "high"}
-    assert high == {"medecine", "droit", "pharmacie", "finance_comptabilite", "psychologie", "sport"}
+    assert high == {"medecine", "droit", "pharmacie", "finance_comptabilite", "psychologie", "sport", "genie_electrique"}
     for profile_id in high:
         notice = registry.get(profile_id).risk_notice
         assert notice.fr and notice.ru and notice.en
@@ -296,3 +298,47 @@ def test_new_document_types_have_structures(services: Services, document_type: s
     services.domains.assign(project.id, "generaliste", {"fr": "fr", "ru": "ru", "en": "intl"}[language])
     template = services.domains.structure_template(project.id)
     assert len(template.sections) >= 6 and all(s.title for s in template.sections)
+
+
+
+@pytest.mark.parametrize(("expected", "text"), [
+    ("automobile_engins", "Тяговый расчёт трактора: сила тяги, сопротивление качению, коробка передач, расход топлива."),
+    ("genie_electrique", "Courant de court-circuit et facteur de puissance d'un moteur asynchrone alimenté par transformateur."),
+    ("ia_data_science", "We train a neural network on the dataset with cross-validation and hyperparameter search."),
+    ("materiaux_metallurgie", "Essai de traction : limite d'élasticité, dureté après trempe et revenu, microstructure."),
+    ("sociologie", "Enquête de terrain par entretiens semi-directifs auprès d'un échantillon représentatif."),
+])
+def test_lot5_profiles_detected(registry: DomainRegistry, expected: str, text: str) -> None:
+    from academic_writer.domains.detection import score_profiles
+
+    assert score_profiles(text, registry.all())[0][0].profile.id == expected
+
+
+def test_interdisciplinary_project_brief(services: Services, inbox) -> None:
+    """Profils secondaires : terminologie et règles ajoutées au dossier du rédacteur."""
+    from academic_writer.core.models import DocumentRole, DocumentType, Language
+
+    project = services.projects.create("Mine électrique", DocumentType.PROJET_TECHNIQUE, Language.FR)
+    path = inbox / "consignes.txt"
+    path.write_text("1. Dimensionner le moteur du convoyeur.", encoding="utf-8")
+    services.documents.import_document(project.id, str(path), DocumentRole.INSTRUCTIONS)
+    services.domains.assign(project.id, "maintenance_industrielle", "fr")
+    updated = services.domains.set_secondary(project.id, ["genie_electrique", "maintenance_industrielle", "economie"])
+    assert updated.secondary_domain_ids == ["genie_electrique", "economie"]  # le profil principal n'est pas dupliqué
+    services.writing.analyze_assignment(project.id)
+    outline = services.writing.create_outline(project.id)
+    outline = services.writing.validate_outline(outline.id, approve=True, force=True).outline
+    brief = services.writing.build_brief(project.id, outline.sections[0].id)
+    assert "facteur de puissance (Génie électrique et électrotechnique)" in brief.brief
+    assert "[Génie électrique et électrotechnique] Toute intervention" in brief.system_prompt
+    with pytest.raises(Exception):
+        services.domains.set_secondary(project.id, ["discipline_inexistante"])
+
+
+@pytest.mark.parametrize("document_type", ["compte_rendu_tp", "rapport_de_cours", "projet_technique", "projet_recherche"])
+def test_lot5_document_types(services: Services, document_type: str) -> None:
+    from academic_writer.core.models import DocumentType, Language
+
+    project = services.projects.create("T", DocumentType(document_type), Language.RU)
+    services.domains.assign(project.id, "generaliste", "ru")
+    assert len(services.domains.structure_template(project.id).sections) >= 6

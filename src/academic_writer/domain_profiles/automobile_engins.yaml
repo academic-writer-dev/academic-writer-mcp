@@ -1,0 +1,34 @@
+id: automobile_engins
+parent: genie_mecanique
+names: {fr: "Automobile, tracteurs et engins lourds", ru: "Автомобили, тракторы и тяжёлая техника", en: "Automotive, tractors and heavy machinery"}
+description:
+  fr: "Véhicules routiers, tracteurs agricoles, engins de chantier et miniers : moteurs, transmissions, freinage, diagnostic, maintenance."
+  ru: "Автомобили, сельскохозяйственные тракторы, строительные и горные машины: двигатели, трансмиссии, тормоза, диагностика, обслуживание."
+  en: "Road vehicles, agricultural tractors, construction and mining machinery: engines, drivetrains, braking, diagnostics, maintenance."
+keywords:
+  fr: ["automobile*", "véhicule*", "tracteur*", "engin* de chantier", "chargeuse*", "bulldozer*", "excavatrice*", "moteur thermique", "boîte de vitesses", "embrayage", "transmission hydrostatique", "freinage", "suspension", "pneumatique*", "consommation de carburant"]
+  ru: ["автомоби*", "трактор*", "погрузчик*", "бульдозер*", "экскаватор*", "самосвал*", "двигател* внутреннего сгорания", "коробк* передач", "сцеплени*", "гидрообъёмн* трансмисси*", "тормозн*", "подвеск*", "шин*", "расход топлива", "тягов* расчёт*"]
+  en: ["automotive", "vehicle*", "tractor*", "loader*", "bulldozer*", "excavator*", "dump truck*", "internal combustion engine", "gearbox", "clutch", "hydrostatic transmission", "braking", "suspension", "tyre*", "tire*", "fuel consumption"]
+terminology:
+  - {id: traction, fr: "effort de traction", ru: "сила тяги", en: "tractive force"}
+  - {id: gear_ratio, fr: "rapport de transmission", ru: "передаточное число", en: "gear ratio"}
+  - {id: rolling_resistance, fr: "résistance au roulement", ru: "сопротивление качению", en: "rolling resistance"}
+  - {id: torque, fr: "couple moteur", ru: "крутящий момент двигателя", en: "engine torque"}
+  - {id: payload, fr: "charge utile", ru: "грузоподъёмность", en: "payload"}
+  - {id: duty_cycle, fr: "cycle de travail", ru: "рабочий цикл", en: "duty cycle"}
+methodology:
+  fr: ["Calcul de traction : bilan des résistances (roulement, pente, air, inertie) et adhérence.", "Maintenance : intervalles constructeur, historique des pannes, indicateurs MTBF / disponibilité."]
+  ru: ["Тяговый расчёт: баланс сопротивлений (качение, подъём, воздух, инерция) и сцепление.", "Обслуживание: регламенты изготовителя, история отказов, показатели наработки на отказ и готовности."]
+  en: ["Traction calculation: resistance balance (rolling, grade, air, inertia) and adhesion.", "Maintenance: manufacturer intervals, failure history, MTBF / availability indicators."]
+validation_rules:
+  - {id: manufacturer_data, severity: warning, description: {fr: "Caractéristiques techniques reprises de la documentation du constructeur citée (modèle, année).", ru: "Технические характеристики — по указанной документации изготовителя (модель, год).", en: "Technical characteristics from cited manufacturer documentation (model, year)."}}
+  - {id: safety_procedures, severity: error, description: {fr: "Aucune procédure d'intervention présentée comme validée sans la notice du constructeur et les règles de sécurité.", ru: "Порядок работ не выдаётся за утверждённый без руководства изготовителя и правил безопасности.", en: "No service procedure presented as validated without the manufacturer manual and safety rules."}}
+calculations:
+  - {id: traction, tools: [sympy], description: {fr: "Bilan de traction, puissance nécessaire, rapports de transmission", ru: "Тяговый баланс, потребная мощность, передаточные числа", en: "Traction balance, required power, gear ratios"},
+     triggers: {fr: ["traction", "effort de traction"], ru: ["тягов", "сила тяги"], en: ["traction", "tractive"]}}
+  - {id: reliability, tools: [numpy, scipy], description: {fr: "Fiabilité, MTBF, disponibilité du parc", ru: "Надёжность, наработка на отказ, коэффициент готовности парка", en: "Reliability, MTBF, fleet availability"}}
+bibliography:
+  preferred_styles: {ru: ["ГОСТ Р 7.0.5-2008"], fr: ["ISO 690", "APA 7"], intl: ["IEEE", "APA 7"]}
+standards:
+  - {code: "ISO 6165", convention: intl, title: {fr: "Engins de terrassement — Termes et définitions des types de base", ru: "Землеройные машины — основные типы, термины и определения", en: "Earth-moving machinery — Basic types — Identification and terms and definitions"}}
+  - {code: "SAE J1349", convention: intl, title: {fr: "Puissance nette des moteurs (méthode de mesure)", ru: "Измерение нетто-мощности двигателя", en: "Engine power test code — net power"}}
