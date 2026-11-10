@@ -17,6 +17,7 @@ from academic_writer.core.software_jobs import SoftwareJobService
 from academic_writer.core.course import CourseService
 from academic_writer.core.documents import DocumentService
 from academic_writer.core.domains import DomainService
+from academic_writer.core.dossier import DossierService
 from academic_writer.core.editing import EditingService
 from academic_writer.core.errors import AcademicWriterError
 from academic_writer.core.extraction import ExtractionService
@@ -48,6 +49,7 @@ class Services:
     charts: ChartService
     presentations: PresentationService
     software_jobs: SoftwareJobService
+    dossier: DossierService
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -66,14 +68,16 @@ def build_services(settings: Settings | None = None) -> Services:
     audit = AuditService(db, settings, projects, documents, extraction)
     charts = ChartService(settings, projects, documents, extraction)
     quality = QualityService(db, settings, projects, documents, extraction, domains, writing, sources)
+    formatting = FormattingService(db, settings, projects, documents, domains, writing, sources)
     return Services(settings=settings, db=db, projects=projects, documents=documents, extraction=extraction,
                     domains=domains, ai=ai, writing=writing, editing=editing, sources=sources, audit=audit,
                     quality=quality,
-                    formatting=FormattingService(db, settings, projects, documents, domains, writing, sources),
+                    formatting=formatting,
                     course=CourseService(db, projects, documents, extraction, writing),
                     charts=charts,
                     presentations=PresentationService(settings, projects, documents, extraction, writing, sources, charts),
-                    software_jobs=SoftwareJobService(settings, projects))
+                    software_jobs=SoftwareJobService(settings, projects),
+                    dossier=DossierService(settings, projects, writing, domains, sources, formatting))
 
 
 _services: Services | None = None

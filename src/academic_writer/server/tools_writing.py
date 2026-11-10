@@ -184,3 +184,21 @@ def register(mcp: MCPServer) -> None:
         """État de chaque section du plan : planifiée, rédigée, validée ; mots acceptés ; révisions en attente."""
         with user_errors():
             return get_services().writing.draft_status(project_id)
+
+    @mcp.tool(title="Dossier de recherche à partir d'un thème",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,
+                                          open_world_hint=True))
+    def build_research_dossier(
+        project_id: str,
+        topic: Annotated[str, Field(description="Thème du TP, du TD ou du mémoire (tel que donné par l'enseignant).")],
+        queries: Annotated[list[str] | None, Field(
+            description="Autres formulations à chercher (ex. traduction anglaise ou russe du thème) : 3 au plus.")] = None,
+        limit: Annotated[int, Field(ge=5, le=40, description="Nombre maximal de sources dans le dossier.")] = 15,
+    ):
+        """À partir du THÈME : reconnaît le domaine (génie mécanique prioritaire), cherche les ouvrages et articles
+        RÉELS dans les bases gratuites, rassemble les consignes de l'enseignant (tâches, longueur, mise en forme, plan
+        imposé, style des références), le plan proposé, la démarche de la discipline et les normes applicables, et
+        produit un dossier Word mis en forme selon les consignes (plus une version Markdown). Base de travail pour
+        rédiger : chaque source est à lire et à confirmer (register_source) avant d'être citée ; rien n'est inventé."""
+        with user_errors():
+            return get_services().dossier.build(project_id, topic, queries, limit)

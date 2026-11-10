@@ -27,6 +27,7 @@ from academic_writer.core.writing import WritingService
 from academic_writer.formatting import word
 from academic_writer.formatting.models import TITLE_FIELDS, ExportSection, FormattingApplied, FormattingCheck
 from academic_writer.formatting.presets import DEFAULT_PRESET, PRESETS, FormatPreset
+from academic_writer.writing.format_instructions import overrides, setting
 from academic_writer.research import styles
 from academic_writer.storage.db import Database
 
@@ -85,7 +86,36 @@ class FormattingService:
             preset_id = DEFAULT_PRESET.get(self._convention(project_id), "apa7") if project_id else "gost_7_32"
         if preset_id not in PRESETS:
             raise ValidationFailed(f"Gabarit inconnu : {preset_id}. Disponibles : {', '.join(PRESETS)}.")
-        return PRESETS[preset_id]
+        preset = PRESETS[preset_id]
+        if project_id:  # les consignes de l'enseignant priment sur le gabarit
+            update, applied = overrides(self.teacher_settings(project_id))
+            if update:
+                preset = preset.model_copy(update={
+                    **update, "id": f"{preset.id}-consignes",
+                    "label": f"{preset.label} + consignes de l'enseignant ({'; '.join(applied)})",
+                    "margins_mm": {**preset.margins_mm, **update.get("margins_mm", {})},
+                    "notes": [*preset.notes, "Réglages imposés par les consignes de l'enseignant : " + "; ".join(applied)]})
+        return preset
+
+    def teacher_settings(self, project_id: str) -> list[str]:
+        """Réglages de mise en forme, du moins au plus prioritaire : profil de l'enseignant (règles de mise en page
+        et bibliographiques), puis consignes du travail (exigences « format » non rejetées)."""
+        from academic_writer.core.teaching import load_profile
+        from academic_writer.writing.format_instructions import parse_format
+
+        values: list[str] = []
+        project = self.projects.get(project_id)
+        with self.db.read() as conn:
+            profile = load_profile(conn, project.teacher_profile_id)
+        if profile:
+            for text in (profile.layout_rules, profile.bibliography_rules, profile.expectations):
+                for sentence in re.split(r"(?<=[.;\n])\s+", text or ""):
+                    values += parse_format(sentence)
+        requirements = self.writing.list_requirements(project_id, kind="format").requirements
+        for requirement in requirements:
+            if requirement.status != "rejected" and requirement.value and "=" in requirement.value:
+                values += [item.strip() for item in requirement.value.split(";") if "=" in item]
+        return values
 
     def list_presets(self, project_id: str | None = None) -> PresetList:
         default = self.preset(None, project_id).id if project_id else None
@@ -165,7 +195,8 @@ class FormattingService:
             raise ValidationFailed("Aucun plan : créez et rédigez d'abord le document (create_academic_outline).")
         preset = self.preset(preset_id, project_id)
         convention = self._convention(project_id)
-        style = citation_style or _DEFAULT_STYLE.get(convention, "apa")
+        teacher = self.teacher_settings(project_id)
+        style = citation_style or setting(teacher, "citation_style") or _DEFAULT_STYLE.get(convention, "apa")
         if style not in styles.FORMATTERS:
             raise ValidationFailed("Style de citation : gost, apa, ieee, chicago, vancouver, harvard ou iso690.")
         sources = {s.key: s for s in self.sources.list(project_id).sources}
@@ -173,6 +204,14 @@ class FormattingService:
         numbers = {e.key: e.number for e in bibliography.entries if e.number} if bibliography else {}
         data = {k: s.data for k, s in sources.items()}
         fields, messages = self._title_fields(project_id, title_page)
+        if preset.id.endswith("-consignes"):
+            messages.append("Mise en forme selon les consignes de l'enseignant : " + preset.label.split("(", 1)[-1]
+                            .rstrip(")"))
+        required = setting(teacher, "file_format")
+        if required == "pdf" and output_format != "pdf":
+            messages.append("Les consignes demandent une remise en PDF : exporter aussi avec output_format=\"pdf\".")
+        elif required == "docx" and output_format not in ("docx", "pdf"):
+            messages.append("Les consignes demandent une remise au format Word (.docx).")
 
         sections: list[ExportSection] = []
         drafts: list[str] = []

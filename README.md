@@ -4,7 +4,7 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : version 1.2.0 — assistant académique universel** — 112 outils MCP, 40 disciplines, 30 types de
+> **Statut : version 1.2.0 — assistant académique universel** — 114 outils MCP, 40 disciplines, 30 types de
 > travaux, profils d'enseignants (« uniquement le cours »), 24 bases de recherche gratuites vérifiées, recherche spécialisée
 > génie mécanique (Europe, Russie,
 > Asie, Amériques, Afrique), calcul

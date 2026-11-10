@@ -2,6 +2,14 @@
 
 ## Non publié
 
+- Consignes de l'enseignant appliquées automatiquement : mise en forme (police, taille, interligne, marges,
+  retrait, alignement, pagination), style des références, format de remise, plan imposé ; priorité consignes >
+  profil de l'enseignant > gabarit.
+- Contrôle des normes internationales (`check_academic_norms`, inclus dans l'audit final) : ISO 7144, Z39.18,
+  ISO 214, ISO 2145, ISO 80000-1, ISO 8601, figures / tableaux, sigles, longueur demandée.
+- Dossier de recherche à partir d'un thème (`build_research_dossier`) : sources réelles, consignes, plan, normes,
+  fichier Word.
+
 - Reconnaissance automatique du domaine de chaque recherche (projet ou vocabulaire, 40 disciplines) : sources
   spécialisées ajoutées sans retirer de base, classées en premier ; priorité au génie mécanique.
 

@@ -46,7 +46,7 @@ from academic_writer.writing.models import (
     WriteResult,
 )
 from academic_writer.domains.detection import TextIndex
-from academic_writer.writing.outline import build_sections, coverage_issues
+from academic_writer.writing.outline import build_sections, coverage_issues, teacher_template
 from academic_writer.writing.requirements import extract_candidates, missing_symbols
 
 logger = logging.getLogger("academic_writer.writing")
@@ -304,6 +304,10 @@ class WritingService:
     def create_outline(self, project_id: str, target_words: int | None = None) -> Outline:
         project = self._active_project(project_id)
         template = self.domains.structure_template(project_id)
+        with self.db.read() as conn:
+            teacher = load_profile(conn, project.teacher_profile_id)
+        if teacher and teacher.expected_structure:  # le plan de l'enseignant prime sur le gabarit
+            template = teacher_template(template, teacher.expected_structure)
         requirements = self.list_requirements(project_id).requirements
         sections, global_ids, total = build_sections(template, requirements, project.language.value, target_words)
         outline_id = new_id()

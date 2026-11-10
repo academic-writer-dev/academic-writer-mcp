@@ -266,6 +266,8 @@ class QualityService:
         issues += claim_issues(claims)
         if structure:
             issues += structure.issues
+        norms = self._academic_norms(target)
+        issues += norms.issues
         summaries = {
             "calculs": (f"{calculations.calculations_checked} calculs vérifiés : {calculations.ok} justes, "
                         f"{calculations.mismatches} faux, {calculations.unit_mismatches} problèmes d'unités, "
@@ -276,6 +278,7 @@ class QualityService:
             "coherence": f"{len(consistency.issues)} constats de cohérence.",
             "structure": (f"Gabarit : {structure.template} ; {structure.headings_found} titres trouvés."
                           if structure else "Structure non contrôlée (aucun gabarit disponible)."),
+            "normes": f"Normes de présentation (ISO 7144, 214, 2145, 80000, 8601) et longueur : {norms.summary}",
         }
         coverage: list[RequirementCoverage] = []
         if target.document_id is None:
@@ -427,6 +430,52 @@ class QualityService:
 
         target = self.target(project_id, document_id)
         return check(target.label, "\n".join(s.text for s in target.segments))
+
+    # --- normes internationales de présentation et consignes de longueur ----------------------------------
+    def academic_norms(self, project_id: str | None = None, document_id: str | None = None):
+        target = self.target(project_id, document_id)
+        return self._academic_norms(target)
+
+    def _academic_norms(self, target: Target):
+        from academic_writer.quality.academic_norms import NormCheck, check_norms
+
+        project = self.projects.get(target.project_id)
+        report = check_norms(target, str(project.document_type.value if hasattr(project.document_type, "value")
+                                         else project.document_type))
+        length = self._length_check(target)
+        if length:
+            check, issue = length
+            report.checks.insert(0, NormCheck(**check))
+            if issue:
+                report.issues.insert(0, issue)
+        return report
+
+    def _length_check(self, target: Target) -> tuple[dict, QualityIssue | None] | None:
+        """Longueur demandée par l'enseignant (exigence « length » non rejetée) comparée au texte."""
+        requirements = [r for r in self.writing.list_requirements(target.project_id, kind="length").requirements
+                        if r.status != "rejected" and r.value]
+        if not requirements:
+            return None
+        value = requirements[-1].value or ""
+        match = re.match(r"(\d+)(?:-(\d+))?\s+(\S+)", value)
+        if not match:
+            return None
+        low, high, unit = int(match.group(1)), int(match.group(2) or match.group(1)), match.group(3).lower()
+        words = sum(len(re.findall(r"\w+", s.text)) for s in target.body)
+        if re.match(r"page|страниц|лист", unit):
+            measured, label = round(words / 280, 1), "pages (estimation : 280 mots par page)"
+        elif re.match(r"mot|слов|word", unit):
+            measured, label = words, "mots"
+        else:
+            return None
+        ok = low * 0.9 <= measured <= high * 1.1
+        check = {"norm": "consignes de l'enseignant", "rule": f"longueur demandée : {value}",
+                 "status": "conforme" if ok else "non_conforme", "detail": f"≈ {measured:g} {label}"}
+        issue = None if ok else QualityIssue(
+            category="exigences", code="length_out_of_range", severity="warning",
+            message=f"Longueur ≈ {measured:g} {label.split(' (')[0]} pour {value} demandés par les consignes.",
+            suggestion="Ajuster le développement des sections (sans remplissage) ou vérifier la consigne.")
+        return check, issue
 
 
 

@@ -190,6 +190,16 @@ def register(mcp: MCPServer) -> None:
 
         return lookup(query)
 
+    @mcp.tool(title="Contrôler les normes de présentation", annotations=_READ)
+    def check_academic_norms(project_id: str | None = None, document_id: str | None = None):
+        """Contrôle la rédaction d'un projet ou un document importé selon les normes internationales des documents
+        académiques et les consignes de l'enseignant : éléments attendus selon le type (TP, mémoire de licence /
+        master, thèse, rapport — ISO 7144, ANSI/NISO Z39.18), longueur du résumé (ISO 214), numérotation des titres
+        (ISO 2145), figures et tableaux numérotés et appelés, valeurs et unités SI (ISO 80000-1), dates (ISO 8601),
+        sigles définis, longueur demandée par l'enseignant. Signale sans rien corriger ; les consignes priment."""
+        with user_errors():
+            return get_services().quality.academic_norms(project_id, document_id)
+
     @mcp.tool(title="Contrôler les normes citées", annotations=_READ)
     def check_standards(project_id: str | None = None, document_id: str | None = None) -> StandardsReport:
         """Repère les normes citées dans la rédaction ou un document (ГОСТ, ISO, IEC, EN, DIN…) et compare leur édition

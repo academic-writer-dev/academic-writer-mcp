@@ -19,6 +19,7 @@ from dataclasses import dataclass
 
 from academic_writer.document.model import ExtractedDocument
 from academic_writer.writing.constraints import source_constraint
+from academic_writer.writing.format_instructions import parse_format
 
 _I = re.IGNORECASE
 
@@ -132,7 +133,10 @@ def classify_secondary(sentence: str) -> list[tuple[str, str | None]]:
     norms = {" ".join(m.group(1).split()) for m in NORM.finditer(sentence)}
     if norms:
         found.append(("norm", ", ".join(sorted(norms))))
-    if FORMAT.search(sentence):
+    settings = parse_format(sentence)  # police, taille, interligne, marges… → appliqués au document
+    if settings:
+        found.append(("format", "; ".join(settings)))  # une exigence par phrase, tous ses réglages
+    elif FORMAT.search(sentence):
         found.append(("format", None))
     data = DATA.findall(sentence)
     if data:

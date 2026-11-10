@@ -89,6 +89,30 @@ def target_from_requirements(requirements: list[Requirement]) -> int | None:
     return None
 
 
+def teacher_template(template: StructureTemplate, titles: list[str]) -> StructureTemplate:
+    """Plan imposé par l'enseignant : il REMPLACE l'ordre et les titres du gabarit. Les parties reconnues
+    (introduction, conclusion, références…) gardent les indications du gabarit ; les autres sont ajoutées telles
+    quelles."""
+    from academic_writer.domains.structures import TemplateSection
+
+    known = {s.id: s for s in template.sections}
+    used: set[str] = set()
+    sections: list[TemplateSection] = []
+    for index, raw in enumerate(t for t in titles if t and t.strip()):
+        title = re.sub(r"^\s*(?:\d{1,2}(?:\.\d{1,2})*\.?|[IVX]{1,4}\.|[-–•*])\s*", "", raw).strip() or raw.strip()
+        key = next((k for k, pattern in STRUCTURE_KEYWORDS.items() if re.search(pattern, title, re.IGNORECASE)), None)
+        base = known.get(key) if key else None
+        if base is None:
+            base = next((s for s in template.sections if s.id not in used
+                         and s.title.casefold().strip(" .") == title.casefold().strip(" .")), None)
+        if base is not None and base.id not in used:
+            used.add(base.id)
+            sections.append(base.model_copy(update={"title": title, "required": True, "origin": "teacher"}))
+        else:
+            sections.append(TemplateSection(id=f"teacher_{index + 1}", title=title, required=True, origin="teacher"))
+    return template.model_copy(update={"sections": sections}) if sections else template
+
+
 def build_sections(template: StructureTemplate, requirements: list[Requirement], language: str,
                    total_words: int | None) -> tuple[list[PlannedSection], list[str], int]:
     """Renvoie (sections, ids d'exigences globales, nombre de mots cible)."""
