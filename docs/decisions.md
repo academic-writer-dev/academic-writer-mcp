@@ -215,6 +215,15 @@
   abandonnés (texte imprévisible) au profit de cartes numérotées.
 - Fournisseurs IA payants conservés mais désactivés par défaut (règle : ne supprimer aucune fonctionnalité).
 
+## D-029 — Version 1.2.0 : assistant universel — 2026-11-10
+- Traitements logiciels : verrou double (software_execution + confirm), moteurs à interface documentée seulement,
+  résultat attribué au logiciel réel ; automatismes industriels jamais pilotés.
+- Calcul numérique SciPy avec seconde méthode de contrôle ; démarche en 11 étapes avec double lecture SI / « tel
+  qu'écrit » (formules écrites pour des unités précises).
+- Bibliothèques lourdes chargées au premier usage (démarrage 8,4 s → 2 s) : le client abandonnait à 30 s.
+- Catalogues de la documentation générés depuis le code (scripts/generate_docs.py) pour rester exacts.
+- Normes : catalogue limité aux éditions connues avec certitude ; le reste est « non vérifié », jamais « faux ».
+
 ## Points ouverts
 - Semantic Scholar sans clé : quota public partagé souvent saturé (HTTP 429) ; nouvelles tentatives
   espacées ; clé gratuite transmise en en-tête x-api-key (secrets set semantic_scholar).

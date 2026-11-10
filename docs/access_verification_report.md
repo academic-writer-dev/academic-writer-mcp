@@ -1,0 +1,50 @@
+<!-- Fichier généré par scripts/generate_docs.py : ne pas modifier à la main. -->
+
+# Rapport de vérification des accès
+
+Date : 2026-11-10. Méthode : requête réelle depuis le poste (seuls des termes de recherche ou des identifiants sont envoyés), lecture de la réponse, contrôle du format et des conditions affichées.
+
+- **Crossref** — OK (recherche, filtre updates) (`PUBLIC_FREE`)
+- **OpenAlex** — OK (avis de budget dans la réponse) (`FREE_API_KEY`)
+- **Semantic Scholar** — HTTP 429 sans clé (quota public saturé) (`FREE_API_KEY`)
+- **CORE** — non testé (pas de clé) (`FREE_API_KEY`)
+- **BASE (Bielefeld)** — refus « Access denied for IP address » (`UNVERIFIED_EXCLUDED`)
+- **OpenAIRE Graph** — OK (`PUBLIC_FREE`)
+- **DOAJ** — OK (`PUBLIC_FREE`)
+- **DataCite** — OK (`PUBLIC_FREE`)
+- **ORCID (API publique)** — OK (`PUBLIC_FREE`)
+- **Unpaywall** — non utilisé sans adresse (`FREE_ACCOUNT`)
+- **Zenodo** — OK (`PUBLIC_FREE`)
+- **arXiv** — OK (`PUBLIC_FREE`)
+- **PubMed (NCBI E-utilities)** — OK (`PUBLIC_FREE`)
+- **Europe PMC / PubMed Central** — OK (PDF OA résolu) (`PUBLIC_FREE`)
+- **ERIC** — OK (`PUBLIC_FREE`)
+- **RePEc / IDEAS** — non intégré (`UNAVAILABLE`)
+- **World Bank Open Data** — OK (`PUBLIC_FREE`)
+- **Eurostat** — OK (`PUBLIC_FREE`)
+- **OECD Data (SDMX)** — API accessible, non intégrée (SDMX complexe) (`PUBLIC_FREE`)
+- **IMF Data** — non intégré (`PUBLIC_FREE`)
+- **NIST (données de référence)** — non intégré (bases multiples) (`PUBLIC_FREE`)
+- **HAL** — OK (PDF téléchargé et lu) (`PUBLIC_FREE`)
+- **OAPEN Library** — HTTP 403 pour les requêtes automatisées (`UNAVAILABLE`)
+- **Gallica / BnF** — HTTP 403 (SRU) depuis ce poste (`UNAVAILABLE`)
+- **Deutsche Nationalbibliothek** — OK (SRU) (`PUBLIC_FREE`)
+- **Deutsche Digitale Bibliothek** — non intégré (`FREE_API_KEY`)
+- **Europeana** — OK avec clé de démonstration (`FREE_API_KEY`)
+- **DART-Europe** — pages web uniquement (`UNAVAILABLE`)
+- **Google Books** — OK (clé configurée) (`FREE_API_KEY`)
+- **Open Library** — OK (`PUBLIC_FREE`)
+- **Internet Archive** — OK (`PUBLIC_FREE`)
+- **eLIBRARY.RU / РИНЦ** — lien de recherche (via Яндекс) ; aucune extraction (`UNAVAILABLE`)
+- **КиберЛенинка** — lien de recherche ; aucune extraction (`UNVERIFIED_EXCLUDED`)
+- **РГБ (dont Электронная библиотека диссертаций)** — lien de recherche (`UNAVAILABLE`)
+- **РНБ** — non intégré (`UNAVAILABLE`)
+- **НЭБ** — non intégré (`UNVERIFIED_EXCLUDED`)
+- **ГПНТБ России** — non intégré (`UNAVAILABLE`)
+- **ВИНИТИ РАН** — non intégré (`PAID_EXCLUDED`)
+- **Федеральная электронная медицинская библиотека** — non intégré (`UNAVAILABLE`)
+
+Points notables :
+- OpenAlex : sans clé, budget gratuit partagé par adresse IP ; une clé gratuite (sans paiement) relève la limite. La réponse contenait une invitation adressée aux « agents IA » à envoyer l'adresse e-mail de l'utilisateur : non suivie.
+- Semantic Scholar : quota public saturé (HTTP 429) ; clé gratuite délivrée seulement aux adresses institutionnelles.
+- BASE : refus par adresse IP. OAPEN, Gallica : HTTP 403 pour les requêtes automatisées.

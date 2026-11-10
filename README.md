@@ -4,25 +4,34 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : version 1.1.0 — corrections de l'audit général** (voir [docs/audit-v1.0.0.md](docs/audit-v1.0.0.md)) :
-> présentations professionnelles (PPTX, PDF, aperçus), graphiques, calcul formel vérifié (SymPy), consignes de
-> l'enseignant (« uniquement le cours »), profils d'enseignants, 35 disciplines, 26 types de travaux, 15 bases
-> scientifiques ouvertes, détection des logiciels du poste. 91 outils MCP.
->
-> Version 1.0.0 — Phase 10 (maintenance) : diagnostic complet de l'installation
-> (`academic-writer doctor` / `system_check`), sauvegarde complète (.zip) et restauration vérifiée,
-> déclaration automatique dans Claude Desktop, parcours guidés (prompts).
-> Phase 9 : mise en forme et export : DOCX selon ГОСТ 7.32-2017,
-> usage francophone, APA 7 ou IEEE (page de titre, sommaire, titres numérotés, citations et bibliographie),
-> PDF via Microsoft Word ; contrôle et correction de la mise en forme d'un .docx existant (copie).
-> Phase 8 : contrôle qualité : recalcul des calculs écrits (unités
-> SI / notations russes et françaises, SymPy), traçabilité des affirmations, cohérence interne, structure
-> par rapport au gabarit, audit final avant remise. Phase 7 : audit documentaire et indices de rédaction
-> par IA (indices, jamais des preuves). Phase 6 : sources et bibliographie (ГОСТ Р 7.0.100/7.0.5, APA 7, IEEE,
-> Chicago, Vancouver ; vérification Crossref / Open Library). Phase 5 : rédaction encadrée, correction, traduction,
-> avec un moteur universel : fournisseur cloud autorisé (Anthropic/OpenAI), modèle local (Ollama)
-> ou assistant MCP. Phases 1 à 4 : projets, import sécurisé, lecture des documents, OCR,
-> recherche, 17 profils disciplinaires, gabarits ГОСТ / NF-EN / ISO.
+> **Statut : version 1.2.0 — assistant académique universel** — 107 outils MCP, 40 disciplines, 30 types de
+> travaux, profils d'enseignants (« uniquement le cours »), 16 bases scientifiques ouvertes vérifiées, calcul
+> formel (SymPy) et numérique (SciPy) contrôlés, graphiques reproductibles, présentations professionnelles
+> (10 styles, PPTX / PDF / ODP, aperçus), traitements dans les logiciels du poste, normes, similarité.
+> 424 tests ; campagne des 25 scénarios réussie ([rapport](docs/TEST_REPORT.md)). Historique : [CHANGELOG.md](CHANGELOG.md).
+
+## Documentation
+
+| Sujet | Document |
+|---|---|
+| Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Installation (Windows) | [docs/INSTALLATION_WINDOWS.md](docs/INSTALLATION_WINDOWS.md) |
+| Configuration | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) |
+| Clés d'API gratuites | [docs/API_SETUP.md](docs/API_SETUP.md) |
+| Bibliothèques scientifiques | [docs/LIBRARY_INTEGRATION.md](docs/LIBRARY_INTEGRATION.md), [statut des fournisseurs](docs/provider_status.md), [vérification des accès](docs/access_verification_report.md), [exclusions](docs/excluded_paid_providers.md) |
+| Licences | [docs/approved_free_libraries.md](docs/approved_free_libraries.md) |
+| Logiciels | [docs/SOFTWARE_INTEROPERABILITY.md](docs/SOFTWARE_INTEROPERABILITY.md), [catalogue](docs/SOFTWARE_CATALOG.md) |
+| Disciplines | [docs/DOMAIN_COVERAGE.md](docs/DOMAIN_COVERAGE.md), [profils](docs/profils-disciplinaires.md) |
+| Enseignants et consignes | [docs/PROFESSOR_PROFILES.md](docs/PROFESSOR_PROFILES.md) |
+| Calcul | [docs/CALCULATION_MODULE.md](docs/CALCULATION_MODULE.md) |
+| Présentations | [docs/PRESENTATION_MODULE.md](docs/PRESENTATION_MODULE.md) |
+| Sécurité | [docs/SECURITY_AND_PRIVACY.md](docs/SECURITY_AND_PRIVACY.md) |
+| Limites | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) |
+| Tests | [docs/TEST_REPORT.md](docs/TEST_REPORT.md) |
+| Décisions techniques | [docs/decisions.md](docs/decisions.md) |
+
+Les catalogues (logiciels, fournisseurs, licences, disciplines) sont générés depuis le code :
+`uv run python scripts/generate_docs.py`.
 
 ## Principes
 
@@ -42,21 +51,21 @@ techniques et professionnels (FR / RU / EN).
 | Diagnostic et maintenance | `ping`, `system_check`, `create_backup`, `list_backups` |
 | Projets | `create_project`, `get_project`, `list_projects`, `update_project`, `archive_project` |
 | Documents | `import_document`, `list_documents`, `get_document_metadata` |
-| Extraction et recherche | `extract_document_content`, `extract_document_tables`, `extract_document_images`, `search_in_documents` |
+| Extraction et recherche | `extract_document_content`, `extract_document_tables`, `export_tables`, `extract_document_images`, `search_in_documents` |
 | IA et moteurs | `get_ai_status`, `set_project_ai_consent`, `test_ai_provider`, `get_writing_engine` |
 | Rédaction | `analyze_assignment`, `extract_requirements`, `manage_requirement`, `create_academic_outline`, `get_academic_outline`, `edit_academic_outline`, `validate_outline`, `write_academic_section`, `rewrite_academic_section`, `get_section_brief`, `save_section_draft`, `get_section_revision`, `review_revision`, `get_draft_status` |
 | Correction et traduction | `check_language`, `correct_academic_section`, `improve_academic_style`, `translate_academic_section`, `manage_languagetool` |
 | Sources et bibliographie | `register_source`, `list_sources`, `update_source`, `verify_source_metadata`, `insert_citation`, `generate_bibliography`, `audit_references`, `find_uncited_references` |
-| Recherche d'ouvrages | `find_works_by_topic`, `download_open_access`, `export_references`, `search_sources`, `import_sources_file`, `confirm_source_verification` |
+| Recherche d'ouvrages | `find_works_by_topic`, `download_open_access`, `export_references`, `search_sources`, `import_sources_file`, `confirm_source_verification`, `check_retractions`, `find_researcher`, `fetch_open_data`, `list_source_providers` |
 | Audit et indices IA | `detect_ai_indicators`, `analyze_writing_patterns`, `analyze_document_metadata`, `inspect_revision_history`, `inspect_document_provenance`, `verify_content_credentials`, `audit_document_integrity`, `generate_ai_audit_report` |
-| Calcul formel | `solve_math` (dérivées, intégrales, limites, équations, EDO, matrices — résultats vérifiés) |
+| Calcul | `solve_math` (formel, SymPy), `solve_numeric` (numérique, SciPy), `solve_problem` (démarche en 11 étapes) — résultats vérifiés |
 | Graphiques | `create_chart`, `list_charts` |
 | Présentations | `plan_presentation`, `create_presentation` |
-| Cours et enseignants | `create_teacher_profile`, `list_teacher_profiles`, `update_teacher_profile`, `set_project_teaching`, `check_course_coverage`, `extract_course_notations` |
-| Logiciels du poste | `detect_software` |
-| Contrôle qualité | `validate_calculations`, `evaluate_formula`, `convert_units`, `verify_factual_claims`, `check_consistency`, `check_document_structure`, `final_quality_audit` |
+| Cours et enseignants | `create_teacher_profile`, `list_teacher_profiles`, `update_teacher_profile`, `set_project_teaching`, `check_course_coverage`, `extract_course_notations`, `extract_teacher_material` |
+| Logiciels du poste | `detect_software`, `list_software_engines`, `prepare_software_job`, `run_software_job` |
+| Contrôle qualité | `validate_calculations`, `evaluate_formula`, `convert_units`, `verify_factual_claims`, `check_consistency`, `check_document_structure`, `final_quality_audit`, `compare_documents`, `check_similarity`, `lookup_standard`, `check_standards` |
 | Mise en forme et export | `list_format_presets`, `export_document`, `check_formatting`, `apply_formatting` |
-| Disciplines | `identify_domain`, `set_project_domain`, `list_domain_profiles`, `get_domain_profile`, `get_document_structure_template`, `lookup_terminology`, `reload_domain_profiles` |
+| Disciplines | `identify_domain`, `set_project_domain`, `set_secondary_domains`, `list_domain_profiles`, `get_domain_profile`, `get_document_structure_template`, `lookup_terminology`, `reload_domain_profiles` |
 
 Ressources : `academic-writer://info`, `academic-writer://projects`,
 `academic-writer://projects/{project_id}`, `academic-writer://document-types`,
@@ -114,7 +123,7 @@ uv run academic-writer setup-desktop [--apply] # déclarer le serveur dans Claud
 Les clés API (coffre Windows) ne sont jamais incluses dans les sauvegardes.
 
 - Configuration : [docs/config.example.toml](docs/config.example.toml) → `%APPDATA%\AcademicWriter\config.toml`.
-- Installation sur un nouveau PC et clients MCP : [docs/installation-windows.md](docs/installation-windows.md).
+- Installation sur un nouveau PC et clients MCP : [docs/INSTALLATION_WINDOWS.md](docs/INSTALLATION_WINDOWS.md).
 - Décisions techniques : [docs/decisions.md](docs/decisions.md).
 
 ## Données locales
