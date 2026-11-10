@@ -38,8 +38,11 @@ def register(mcp: MCPServer) -> None:
         deck: Annotated[Deck, Field(description=(
             "Diapositives : title, section, bullets (≤ 6 puces courtes), two_columns, chart (chart_id), image "
             "(image_path du projet + source), table, key_figures (2-4 valeurs sourcées), quote (+ source), process "
-            "(étapes), conclusion, references (vide = bibliographie du projet), questions. notes = texte à dire. "
-            "Thèmes : academique, technique, sobre, clair. Page de titre : seulement les informations fournies."))],
+            "(étapes), conclusion, references (vide = bibliographie du projet), questions, agenda (plan numéroté), "
+            "comparison (criteria + left_title / right_title), definitions (terms), timeline (events). notes = texte à "
+            "dire ; transition ; jury_questions (question + éléments de réponse fondés sur le travail). Thèmes : "
+            "academique, technique, sobre, clair, minimal_premium, corporate, scientifique, industriel, futuriste "
+            "(sombre), editorial. Page de titre : seulement les informations fournies."))],
         duration_minutes: Annotated[int | None, Field(ge=3, le=90)] = None,
         export_pdf: bool = True,
         export_odp: bool = False,
@@ -47,8 +50,8 @@ def register(mcp: MCPServer) -> None:
                                                   "contrôle visuel.")] = True,
     ) -> PresentationResult:
         """Génère un PPTX modifiable au design soigné (16:9, hiérarchie, couleurs, graphiques, notes du présentateur),
-        puis contrôle : texte trop long, chiffres absents des sources du projet, figures sans source, notes
-        manquantes, durée ; export PDF / ODP et aperçus par PowerPoint si installé. Montrer les erreurs à
+        puis contrôle : texte trop long, chevauchements et éléments hors cadre, chiffres absents des sources du
+        projet, figures sans source, notes manquantes, durée ; export PDF / ODP et aperçus par PowerPoint si installé. Montrer les erreurs à
         l'utilisateur ; inspecter les aperçus avant de déclarer la présentation prête."""
         with user_errors():
             return get_services().presentations.create(project_id, deck, duration_minutes=duration_minutes,

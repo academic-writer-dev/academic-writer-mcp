@@ -7,8 +7,10 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 SlideType = Literal["title", "section", "bullets", "two_columns", "chart", "image", "table", "key_figures", "quote",
-                    "process", "conclusion", "references", "questions"]
-ThemeName = Literal["academique", "technique", "sobre", "clair"]
+                    "process", "conclusion", "references", "questions", "agenda", "comparison", "definitions",
+                    "timeline"]
+ThemeName = Literal["academique", "technique", "sobre", "clair", "minimal_premium", "corporate", "scientifique",
+                    "industriel", "futuriste", "editorial"]
 Occasion = Literal["expose", "soutenance_licence", "soutenance_master", "soutenance_doctorat", "presentation_scientifique",
                    "presentation_professionnelle"]
 
@@ -17,6 +19,28 @@ class KeyFigure(BaseModel):
     value: str = Field(max_length=24, description="Valeur telle qu'elle figure dans les sources (ex. « 151,8 рад/с »).")
     label: str = Field(max_length=80)
     source: str | None = Field(default=None, max_length=120)
+
+
+class JuryQuestion(BaseModel):
+    question: str = Field(max_length=300)
+    answer: str = Field(default="", max_length=800, description="Éléments de réponse fondés sur le travail.")
+
+
+class TermCard(BaseModel):
+    term: str = Field(max_length=60)
+    definition: str = Field(max_length=300)
+    source: str | None = Field(default=None, max_length=120)
+
+
+class Criterion(BaseModel):
+    criterion: str = Field(max_length=60)
+    left: str = Field(max_length=120)
+    right: str = Field(max_length=120)
+
+
+class Event(BaseModel):
+    date: str = Field(max_length=30)
+    label: str = Field(max_length=120)
 
 
 class Slide(BaseModel):
@@ -40,6 +64,11 @@ class Slide(BaseModel):
     quote_author: str | None = Field(default=None, max_length=120)
     references: list[str] = Field(default_factory=list)
     notes: str = Field(default="", max_length=4000, description="Notes du présentateur (texte à dire).")
+    transition: str | None = Field(default=None, max_length=300, description="Phrase de transition vers la suite.")
+    jury_questions: list[JuryQuestion] = Field(default_factory=list, description="Questions possibles du jury.")
+    terms: list[TermCard] = Field(default_factory=list, description="Diapositive definitions (2 à 4 termes).")
+    criteria: list[Criterion] = Field(default_factory=list, description="Diapositive comparison (left_title / right_title).")
+    events: list[Event] = Field(default_factory=list, description="Diapositive timeline (3 à 7 jalons).")
     duration_seconds: int | None = Field(default=None, ge=10, le=900)
 
 

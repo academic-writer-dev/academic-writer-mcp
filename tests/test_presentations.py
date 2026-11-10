@@ -136,3 +136,50 @@ async def test_presentation_tools_exposed() -> None:
     async with Client(mcp) as client:
         names = {t.name for t in (await client.list_tools()).tools}
     assert {"plan_presentation", "create_presentation"} <= names
+
+
+# --- lot 7 : styles, nouvelles mises en page, notes du jury, contrôle de mise en page ------------------------
+
+def test_all_themes_are_readable() -> None:
+    """Titres et texte lisibles (WCAG ≥ 4,5:1) ; texte des pastilles d'accent lisible (≥ 3:1)."""
+    from academic_writer.presentations.builder import THEMES, contrast, on
+
+    for name, theme in THEMES.items():
+        heading = theme.heading or theme.primary
+        assert contrast(heading, theme.background) >= 4.5, name
+        assert contrast(theme.text, theme.background) >= 4.5, name
+        assert contrast(on(theme.accent), theme.accent) >= 3, name
+
+
+def test_new_layouts_and_jury_notes(services: Services, project) -> None:
+    from academic_writer.presentations.models import Criterion, Event, JuryQuestion, TermCard
+
+    deck = Deck(title="Démo", theme="futuriste", slides=[
+        Slide(type="agenda", title="Plan", bullets=["Contexte", "Méthode", "Résultats"], notes="Plan."),
+        Slide(type="definitions", title="Notions", terms=[TermCard(term="MTBF", definition="Temps moyen entre pannes.")],
+              notes="Définitions.", transition="Passons à la méthode.",
+              jury_questions=[JuryQuestion(question="Comment le MTBF est-il calculé ?", answer="Sur 24 mois.")]),
+        Slide(type="comparison", title="A ou B", left_title="A", right_title="B",
+              criteria=[Criterion(criterion="Coût", left="Faible", right="Élevé")], notes="Comparaison."),
+        Slide(type="timeline", title="Calendrier", events=[Event(date="Jan.", label="Début"),
+                                                          Event(date="Mars", label="Fin")], notes="Dates."),
+    ])
+    result = services.presentations.create(project.id, deck, export_pdf=False, preview=False)
+    pptx = Presentation(result.pptx_path)
+    notes = pptx.slides[1].notes_slide.notes_text_frame.text
+    assert "Transition : Passons à la méthode." in notes and "— Comment le MTBF est-il calculé ?" in notes
+    assert "→ Sur 24 mois." in notes
+    assert not [c for c in result.checks if c.code in ("overlap", "out_of_slide")]
+
+
+def test_layout_check_detects_overlap_and_overflow() -> None:
+    from academic_writer.presentations.builder import Builder
+
+    builder = Builder(Deck(title="T", slides=[Slide(type="questions")]), {})
+    slide = builder.prs.slides.add_slide(builder.blank)
+    builder.text(slide, 1, 1, 4, 1, "Premier texte", 20)
+    builder.text(slide, 2, 1.2, 4, 1, "Second texte", 20)  # chevauche le premier
+    builder.text(slide, 12, 6, 3, 1, "Hors champ", 20)  # dépasse à droite
+    builder.layout_checks()
+    codes = {c.code for c in builder.checks}
+    assert {"overlap", "out_of_slide"} <= codes
