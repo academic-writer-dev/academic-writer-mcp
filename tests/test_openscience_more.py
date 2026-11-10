@@ -77,3 +77,38 @@ def test_provider_registry_is_honest() -> None:
     assert by_id["base"].integration == "excluded" and by_id["viniti"].access == "PAID_EXCLUDED"
     assert all(p.integration != "api" for p in PROVIDERS if p.region == "Russie")  # aucune extraction automatique
     assert all(p.integration != "api" or p.access in ("PUBLIC_FREE", "FREE_API_KEY", "FREE_ACCOUNT") for p in PROVIDERS)
+
+
+CODATA = """             Fundamental Physical Constants --- Complete Listing
+             2022 CODATA adjustment
+
+  Quantity                                                       Value                 Uncertainty           Unit
+-----------------------------------------------------------------------------------------------------------------------------
+Avogadro constant                                           6.022 140 76 e23         (exact)                  mol^-1
+electron mass                                               9.109 383 7139 e-31      0.000 000 0028 e-31      kg
+Newtonian constant of gravitation                           6.674 30 e-11            0.000 15 e-11            m^3 kg^-1 s^-2
+"""
+
+
+def test_codata_constants_offline_cache(tmp_path) -> None:
+    from academic_writer.research.reference_data import load_codata, parse_codata, search_constants
+
+    source, constants = parse_codata(CODATA)
+    assert source == "CODATA 2022 (NIST)" and len(constants) == 3
+    assert search_constants(constants, "avogadro")[0].value == 6.02214076e23
+    assert search_constants(constants, "electron mass")[0].uncertainty.startswith("0.000")
+    loaded, origin = load_codata(tmp_path, lambda _url: CODATA, allow_network=True)
+    assert origin.startswith("téléchargée") and len(loaded) == 3
+    again, origin = load_codata(tmp_path, lambda _url: None, allow_network=False)  # hors connexion : copie locale
+    assert origin == "copie locale" and len(again) == 3
+
+
+def test_europeana_parser_and_licence() -> None:
+    from academic_writer.research.reference_data import parse_europeana
+
+    items = parse_europeana({"items": [
+        {"title": ["Engine, steam"], "type": "IMAGE", "dataProvider": ["Royal Museums Greenwich"],
+         "rights": ["http://creativecommons.org/licenses/by-nc-sa/4.0/"], "guid": "https://www.europeana.eu/item/1?x=y"},
+        {"title": ["Locomotive"], "type": "IMAGE", "rights": ["http://creativecommons.org/publicdomain/mark/1.0/"]}]})
+    assert not items[0].open_license and items[0].url == "https://www.europeana.eu/item/1"  # NC : non libre
+    assert items[1].open_license

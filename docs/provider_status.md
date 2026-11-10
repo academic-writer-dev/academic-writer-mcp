@@ -2,7 +2,7 @@
 
 # Statut des fournisseurs documentaires
 
-Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 6, PAID_EXCLUDED : 1, PUBLIC_FREE : 19, UNAVAILABLE : 9, UNVERIFIED_EXCLUDED : 3.
+Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 6, PAID_EXCLUDED : 1, PUBLIC_FREE : 18, UNAVAILABLE : 10, UNVERIFIED_EXCLUDED : 3.
 
 Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVERIFIED_EXCLUDED, UNAVAILABLE.
 
@@ -26,15 +26,15 @@ Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVER
 | [RePEc / IDEAS](https://ideas.repec.org) | international | économie | `UNAVAILABLE` | pas d'API publique de recherche | — | manual_link | non intégré |
 | [World Bank Open Data](https://api.worldbank.org/v2) | international | statistiques | `PUBLIC_FREE` | aucune | données | api | OK |
 | [Eurostat](https://ec.europa.eu/eurostat/api) | Europe | statistiques | `PUBLIC_FREE` | aucune | données | api | OK |
-| [OECD Data (SDMX)](https://sdmx.oecd.org) | international | statistiques | `PUBLIC_FREE` | aucune | données | manual_link | API accessible, non intégrée (SDMX complexe) |
+| [OECD Data (SDMX)](https://data-explorer.oecd.org) | international | statistiques | `UNAVAILABLE` | aucune | données | manual_link | liste des jeux accessible ; requêtes de données refusées au client automatisé (HTTP 403) |
 | [IMF Data](https://data.imf.org) | international | statistiques | `PUBLIC_FREE` | aucune | données | manual_link | non intégré |
-| [NIST (données de référence)](https://www.nist.gov/srd) | international | constantes, propriétés | `PUBLIC_FREE` | aucune | données | manual_link | non intégré (bases multiples) |
+| [NIST — constantes CODATA](https://physics.nist.gov/constants) | international | constantes physiques fondamentales | `PUBLIC_FREE` | aucune | données | api | OK (CODATA 2022, 355 constantes) |
 | [HAL](https://api.archives-ouvertes.fr) | France | archive ouverte | `PUBLIC_FREE` | aucune | oui (dépôts) | api | OK (PDF téléchargé et lu) |
 | [OAPEN Library](https://library.oapen.org) | Europe | livres en libre accès | `UNAVAILABLE` | — | oui en principe | manual_link | HTTP 403 pour les requêtes automatisées |
 | [Gallica / BnF](https://gallica.bnf.fr) | France | patrimoine numérisé | `UNAVAILABLE` | — | selon document | manual_link | HTTP 403 (SRU) depuis ce poste |
 | [Deutsche Nationalbibliothek](https://services.dnb.de/sru) | Allemagne | catalogue de livres | `PUBLIC_FREE` | aucune | non (catalogue) | api | OK (SRU) |
 | [Deutsche Digitale Bibliothek](https://www.deutsche-digitale-bibliothek.de) | Allemagne | patrimoine numérisé | `FREE_API_KEY` | clé gratuite sur inscription | selon document | manual_link | non intégré |
-| [Europeana](https://api.europeana.eu) | Europe | patrimoine culturel | `FREE_API_KEY` | clé gratuite (la clé de démonstration n'est pas destinée à l'usage réel) | selon licence | manual_link | OK avec clé de démonstration |
+| [Europeana](https://api.europeana.eu) | Europe | patrimoine culturel | `FREE_API_KEY` | clé personnelle gratuite (la clé de démonstration n'est pas destinée à l'usage réel) | selon licence | api | format vérifié ; inactif sans clé |
 | [DART-Europe](https://www.dart-europe.org) | Europe | thèses européennes | `UNAVAILABLE` | pas d'API | liens | manual_link | pages web uniquement |
 | [Google Books](https://www.googleapis.com/books) | international | livres (métadonnées) | `FREE_API_KEY` | clé gratuite | non | api | OK (clé configurée) |
 | [Open Library](https://openlibrary.org) | international | livres | `PUBLIC_FREE` | aucune | prêt / domaine public | api | OK |

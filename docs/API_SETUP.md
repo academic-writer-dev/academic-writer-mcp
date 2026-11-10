@@ -15,6 +15,7 @@ uv run academic-writer secrets delete <service>
 | `google_books` | FREE_API_KEY | Console Google Cloud, API « Books » (sans facturation) | Recherche de livres |
 | `core` | FREE_API_KEY | https://core.ac.uk/services/api (inscription) | Agrégateur de dépôts en libre accès |
 | `semantic_scholar` | FREE_API_KEY | Formulaire du site (adresse institutionnelle exigée) | Lève le quota public saturé |
+| `europeana` | FREE_API_KEY | https://pro.europeana.eu/page/get-api (e-mail, gratuit) | Patrimoine numérisé européen (`search_heritage`) |
 | `anthropic`, `openai` | PAID_EXCLUDED | — | Fournisseurs payants : facultatifs, désactivés par défaut |
 
 Unpaywall n'a pas de clé : il exige une adresse e-mail dans chaque requête (`unpaywall_email` dans config.toml).

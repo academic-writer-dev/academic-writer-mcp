@@ -4,7 +4,7 @@ Serveur [Model Context Protocol](https://modelcontextprotocol.io) local destiné
 structurer, vérifier et mettre en forme des documents académiques, scientifiques,
 techniques et professionnels (FR / RU / EN).
 
-> **Statut : version 1.2.0 — assistant académique universel** — 107 outils MCP, 40 disciplines, 30 types de
+> **Statut : version 1.2.0 — assistant académique universel** — 109 outils MCP, 40 disciplines, 30 types de
 > travaux, profils d'enseignants (« uniquement le cours »), 16 bases scientifiques ouvertes vérifiées, calcul
 > formel (SymPy) et numérique (SciPy) contrôlés, graphiques reproductibles, présentations professionnelles
 > (10 styles, PPTX / PDF / ODP, aperçus), traitements dans les logiciels du poste, normes, similarité.
@@ -56,7 +56,7 @@ Les catalogues (logiciels, fournisseurs, licences, disciplines) sont générés 
 | Rédaction | `analyze_assignment`, `extract_requirements`, `manage_requirement`, `create_academic_outline`, `get_academic_outline`, `edit_academic_outline`, `validate_outline`, `write_academic_section`, `rewrite_academic_section`, `get_section_brief`, `save_section_draft`, `get_section_revision`, `review_revision`, `get_draft_status` |
 | Correction et traduction | `check_language`, `correct_academic_section`, `improve_academic_style`, `translate_academic_section`, `manage_languagetool` |
 | Sources et bibliographie | `register_source`, `list_sources`, `update_source`, `verify_source_metadata`, `insert_citation`, `generate_bibliography`, `audit_references`, `find_uncited_references` |
-| Recherche d'ouvrages | `find_works_by_topic`, `download_open_access`, `export_references`, `search_sources`, `import_sources_file`, `confirm_source_verification`, `check_retractions`, `find_researcher`, `fetch_open_data`, `list_source_providers` |
+| Recherche d'ouvrages | `find_works_by_topic`, `download_open_access`, `export_references`, `search_sources`, `import_sources_file`, `confirm_source_verification`, `check_retractions`, `find_researcher`, `fetch_open_data`, `lookup_constant`, `search_heritage`, `list_source_providers` |
 | Audit et indices IA | `detect_ai_indicators`, `analyze_writing_patterns`, `analyze_document_metadata`, `inspect_revision_history`, `inspect_document_provenance`, `verify_content_credentials`, `audit_document_integrity`, `generate_ai_audit_report` |
 | Calcul | `solve_math` (formel, SymPy), `solve_numeric` (numérique, SciPy), `solve_problem` (démarche en 11 étapes) — résultats vérifiés |
 | Graphiques | `create_chart`, `list_charts` |

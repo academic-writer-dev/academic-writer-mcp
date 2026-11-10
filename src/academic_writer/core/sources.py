@@ -636,3 +636,38 @@ class SourceService:
         except (ValueError, OSError) as exc:
             raise ValidationFailed(str(exc)) from exc
         raise ValidationFailed("Fournisseur : worldbank ou eurostat.")
+
+    # --- données de référence : constantes CODATA (NIST), patrimoine (Europeana) -----------------------------
+    def physical_constants(self, query: str):
+        from academic_writer.research.reference_data import load_codata, search_constants
+
+        if not query or len(query.strip()) < 2:
+            raise ValidationFailed("Indiquez le nom d'une constante (ex. « Avogadro », « electron mass »).")
+        try:
+            constants, origin = load_codata(self.settings.data_dir / "reference", self.text_fetcher,
+                                            self.settings.mode == "connected")
+        except (ValueError, OSError) as exc:
+            raise ValidationFailed(str(exc)) from exc
+        found = search_constants(constants, query)
+        return {"query": query, "origin": origin, "constants": [c.model_dump() for c in found],
+                "notice": "Valeurs officielles CODATA publiées par le NIST (noms en anglais) ; citer l'édition CODATA."}
+
+    def heritage(self, query: str, media_type: str | None = None, rows: int = 10):
+        import json as _json
+
+        from academic_writer.research.reference_data import europeana_url, parse_europeana
+
+        self._require_connected("la recherche Europeana")
+        key = self._service_keys().get("europeana")
+        if not key:
+            raise ValidationFailed("Europeana nécessite une clé personnelle GRATUITE : la demander sur "
+                                   "https://pro.europeana.eu/page/get-api puis : uv run academic-writer secrets set "
+                                   "europeana --clipboard")
+        try:
+            data = _json.loads(self.text_fetcher(europeana_url(query, key, max(1, min(rows, 50)), media_type)) or "{}")
+        except (OSError, ValueError) as exc:
+            raise ValidationFailed(f"Europeana indisponible : {exc}") from exc
+        items = parse_europeana(data)
+        return {"query": query, "count": len(items), "items": [i.model_dump() for i in items],
+                "notice": "Licence propre à chaque objet (rights) : réutilisation libre seulement si open_license ; "
+                          "citer l'institution (provider)."}

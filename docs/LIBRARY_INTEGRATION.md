@@ -14,6 +14,8 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 | `download_open_access` | Télécharge un texte intégral en libre accès LÉGAL (licence revérifiée) | arXiv, Internet Archive (licence libre), DOAJ, HAL, Europe PMC (OA), Zenodo, Semantic Scholar, CORE, Unpaywall |
 | `find_researcher` | Identifiants ORCID | ORCID |
 | `fetch_open_data` | Séries statistiques officielles | World Bank, Eurostat |
+| `lookup_constant` | Constantes physiques fondamentales (copie locale hors connexion) | NIST — CODATA 2022 |
+| `search_heritage` | Objets numérisés des musées, archives, bibliothèques (licence par objet) | Europeana (clé gratuite) |
 | `list_source_providers` | Registre des 40 fournisseurs et statuts | — |
 
 ## Règles

@@ -266,3 +266,21 @@ def register(mcp: MCPServer) -> None:
 
         providers = [p.model_dump() for p in PROVIDERS if not region or region.casefold() in p.region.casefold()]
         return {"verified_on": VERIFIED_ON, "by_status": summary(), "providers": providers}
+
+    @mcp.tool(title="Constantes physiques (CODATA, NIST)", annotations=_READ)
+    def lookup_constant(query: Annotated[str, Field(description="Nom anglais ou mot-clé : « Avogadro », « speed of "
+                                                                "light », « electron mass », « Boltzmann ».")]) -> dict:
+        """Valeurs officielles des constantes physiques fondamentales (CODATA, publiées par le NIST) avec incertitude et
+        unité. Copie locale : utilisable hors connexion après le premier téléchargement (mode connecté)."""
+        with user_errors():
+            return get_services().sources.physical_constants(query)
+
+    @mcp.tool(title="Patrimoine numérisé (Europeana)",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
+    def search_heritage(query: str,
+                        media_type: Literal["TEXT", "IMAGE", "SOUND", "VIDEO", "3D"] | None = None,
+                        rows: Annotated[int, Field(ge=1, le=50)] = 10) -> dict:
+        """Objets numérisés des musées, archives et bibliothèques européens (Europeana) : titre, institution, pays,
+        licence (réutilisation libre seulement si open_license). Clé personnelle gratuite requise ; mode connecté."""
+        with user_errors():
+            return get_services().sources.heritage(query, media_type, rows)
