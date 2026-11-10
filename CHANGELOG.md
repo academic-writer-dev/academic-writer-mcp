@@ -2,6 +2,10 @@
 
 ## Non publié
 
+- Installation automatique : script `scripts/install.ps1` (uv, Git, dépôt, dépendances, configuration non
+  écrasée, Claude Desktop et Claude Code, test de démarrage) et instructions pour un assistant IA (`INSTALL_AI.md`) ;
+  guide pour autoriser l'installation (permissions de l'IA, accès au dépôt).
+
 - Bilan général (docs/BILAN.md) : 27 bibliothèques et services testés en réel sur 9 thèmes ; services non
   opérationnels retirés (Semantic Scholar, CORE, Europeana — outil search_heritage —, Unpaywall) ; registre réduit
   aux bases connectées ; liens manuels РГБ retirés.

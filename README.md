@@ -19,6 +19,7 @@ techniques et professionnels (FR / RU / EN).
 | **Bilan général** | [docs/BILAN.md](docs/BILAN.md) |
 | **Guide d'utilisation** | [docs/GUIDE_UTILISATION.md](docs/GUIDE_UTILISATION.md) |
 | Architecture | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| **Installation par une IA** | [INSTALL_AI.md](INSTALL_AI.md) (script : [scripts/install.ps1](scripts/install.ps1)) |
 | Installation (Windows, autre ordinateur) | [docs/INSTALLATION_WINDOWS.md](docs/INSTALLATION_WINDOWS.md) |
 | Configuration | [docs/CONFIGURATION.md](docs/CONFIGURATION.md) |
 | Clés d'API gratuites | [docs/API_SETUP.md](docs/API_SETUP.md) |
