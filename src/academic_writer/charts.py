@@ -80,6 +80,7 @@ class ChartResult(BaseModel):
     png_path: str
     svg_path: str
     data_path: str
+    script_path: str | None = Field(default=None, description="Script Python de régénération (reproductibilité).")
     markdown: str = Field(description="À insérer dans une section pour que l'export DOCX intègre le graphique.")
     summaries: list[SeriesSummary]
     regressions: list[RegressionResult]
@@ -167,6 +168,23 @@ def _fit(x: list[float], y: list[float], model: str) -> RegressionResult | str:
     total = float(np.sum((ys - ys.mean()) ** 2))
     r2 = 1 - residual / total if total else 1.0
     return RegressionResult(series="", model=model, equation=equation, r_squared=round(r2, 6), coefficients=coefs)
+
+
+_SCRIPT_TEMPLATE = '''"""Régénère le graphique « {title} » à partir des données conservées ({chart_id}.json).
+
+Commande : uv run python {chart_id}.py (dans ce dossier, avec Academic Writer installé).
+"""
+
+import json
+from pathlib import Path
+
+from academic_writer.charts import ChartSpec, render
+
+here = Path(__file__).resolve().parent
+spec = ChartSpec.model_validate(json.loads((here / "{chart_id}.json").read_text(encoding="utf-8"))["spec"])
+result = render(spec, here, "{chart_id}-regenere")
+print(result.png_path)
+'''
 
 
 def render(spec: ChartSpec, folder: Path, chart_id: str) -> ChartResult:
@@ -342,6 +360,9 @@ def render(spec: ChartSpec, folder: Path, chart_id: str) -> ChartResult:
         plt.close(fig)
     used["regressions"] = [r.model_dump() for r in regressions]
     data.write_text(json.dumps(used, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    script = folder / f"{chart_id}.py"
+    script.write_text(_SCRIPT_TEMPLATE.format(title=spec.title, chart_id=chart_id), encoding="utf-8")
     return ChartResult(chart_id=chart_id, title=spec.title, png_path=str(png), svg_path=str(svg), data_path=str(data),
+                       script_path=str(script),
                        markdown=f"![{spec.title}](chart:{chart_id})", summaries=summaries, regressions=regressions,
                        warnings=warnings)

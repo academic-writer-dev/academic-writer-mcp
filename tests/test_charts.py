@@ -101,3 +101,19 @@ async def test_chart_tools_exposed() -> None:
     async with Client(mcp) as client:
         names = {t.name for t in (await client.list_tools()).tools}
     assert {"create_chart", "list_charts"} <= names
+
+
+def test_chart_generation_script_regenerates(services: Services, project) -> None:
+    """Lot 4 : le code de génération est conservé et reproduit le graphique."""
+    import subprocess
+    import sys
+
+    result = services.charts.create(project.id, ChartSpec(chart_type="line", title="Reproductible", x_label="t",
+                                                          x_unit="s", y_label="v", y_unit="m/s", source="test",
+                                                          series=[Series(x=[0, 1, 2], y=[0.0, 1.5, 3.0])]))
+    script = Path(result.script_path)
+    assert script.exists() and f"{result.chart_id}.json" in script.read_text(encoding="utf-8")
+    completed = subprocess.run([sys.executable, str(script)], capture_output=True, text=True, timeout=120,
+                               cwd=script.parent)
+    assert completed.returncode == 0, completed.stderr
+    assert _png_ok(str(script.parent / f"{result.chart_id}-regenere.png"))

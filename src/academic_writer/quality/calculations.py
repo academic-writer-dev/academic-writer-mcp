@@ -376,6 +376,7 @@ class FormulaResult(BaseModel):
     target_unit: str | None = None
     results_in_target: list[float] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    dims_si: list[int] | None = Field(default=None, description="Dimensions SI du résultat (m, kg, s, A, K, mol).")
     notice: str = "Calcul fait avec les seules valeurs fournies : aucune donnée n'est supposée ni inventée."
 
 
@@ -511,4 +512,5 @@ def evaluate_formula(formula: str, values: dict[str, str], target_unit: str | No
                          expression="; ".join(str(e) for e in expressions), values_used=values,
                          results_si=results_si, unit_si=U.format_dims(result_dims) if result_dims is not None else None,
                          results_as_written=results_shown, target_unit=target_unit, results_in_target=in_target,
-                         warnings=list(dict.fromkeys(warnings)))
+                         warnings=list(dict.fromkeys(warnings)),
+                         dims_si=list(result_dims) if result_dims is not None else None)

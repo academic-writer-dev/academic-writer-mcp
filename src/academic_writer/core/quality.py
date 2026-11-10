@@ -402,6 +402,25 @@ class QualityService:
                                    "(articles, cours, versions précédentes).")
         return analyze(target.label, segments, sources, min_words, target.language)
 
+    # --- calcul numérique et démarche de résolution ---------------------------------------------------------
+    def solve_numeric(self, operation: str, **options):
+        from academic_writer.quality.numeric import NumericError, compute
+
+        try:
+            return compute(operation, **options)
+        except NumericError as exc:
+            raise ValidationFailed(str(exc)) from exc
+        except (ValueError, ArithmeticError) as exc:
+            raise ValidationFailed(f"Calcul numérique impossible : {exc}") from exc
+
+    def solve_problem(self, data: dict[str, str], unknown: str, formulas: list[str], **options):
+        from academic_writer.quality.problem import solve
+
+        if not formulas:
+            raise ValidationFailed("Indiquez au moins une formule (elles ne sont jamais choisies à la place de "
+                                   "l'utilisateur ou du cours).")
+        return solve(data, unknown, formulas, **options)
+
 
 
 def _markdown_segments(text: str, section: str, level: int) -> list[Segment]:

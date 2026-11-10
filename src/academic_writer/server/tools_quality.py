@@ -12,6 +12,8 @@ from academic_writer.core.quality import FinalAudit
 from academic_writer.quality.calculations import CalculationReport, ConversionResult, FormulaResult
 from academic_writer.quality.claims import ClaimsReport
 from academic_writer.quality.compare import DocumentComparison
+from academic_writer.quality.numeric import NumericOperation, NumericResult
+from academic_writer.quality.problem import ProblemSolution
 from academic_writer.quality.similarity import SimilarityReport
 from academic_writer.quality.consistency import ConsistencyReport
 from academic_writer.quality.structure import StructureReport
@@ -125,3 +127,54 @@ def register(mcp: MCPServer) -> None:
         ruptures de style. Similarité ≠ plagiat ; reformulations non détectées ; pas de comparaison avec Internet."""
         with user_errors():
             return get_services().quality.similarity(project_id, document_id, min_words)
+
+    @mcp.tool(title="Calcul numérique (SciPy)", annotations=_READ)
+    def solve_numeric(
+        operation: Annotated[NumericOperation, Field(description=(
+            "minimize / maximize (expression, variables, bounds, start) ; root (expression, interval [a, b] ou start) ; "
+            "integrate (expression, interval) ; ode (dérivées séparées par « ; », unknown_functions, variables=[t], "
+            "interval, initial) ; fit (modèle, parameters, x_data, y_data) ; statistics / ttest / anova / correlation "
+            "(samples)."))],
+        expression: str | None = None,
+        variables: list[str] | None = None,
+        bounds: list[list[float]] | None = None,
+        start: list[float] | None = None,
+        interval: list[float] | None = None,
+        initial: list[float] | None = None,
+        unknown_functions: list[str] | None = None,
+        parameters: list[str] | None = None,
+        x_data: list[float] | None = None,
+        y_data: list[float] | None = None,
+        samples: list[list[float]] | None = None,
+        points: Annotated[int, Field(ge=2, le=2000)] = 50,
+    ) -> NumericResult:
+        """Calcul NUMÉRIQUE par SciPy (optimisation, racines, intégrales, équations différentielles, ajustement de
+        modèle, statistiques), chaque résultat contrôlé par une seconde méthode indépendante. Résultat approché ;
+        result_kind distingue calculé / estimé. Aucune valeur manquante n'est supposée."""
+        with user_errors():
+            return get_services().quality.solve_numeric(
+                operation, expression=expression, variables=variables, bounds=bounds, start=start, interval=interval,
+                initial=initial, unknown_functions=unknown_functions, parameters=parameters, x_data=x_data,
+                y_data=y_data, samples=samples, points=points)
+
+    @mcp.tool(title="Résoudre un problème (démarche en 11 étapes)", annotations=_READ)
+    def solve_problem(
+        data: Annotated[dict[str, str], Field(description="Données avec unités, ex. {\"n\": \"1450 об/мин\", \"r\": \"50 мм\"}.")],
+        unknown: str,
+        formulas: Annotated[list[str], Field(description="Formules dans l'ordre d'utilisation (du cours ou de "
+                                                         "l'utilisateur), ex. [\"omega = pi*n/30\", \"v = omega*r\"].")],
+        hypotheses: list[str] | None = None,
+        target_unit: str | None = None,
+        plausible_range: Annotated[list[float] | None, Field(description="Ordre de grandeur attendu [min, max] "
+                                                                         "dans l'unité cible.")] = None,
+        values_as_written: Annotated[bool, Field(description="Formules écrites pour des unités précises (n en tr/min, "
+                                                             "longueurs en mm…) : calculer avec les nombres tels "
+                                                             "qu'écrits.")] = False,
+    ) -> ProblemSolution:
+        """Démarche complète en 11 étapes : données, inconnue, unités, hypothèses, méthode, formules, étapes,
+        calculs, vérification (réinjection), interprétation (ordre de grandeur, signe), limites. Les formules sont
+        fournies par l'utilisateur ou le cours ; rien n'est supposé ; un écart SI / « tel qu'écrit » est signalé."""
+        with user_errors():
+            return get_services().quality.solve_problem(data, unknown, formulas, hypotheses=hypotheses,
+                                                        target_unit=target_unit, plausible_range=plausible_range,
+                                                        values_as_written=values_as_written)

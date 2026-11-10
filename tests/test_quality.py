@@ -306,3 +306,50 @@ def test_similarity_missing_citations_and_repetitions(services: Services, inbox:
     assert cited and "charges cycliques" in cited[0].text
     assert report.missing_citations == 1 and report.sources[0].source.startswith("article.txt")
     assert 0 < report.overall_share < 1 and "≠ plagiat" in report.notice
+
+
+# --- lot 4 : calcul numérique et démarche en 11 étapes -----------------------------------------------------------
+
+@pytest.mark.parametrize(("operation", "options", "key", "expected"), [
+    ("minimize", {"expression": "(x-2)^2+3"}, "value", 3.0),
+    ("root", {"expression": "x^3-2*x-5", "interval": [2, 3]}, "x", 2.0945514815),
+    ("integrate", {"expression": "exp(-x^2)", "interval": [0, 1]}, "value", 0.746824132812),
+])
+def test_solve_numeric_known_values(services: Services, operation, options, key, expected) -> None:
+    result = services.quality.solve_numeric(operation, **options)
+    assert result.result[key] == pytest.approx(expected, rel=1e-8) and result.verified and result.engine == "SciPy"
+
+
+def test_solve_numeric_ode_fit_and_statistics(services: Services) -> None:
+    import math
+
+    ode = services.quality.solve_numeric("ode", expression="v ; -4*x", variables=["t"], unknown_functions=["x", "v"],
+                                         interval=[0, math.pi / 2], initial=[1, 0])
+    assert ode.result["final"]["x"] == pytest.approx(-1, abs=1e-6) and ode.verified
+    xs = [0, 1, 2, 3, 4, 5]
+    fit = services.quality.solve_numeric("fit", expression="a*exp(b*x)", parameters=["a", "b"], x_data=xs,
+                                         y_data=[2 * math.exp(0.5 * x) for x in xs])
+    assert fit.result["parameters"]["b"] == pytest.approx(0.5) and fit.result_kind.startswith("estimé")
+    test = services.quality.solve_numeric("ttest", samples=[[5.1, 5.3, 5.0, 5.2, 5.4], [6.0, 6.2, 5.9, 6.1, 6.3]])
+    assert test.result["p_value"] < 0.001 and test.verified
+    from academic_writer.core.errors import ValidationFailed
+
+    with pytest.raises(ValidationFailed, match="sans valeur"):
+        services.quality.solve_numeric("minimize", expression="a*x^2")
+
+
+def test_solve_problem_eleven_steps(services: Services) -> None:
+    """Démarche en 11 étapes ; formule écrite pour n en tr/min : écart signalé en SI, juste « tel qu'écrit »."""
+    si = services.quality.solve_problem({"n": "1450 об/мин", "r": "0,05"}, "v", ["omega = pi*n/30", "v = omega*r"],
+                                        hypotheses=["rotation uniforme"], plausible_range=[1, 20])
+    assert [s.number for s in si.steps] == list(range(1, 12))
+    assert si.steps[4].status == "attention" and "values_as_written" in " ".join(si.steps[4].content)
+    assert si.steps[9].status == "erreur"  # hors de l'ordre de grandeur
+    written = services.quality.solve_problem({"n": "1450 об/мин", "r": "0,05"}, "v", ["omega = pi*n/30", "v = omega*r"],
+                                             plausible_range=[1, 20], values_as_written=True)
+    assert written.result_si == pytest.approx(7.592, abs=1e-3) and written.verified and written.steps[9].status == "ok"
+    chain = services.quality.solve_problem({"s": "120 m", "t": "8 s"}, "a", ["v = s/t", "a = v/t"],
+                                           target_unit="m/s^2")
+    assert chain.result_si == pytest.approx(1.875) and chain.unit_si == "m/s²" and chain.verified
+    missing = services.quality.solve_problem({"F": "10 kN"}, "sigma", ["sigma = F/A"])
+    assert missing.result_si is None and missing.steps[7].status == "erreur"
