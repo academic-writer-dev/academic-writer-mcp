@@ -39,6 +39,8 @@ Date : 2026-11-10. Méthode : requête réelle depuis le poste (seuls des termes
 - **NDL Search (Bibliothèque nationale de la Diète)** — OK : OpenSearch autorisé par robots.txt (`PUBLIC_FREE`)
 - **CiNii Research (NII)** — recherche interdite aux robots (robots.txt) ; ses notices passent par NDL Search (`UNAVAILABLE`)
 - **OSTI.GOV (DOE)** — OK : API publique autorisée par robots.txt (`PUBLIC_FREE`)
+- **NASA Technical Reports Server (NTRS)** — OK : API publique autorisée par robots.txt (`PUBLIC_FREE`)
+- **engrXiv (prépublications d'ingénierie)** — API OSF interdite aux robots (robots.txt) (`UNAVAILABLE`)
 - **Library of Congress** — HTTP 403 au client automatisé (non contourné) (`UNAVAILABLE`)
 - **DPLA** — HTTP 403 sans clé ; non intégré (`FREE_API_KEY`)
 - **Érudit** — OK : recherche Crossref, préfixe DOI 10.7202 (`PUBLIC_FREE`)

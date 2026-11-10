@@ -217,9 +217,14 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                   language: str | None = None, limit: int = 10, keys: dict[str, str] | None = None,
                   unpaywall_email: str | None = None, services_filter: list[str] | None = None,
                   author: str | None = None, year_from: int | None = None, year_to: int | None = None,
-                  publication_type: str | None = None, local_records: list | None = None) -> DiscoveryResult:
+                  publication_type: str | None = None, local_records: list | None = None,
+                  discipline: str | None = None) -> DiscoveryResult:
+    from academic_writer.research import disciplines
     from academic_writer.research import openscience as osc
     from academic_writer.research import openscience_more as more
+
+    profile = disciplines.get(discipline)
+    doaj_query = disciplines.doaj_query(query, profile) if profile else query
 
     keys = keys or {}
     q = urllib.parse.quote
@@ -238,7 +243,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
             plans.append(("open_library", f"https://openlibrary.org/search.json?limit={per}&q=" + q(query),
                           parse_open_library))
     if kind in ("articles", "all"):
-        plans.append(("doaj", f"https://doaj.org/api/search/articles/{q(query)}?pageSize={per}", parse_doaj))
+        plans.append(("doaj", f"https://doaj.org/api/search/articles/{q(doaj_query)}?pageSize={per}", parse_doaj))
         plans.append(("arxiv", f"https://export.arxiv.org/api/query?max_results={per}&search_query="
                       + q(f"all:{query}"), parse_arxiv))
         if not open_access_only:
@@ -270,7 +275,8 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                      "dataset": "dataset", "chapter": "book-chapter"}.get(publication_type or "")
     if kind in ("books", "articles", "all"):
         plans.append(("openalex", more.openalex_url(query, per, year_from, year_to, openalex_type, keys.get("openalex"),
-                                                    language), more.parse_openalex))
+                                                    language, profile.openalex_subfields if profile else ()),
+                      more.parse_openalex))
     if kind in ("articles", "all"):
         plans.append(("openaire", more.openaire_url(query, per), more.parse_openaire))
         plans.append(("eric", more.eric_url(query, per), more.parse_eric))
@@ -295,6 +301,9 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                 data=SourceData(authors=[_person(a) for a in r.authors[:10]], title=r.title, container=r.journal,
                                 publisher=r.publisher, url=r.url, language="ru")) for r in _records]
         plans.append(("cyberleninka", "", cyberleninka_local))
+    if profile:  # discipline : bases hors sujet retirées, revues et rapports spécialisés ajoutés
+        plans = [plan for plan in plans if plan[0] not in profile.skip_services]
+        plans += disciplines.extra_plans(profile, query, per, kind)
     if services_filter:
         plans = [plan for plan in plans if plan[0] in services_filter]
     works: list[DiscoveredWork] = []

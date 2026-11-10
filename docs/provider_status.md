@@ -2,7 +2,7 @@
 
 # Statut des fournisseurs documentaires
 
-Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 8, PAID_EXCLUDED : 1, PUBLIC_FREE : 25, UNAVAILABLE : 14, UNVERIFIED_EXCLUDED : 2.
+Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 8, PAID_EXCLUDED : 1, PUBLIC_FREE : 26, UNAVAILABLE : 15, UNVERIFIED_EXCLUDED : 2.
 
 Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVERIFIED_EXCLUDED, UNAVAILABLE.
 
@@ -43,6 +43,8 @@ Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVER
 | [NDL Search (Bibliothèque nationale de la Diète)](https://ndlsearch.ndl.go.jp/api/opensearch) | Japon | livres, articles, thèses japonais | `PUBLIC_FREE` | aucune | notices (document selon la bibliothèque) | api | OK : OpenSearch autorisé par robots.txt |
 | [CiNii Research (NII)](https://cir.nii.ac.jp) | Japon | articles, livres, thèses japonais | `UNAVAILABLE` | — | — | manual_link | recherche interdite aux robots (robots.txt) ; ses notices passent par NDL Search |
 | [OSTI.GOV (DOE)](https://www.osti.gov/api/v1) | États-Unis | rapports techniques, articles, données (énergie, sciences) | `PUBLIC_FREE` | aucune | souvent sur le site (droits selon le document) | api | OK : API publique autorisée par robots.txt |
+| [NASA Technical Reports Server (NTRS)](https://ntrs.nasa.gov/api/citations/search) | États-Unis | rapports techniques NASA (mécanique, aéronautique, matériaux) | `PUBLIC_FREE` | aucune | souvent sur le site (documents publics) | api | OK : API publique autorisée par robots.txt |
+| [engrXiv (prépublications d'ingénierie)](https://engrxiv.org) | international | prépublications | `UNAVAILABLE` | — | oui (sur le site) | manual_link | API OSF interdite aux robots (robots.txt) |
 | [Library of Congress](https://www.loc.gov) | États-Unis | catalogue, collections numérisées | `UNAVAILABLE` | — | — | manual_link | HTTP 403 au client automatisé (non contourné) |
 | [DPLA](https://dp.la) | États-Unis | collections patrimoniales | `FREE_API_KEY` | clé personnelle obligatoire | selon institution | manual_link | HTTP 403 sans clé ; non intégré |
 | [Érudit](https://www.erudit.org) | Canada | revues savantes francophones | `PUBLIC_FREE` | aucune (via Crossref) | libre ou différé selon la revue | api | OK : recherche Crossref, préfixe DOI 10.7202 |

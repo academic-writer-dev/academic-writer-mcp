@@ -331,7 +331,7 @@ class SourceService:
     def discover(self, query: str, kind: str = "all", open_access_only: bool = False, language: str | None = None,
                  limit: int = 10, services: list[str] | None = None, author: str | None = None,
                  year_from: int | None = None, year_to: int | None = None,
-                 publication_type: str | None = None) -> DiscoveryResult:
+                 publication_type: str | None = None, discipline: str | None = None) -> DiscoveryResult:
         if not query or len(query.strip()) < 3:
             raise ValidationFailed("Indiquez un thème de recherche (au moins 3 caractères).")
         self._require_connected("la recherche d'ouvrages par thème")
@@ -339,7 +339,7 @@ class SourceService:
                              max(1, min(limit, 25)), keys=self._service_keys(),
                              unpaywall_email=self.settings.unpaywall_email, services_filter=services,
                              author=author, year_from=year_from, year_to=year_to, publication_type=publication_type,
-                             local_records=self._cyberleninka_records())
+                             local_records=self._cyberleninka_records(), discipline=discipline)
 
     def download_open_access(self, project_id: str, item_id: str) -> OpenAccessDownload:
         self._require_external_sources(project_id, "Télécharger un texte externe")
@@ -708,3 +708,24 @@ class SourceService:
                            max(1, min(max_pages, 300)))
         except (ValueError, OSError) as exc:
             raise ValidationFailed(f"Moissonnage interrompu : {exc}") from exc
+
+    def cyberleninka_harvest_discipline(self, discipline: str, max_pages_per_journal: int = 20):
+        """Moissonne les revues КиберЛенинка d'une discipline (une page par seconde)."""
+        from academic_writer.research import disciplines
+        from academic_writer.research.cyberleninka import harvest
+
+        self._require_connected("le moissonnage КиберЛенинка (OAI-PMH)")
+        try:
+            profile = disciplines.get(discipline)
+        except ValueError as exc:
+            raise ValidationFailed(str(exc)) from exc
+        results = []
+        for set_spec, name in profile.cyberleninka_journals.items():
+            try:
+                results.append(harvest(self.settings.data_dir, self.text_fetcher, set_spec, name,
+                                       max(1, min(max_pages_per_journal, 100))).model_dump())
+            except (ValueError, OSError) as exc:
+                results.append({"set_spec": set_spec, "journal": name, "records": 0, "error": str(exc)})
+        return {"discipline": profile.name, "journals": len(results),
+                "records": sum(r.get("records", 0) for r in results), "results": results,
+                "next_step": "Les articles moissonnés apparaissent dans find_works_by_topic (base « cyberleninka »)."}

@@ -13,6 +13,7 @@ Aucun de ces services n'est interrogé automatiquement. Ceux marqués `manual_li
 | Gallica / BnF | `UNAVAILABLE` | HTTP 403 (SRU) depuis ce poste ; — | manual_link |
 | DART-Europe | `UNAVAILABLE` | pages web uniquement ; pas d'API | manual_link |
 | CiNii Research (NII) | `UNAVAILABLE` | recherche interdite aux robots (robots.txt) ; ses notices passent par NDL Search ; — | manual_link |
+| engrXiv (prépublications d'ingénierie) | `UNAVAILABLE` | API OSF interdite aux robots (robots.txt) ; — | manual_link |
 | Library of Congress | `UNAVAILABLE` | HTTP 403 au client automatisé (non contourné) ; — | manual_link |
 | Redalyc | `UNAVAILABLE` | OAI-PMH sans résultat ; revues souvent présentes dans DOAJ et OpenAlex ; — | manual_link |
 | Research Data Australia | `UNAVAILABLE` | API sous /registry/, interdite aux robots (robots.txt) ; — | manual_link |

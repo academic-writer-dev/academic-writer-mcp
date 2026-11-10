@@ -166,6 +166,12 @@ def register(mcp: MCPServer) -> None:
         year_to: int | None = None,
         publication_type: Annotated[Literal["article", "book", "chapter", "thesis", "preprint", "conference",
                                             "dataset", "report"] | None, Field(description="Type de publication.")] = None,
+        discipline: Annotated[Literal["genie_mecanique", "fabrication_mecanique", "materiaux_metallurgie",
+                                      "automobile_engins", "maintenance_industrielle"] | None, Field(
+            description="Recherche spécialisée génie mécanique (au sens large) : OpenAlex et DOAJ filtrés sur la "
+                        "mécanique, revues JSME (J-STAGE), rapports NASA (NTRS), revues russes de machinostroenie "
+                        "moissonnées ; bases médicales et éducatives retirées. À utiliser pour tout travail de "
+                        "génie mécanique, fabrication, matériaux, automobile, maintenance.")] = None,
     ) -> DiscoveryResult:
         """Trouve des livres, manuels, articles et jeux de données RÉELS sur un thème dans des bases légales et
         gratuites (Internet Archive, Open Library, DOAJ, arXiv, Crossref, Semantic Scholar, Europe PMC, PubMed, HAL,
@@ -175,7 +181,7 @@ def register(mcp: MCPServer) -> None:
         Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""
         with user_errors():
             return get_services().sources.discover(query, kind, open_access_only, language, limit, services, author,
-                                                   year_from, year_to, publication_type)
+                                                   year_from, year_to, publication_type, discipline)
 
     @mcp.tool(title="Télécharger un texte en libre accès",
               annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,
@@ -307,3 +313,18 @@ def register(mcp: MCPServer) -> None:
         Aucun PDF téléchargé (interdit aux robots) : les articles se lisent par leur lien."""
         with user_errors():
             return get_services().sources.cyberleninka_harvest(set_spec, max_pages)
+
+    @mcp.tool(title="Moissonner les revues russes d'une discipline",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True,
+                                          open_world_hint=True))
+    def cyberleninka_harvest_discipline(
+            discipline: Annotated[Literal["genie_mecanique"], Field(
+                description="genie_mecanique : 18 revues (МГТУ им. Баумана « Машиностроение », Известия вузов. "
+                            "Машиностроение, Обработка металлов, Динамика систем, механизмов и машин…).")] = "genie_mecanique",
+            max_pages_per_journal: Annotated[int, Field(ge=1, le=100, description="10 articles par page ; une page "
+                                                                                  "par seconde.")] = 20):
+        """Récupère par l'interface OFFICIELLE OAI-PMH de КиберЛенинка les métadonnées des articles des revues russes
+        de la discipline et les garde dans l'index local (plusieurs minutes : une requête par seconde). Ils sont
+        ensuite trouvés par find_works_by_topic. Aucun PDF téléchargé."""
+        with user_errors():
+            return get_services().sources.cyberleninka_harvest_discipline(discipline, max_pages_per_journal)

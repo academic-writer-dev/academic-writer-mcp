@@ -16,8 +16,25 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 | `fetch_open_data` | Séries statistiques officielles | World Bank, Eurostat |
 | `lookup_constant` | Constantes physiques fondamentales (copie locale hors connexion) | NIST — CODATA 2022 |
 | `search_heritage` | Objets numérisés des musées, archives, bibliothèques (licence par objet) | Europeana (clé gratuite) |
+| `cyberleninka_harvest_discipline` | Moissonne les 18 revues russes de génie mécanique (OAI-PMH officiel) | КиберЛенинка |
 | `cyberleninka_journals`, `cyberleninka_harvest` | Revues russes en libre accès : moissonnage OAI-PMH officiel, index local, recherche via `find_works_by_topic` | КиберЛенинка |
 | `list_source_providers` | Registre des 51 fournisseurs et statuts | — |
+
+## Recherche spécialisée génie mécanique
+
+`find_works_by_topic(..., discipline="genie_mecanique")` (aussi `fabrication_mecanique`, `materiaux_metallurgie`,
+`automobile_engins`, `maintenance_industrielle`) :
+
+| Source | Filtre |
+|---|---|
+| OpenAlex | sous-domaines Mechanical Engineering, Mechanics of Materials, Industrial and Manufacturing, Automotive, Aerospace, Computational Mechanics |
+| DOAJ | revues classées LCC TJ (machines), TL (véhicules, aéronautique), TS (fabrication), TA349-359 (mécanique appliquée), TA401-492 (matériaux, RDM) |
+| J-STAGE | revues JSME : Mechanical Engineering Journal, Journal of Advanced Mechanical Design, Systems, and Manufacturing, Transactions of the JSME |
+| NASA NTRS | rapports techniques NASA (API publique) |
+| КиберЛенинка | 18 revues russes (МГТУ им. Баумана « Машиностроение », Известия вузов. Машиностроение, Обработка металлов, Динамика систем, механизмов и машин…), après moissonnage |
+| autres | Crossref, arXiv, HAL, Zenodo, OpenAIRE, OSTI, SciELO, AJOL, Érudit, Internet Archive, Open Library, DNB |
+
+Retirées dans ce mode : PubMed, Europe PMC, ERIC (hors sujet), NDL (lente). engrXiv : API interdite aux robots.
 
 ## Règles
 
