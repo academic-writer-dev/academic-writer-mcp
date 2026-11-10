@@ -12,6 +12,7 @@ from academic_writer.core.quality import FinalAudit
 from academic_writer.quality.calculations import CalculationReport, ConversionResult, FormulaResult
 from academic_writer.quality.claims import ClaimsReport
 from academic_writer.quality.compare import DocumentComparison
+from academic_writer.quality.similarity import SimilarityReport
 from academic_writer.quality.consistency import ConsistencyReport
 from academic_writer.quality.structure import StructureReport
 from academic_writer.quality.symbolic import MatrixOperation, Operation, SymbolicResult
@@ -114,3 +115,13 @@ def register(mcp: MCPServer) -> None:
         côté, symboles définis avec des valeurs différentes. Constats seulement, aucune modification."""
         with user_errors():
             return get_services().quality.compare_documents(document_a, document_b)
+
+    @mcp.tool(title="Similarité et citations manquantes", annotations=_READ)
+    def check_similarity(project_id: str | None = None, document_id: str | None = None,
+                         min_words: Annotated[int, Field(ge=5, le=30, description="Longueur minimale d'un passage "
+                                                                                 "repris (mots).")] = 8) -> SimilarityReport:
+        """Compare la rédaction du projet (project_id) ou un document importé (document_id) aux autres documents du
+        projet : passages repris, cités ou non (citation manquante), part par source, répétitions internes,
+        ruptures de style. Similarité ≠ plagiat ; reformulations non détectées ; pas de comparaison avec Internet."""
+        with user_errors():
+            return get_services().quality.similarity(project_id, document_id, min_words)

@@ -170,3 +170,40 @@ async def test_formatting_tools_exposed(project) -> None:
         assert result.structured_content["default_for_project"] == "gost_7_32"
         result = await client.call_tool("export_document", {"project_id": project.id, "preset": "inexistant"})
         assert result.is_error and "Gabarit inconnu" in result.content[0].text
+
+
+def test_export_markdown_and_txt(services: Services, inbox: Path) -> None:
+    """G14 : export de la rédaction en Markdown et en texte brut."""
+    from academic_writer.core.models import DocumentType, Language
+
+    project = services.projects.create("Rapport court", DocumentType.RAPPORT_TECHNIQUE, Language.FR)
+    services.domains.assign(project.id, "generaliste", "fr")
+    outline = services.writing.create_outline(project.id)
+    outline = services.writing.validate_outline(outline.id, approve=True, force=True).outline
+    section = next(s for s in outline.sections if s.section_key == "introduction")
+    revision = services.writing.save_section_draft(project.id, section.id, "Le **rapport** présente l'étude.")
+    services.writing.review_revision(revision.id, "accept")
+    md = services.formatting.export(project.id, output_format="markdown")
+    text = Path(md.output_path).read_text(encoding="utf-8")
+    assert md.docx_path is None and text.startswith("# Rapport court") and "Le **rapport** présente" in text
+    assert "[Section non rédigée]" in text and md.unwritten_sections and not md.ready
+    txt = services.formatting.export(project.id, output_format="txt")
+    plain = Path(txt.output_path).read_text(encoding="utf-8")
+    assert "Le rapport présente" in plain and "#" not in plain.splitlines()[0]
+
+
+def test_export_tables_xlsx_and_csv(services: Services, inbox: Path) -> None:
+    from openpyxl import load_workbook
+
+    from academic_writer.core.models import DocumentRole, DocumentType, Language
+    from tests.samples import make_xlsx
+
+    project = services.projects.create("Mesures", DocumentType.TP, Language.FR)
+    imported = services.documents.import_document(project.id, str(make_xlsx(inbox / "mesures.xlsx")), DocumentRole.DATA)
+    document_id = imported.document.id if hasattr(imported, "document") else imported.id
+    result = services.extraction.export_tables(document_id, "xlsx")
+    workbook = load_workbook(result.paths[0])
+    assert result.tables == len(workbook.sheetnames) and workbook.worksheets[0]["A1"].value == "Essai"
+    csv_result = services.extraction.export_tables(document_id, "csv", table_index=1)
+    content = Path(csv_result.paths[0]).read_text(encoding="utf-8-sig")
+    assert content.splitlines()[0] == "Essai;Force (N);Allongement (mm)"

@@ -372,6 +372,37 @@ class QualityService:
             raise ValidationFailed("Les deux documents doivent appartenir au même projet.")
         return compare(*parts[0], *parts[1])
 
+    # --- similarité avec les sources du projet ---------------------------------------------------------
+    def similarity(self, project_id: str | None = None, document_id: str | None = None, min_words: int = 8):
+        from academic_writer.quality.similarity import analyze
+
+        target = self.target(project_id, document_id)
+        segments: list[tuple[str | None, str]] = []
+        current: list[str] = []
+        section = None
+        for segment in target.segments:
+            if segment.kind == "heading":
+                if current:
+                    segments.append((section, " ".join(current)))
+                section, current = segment.text, []
+            elif segment.kind != "table":
+                current.append(segment.text)
+        if current:
+            segments.append((section, " ".join(current)))
+        sources: list[tuple[str, str]] = []
+        for document in self.documents.list(target.project_id):
+            if document.id == document_id:
+                continue
+            result, _ = self.extraction.extract(document.id)
+            text = "\n".join(b.text for b in result.blocks if b.text)
+            if text.strip():
+                sources.append((f"{document.original_filename} ({document.role.value})", text))
+        if not sources:
+            raise ValidationFailed("Aucun autre document dans le projet : importez les sources à comparer "
+                                   "(articles, cours, versions précédentes).")
+        return analyze(target.label, segments, sources, min_words, target.language)
+
+
 
 def _markdown_segments(text: str, section: str, level: int) -> list[Segment]:
     segments: list[Segment] = []

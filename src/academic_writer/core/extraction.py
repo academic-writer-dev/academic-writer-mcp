@@ -80,6 +80,14 @@ class TablesResult(BaseModel):
     tables: list[TableData]
 
 
+class TableExport(BaseModel):
+    document_id: str
+    format: str
+    tables: int
+    paths: list[str]
+    notice: str = "Cellules copiées telles qu'extraites : vérifier les nombres (virgule décimale, unités) dans le tableur."
+
+
 class ImagesResult(BaseModel):
     document_id: str
     count: int
@@ -308,6 +316,46 @@ class ExtractionService:
         max_tables = max(1, min(max_tables, 200))
         return TablesResult(document_id=document_id, count=len(result.tables),
                             returned=min(len(result.tables), max_tables), tables=result.tables[:max_tables])
+
+    def export_tables(self, document_id: str, output_format: str = "xlsx", table_index: int | None = None) -> TableExport:
+        """Tableaux extraits d'un document → XLSX (une feuille par tableau) ou CSV (un fichier par tableau, UTF-8 BOM
+        pour Excel). Les cellules sont copiées telles qu'extraites (aucune conversion de valeur)."""
+        import csv
+        import re as _re
+        from datetime import datetime as _dt
+
+        if output_format not in ("xlsx", "csv"):
+            raise ValidationFailed("Format : xlsx ou csv.")
+        document = self.documents.get(document_id)
+        tables = self.tables(document_id, max_tables=500).tables
+        if table_index is not None:
+            tables = [t for t in tables if t.index == table_index]
+        if not tables:
+            raise ValidationFailed("Aucun tableau extrait de ce document" + (f" (n° {table_index})." if table_index else "."))
+        folder = self.settings.projects_dir / document.project_id / "exports"
+        folder.mkdir(parents=True, exist_ok=True)
+        stem = _re.sub(r"[^\w\-]+", "_", Path(document.original_filename).stem)[:50] or "tableaux"
+        stamp = _dt.now().strftime("%Y%m%d-%H%M%S")
+        paths: list[str] = []
+        if output_format == "xlsx":
+            from openpyxl import Workbook
+
+            workbook = Workbook()
+            workbook.remove(workbook.active)
+            for table in tables:
+                sheet = workbook.create_sheet(f"Tableau {table.index}"[:31])
+                for row in table.rows:
+                    sheet.append(list(row))
+            path = folder / f"{stem}-tableaux-{stamp}.xlsx"
+            workbook.save(path)
+            paths.append(str(path))
+        else:
+            for table in tables:
+                path = folder / f"{stem}-tableau{table.index}-{stamp}.csv"
+                with path.open("w", encoding="utf-8-sig", newline="") as handle:
+                    csv.writer(handle, delimiter=";").writerows(table.rows)
+                paths.append(str(path))
+        return TableExport(document_id=document_id, format=output_format, tables=len(tables), paths=paths)
 
     def images(self, document_id: str, *, ocr: bool = False) -> ImagesResult:
         result, _ = self.extract(document_id)

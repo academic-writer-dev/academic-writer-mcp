@@ -26,7 +26,7 @@ def register(mcp: MCPServer) -> None:
     def export_document(project_id: str, output_format: str = "docx", preset: str | None = None,
                         citation_style: str | None = None, title_page: dict[str, str] | None = None,
                         include_drafts: bool = False) -> ExportResult:
-        """Produit le document final (DOCX, ou PDF + DOCX via Microsoft Word) à partir des sections ACCEPTÉES du
+        """Produit le document final (DOCX, PDF + DOCX via Microsoft Word, Markdown ou texte) à partir des sections ACCEPTÉES du
         plan : mise en forme du gabarit, titres numérotés, sommaire, citations [@clé] rendues dans le style
         (gost, apa, ieee, chicago, vancouver, harvard, iso690), bibliographie. title_page : organization, ministry, faculty,
         department, document_kind, discipline, title, variant, author, group, supervisor, supervisor_title, city,

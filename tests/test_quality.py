@@ -278,3 +278,31 @@ def test_compare_documents_versions(services: Services, inbox: Path) -> None:
     assert "120" in result.numbers_only_in_a and "150" in result.numbers_only_in_b
     assert [(c.symbol, c.value_a, c.value_b) for c in result.symbol_conflicts] == [("k", "120 N/m", "150 N/m")]
     assert 0.5 < result.similarity < 1
+
+
+def test_similarity_missing_citations_and_repetitions(services: Services, inbox: Path) -> None:
+    """G12 : passage repris sans citation signalé, passage cité reconnu, répétitions ; jamais de « plagiat »."""
+    project = services.projects.create("Mémoire", DocumentType.MEMOIRE_MASTER, Language.FR)
+    source = inbox / "article.txt"
+    source.write_text("La maintenance préventive conditionnelle repose sur la surveillance continue de "
+                      "paramètres physiques comme les vibrations et la température des roulements. Les convoyeurs "
+                      "miniers subissent des charges cycliques importantes qui accélèrent l'usure des tambours.",
+                      encoding="utf-8")
+    draft = inbox / "memoire.md"
+    draft.write_text(
+        "# Introduction\n\nLa maintenance préventive conditionnelle repose sur la surveillance continue de "
+        "paramètres physiques comme les vibrations et la température des roulements. Ce travail étudie un convoyeur.\n\n"
+        "# Analyse\n\nSelon l'auteur, « les convoyeurs miniers subissent des charges cycliques importantes qui "
+        "accélèrent l'usure des tambours » [@dupont2020]. Ce travail étudie un convoyeur de la mine.\n\n"
+        "# Conclusion\n\nNous proposons un plan de surveillance adapté au site. Les mesures restent à réaliser.\n",
+        encoding="utf-8")
+    services.documents.import_document(project.id, str(source), DocumentRole.SOURCE)
+    imported = services.documents.import_document(project.id, str(draft), DocumentRole.DRAFT)
+    document_id = imported.document.id if hasattr(imported, "document") else imported.id
+    report = services.quality.similarity(document_id=document_id)
+    missing = [p for p in report.passages if p.status == "citation_manquante"]
+    cited = [p for p in report.passages if p.cited]
+    assert missing and missing[0].location == "Introduction" and "surveillance continue" in missing[0].text
+    assert cited and "charges cycliques" in cited[0].text
+    assert report.missing_citations == 1 and report.sources[0].source.startswith("article.txt")
+    assert 0 < report.overall_share < 1 and "≠ plagiat" in report.notice

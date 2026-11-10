@@ -8,7 +8,7 @@ from mcp.server import MCPServer
 from mcp.types import ToolAnnotations
 from pydantic import Field
 
-from academic_writer.core.extraction import ContentPage, ImagesResult, SearchResult, TablesResult
+from academic_writer.core.extraction import ContentPage, ImagesResult, SearchResult, TableExport, TablesResult
 from academic_writer.server.services import get_services, user_errors
 
 DocumentId = Annotated[str, Field(description="Identifiant du document (voir list_documents).")]
@@ -45,6 +45,20 @@ def register(mcp: MCPServer) -> None:
         """Renvoie les tableaux d'un document (lignes et cellules), avec leur page."""
         with user_errors():
             return get_services().extraction.tables(document_id, max_tables=max_tables)
+
+    @mcp.tool(title="Exporter les tableaux",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,
+                                          open_world_hint=False))
+    def export_tables(
+        document_id: DocumentId,
+        output_format: Annotated[Literal["xlsx", "csv"], Field(description="xlsx : une feuille par tableau ; csv : un "
+                                                                         "fichier par tableau (séparateur ;).")] = "xlsx",
+        table_index: Annotated[int | None, Field(description="Un seul tableau (numéro) ; vide = tous.")] = None,
+    ) -> TableExport:
+        """Exporte les tableaux extraits d'un document vers Excel / LibreOffice (XLSX) ou CSV, dans le dossier exports
+        du projet. Cellules copiées telles qu'extraites ; l'original n'est pas modifié."""
+        with user_errors():
+            return get_services().extraction.export_tables(document_id, output_format, table_index)
 
     @mcp.tool(title="Extraire les images", annotations=_LOCAL)
     def extract_document_images(

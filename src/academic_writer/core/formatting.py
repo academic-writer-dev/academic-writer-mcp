@@ -46,8 +46,9 @@ class PresetList(BaseModel):
 
 class ExportResult(BaseModel):
     project_id: str
-    docx_path: str
+    docx_path: str | None
     pdf_path: str | None
+    output_path: str | None = Field(default=None, description="Fichier Markdown ou texte (formats markdown, txt).")
     preset: str
     citation_style: str | None
     sections_included: int
@@ -120,11 +121,45 @@ class FormattingService:
         return fields, messages
 
     # --- export -------------------------------------------------------------------------------
+    def _export_text(self, project_id, name, output_format, sections, stem, stamp, preset_id, style, drafts, citations,
+                     unknown, bibliography, messages) -> ExportResult:
+        """Rédaction en Markdown (titres #, tableaux et formules conservés) ou en texte brut."""
+        import re as _re
+
+        lines: list[str] = [f"# {name}", ""]
+        unwritten: list[str] = []
+        for section in sections:
+            if section.kind == "title_page":
+                continue
+            if section.title:
+                lines += ["#" * min(6, section.level + 1) + " " + section.title, ""]
+            if section.text:
+                lines += [section.text.strip(), ""]
+            elif section.title:
+                unwritten.append(section.title)
+                lines += ["[Section non rédigée]", ""]
+        text = "\n".join(lines).strip() + "\n"
+        if output_format == "txt":
+            text = _re.sub(r"^#{1,6}\s+", "", text, flags=_re.MULTILINE)
+            text = _re.sub(r"\*\*([^*]+)\*\*|\*([^*]+)\*", lambda m: m.group(1) or m.group(2), text)
+        path = stem.with_name(f"{stem.name}-{stamp}.{'md' if output_format == 'markdown' else 'txt'}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        placeholders = len(_re.findall(r"\[(?:À COMPLÉTER|ЗАПОЛНИТЬ|TO COMPLETE)", text, _re.IGNORECASE))
+        return ExportResult(project_id=project_id, docx_path=None, pdf_path=None, output_path=str(path),
+                            preset=preset_id, citation_style=style, sections_included=sum(1 for s in sections if s.text),
+                            unwritten_sections=unwritten, draft_sections=drafts, citations_rendered=citations,
+                            unknown_citation_keys=sorted(unknown),
+                            bibliography_entries=len(bibliography.entries) if bibliography else 0,
+                            placeholders_remaining=placeholders, tables=text.count("\n|---") ,
+                            word_finalized=False, messages=messages,
+                            ready=not unwritten and not placeholders and not unknown and not drafts)
+
     def export(self, project_id: str, output_format: str = "docx", preset_id: str | None = None,
                citation_style: str | None = None, title_page: dict[str, str] | None = None,
                include_drafts: bool = False) -> ExportResult:
-        if output_format not in ("docx", "pdf"):
-            raise ValidationFailed("Format : docx ou pdf (le PDF est accompagné du DOCX).")
+        if output_format not in ("docx", "pdf", "markdown", "txt"):
+            raise ValidationFailed("Format : docx, pdf (accompagné du DOCX), markdown ou txt.")
         project = self.projects.get(project_id)
         outline = self.writing.current_outline(project_id)
         if outline is None:
@@ -182,6 +217,10 @@ class FormattingService:
         stem = _SAFE_NAME.sub("_", project.name).strip() or "document"
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         docx_path = folder / f"{stem}-{preset.id}-{stamp}.docx"
+        if output_format in ("markdown", "txt"):
+            return self._export_text(project_id, project.name, output_format, sections, folder / stem, stamp,
+                                     preset.id, style if sources else None, drafts, citations, unknown, bibliography,
+                                     messages)
         charts = self.settings.projects_dir / project_id / "charts"
         images = {f"chart:{p.stem}": p for p in charts.glob("*.png")} if charts.exists() else {}
         stats = build_docx(docx_path, sections, preset, outline.language, fields, images)
