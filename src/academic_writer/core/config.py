@@ -63,6 +63,10 @@ class Settings(BaseSettings):
     unpaywall_email: str | None = Field(
         default=None, description="Adresse e-mail exigée par Unpaywall (localisation légale du texte intégral). "
         "Facultative ; jamais envoyée si elle n'est pas renseignée par l'utilisateur.")
+    software_execution: bool = Field(
+        default=False, description="Autorise le lancement de traitements dans les logiciels détectés (Python, Excel, "
+        "Octave, R, Scilab, CalculiX…), toujours avec confirmation à chaque lancement. Désactivé par défaut.")
+    software_timeout_s: int = Field(default=180, ge=10, le=1800, description="Durée maximale d'un traitement.")
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     max_file_size_mb: int = Field(default=100, ge=1, le=2048)
     allowed_extensions: list[str] = Field(default_factory=lambda: list(SUPPORTED_EXTENSIONS))

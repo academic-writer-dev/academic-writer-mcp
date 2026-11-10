@@ -13,6 +13,7 @@ from academic_writer.core.audit import AuditService
 from academic_writer.core.charts import ChartService
 from academic_writer.core.config import Settings
 from academic_writer.core.presentations import PresentationService
+from academic_writer.core.software_jobs import SoftwareJobService
 from academic_writer.core.course import CourseService
 from academic_writer.core.documents import DocumentService
 from academic_writer.core.domains import DomainService
@@ -46,6 +47,7 @@ class Services:
     course: CourseService
     charts: ChartService
     presentations: PresentationService
+    software_jobs: SoftwareJobService
 
 
 def build_services(settings: Settings | None = None) -> Services:
@@ -70,7 +72,8 @@ def build_services(settings: Settings | None = None) -> Services:
                     formatting=FormattingService(db, settings, projects, documents, domains, writing, sources),
                     course=CourseService(db, projects, documents, extraction, writing),
                     charts=charts,
-                    presentations=PresentationService(settings, projects, documents, extraction, writing, sources, charts))
+                    presentations=PresentationService(settings, projects, documents, extraction, writing, sources, charts),
+                    software_jobs=SoftwareJobService(settings, projects))
 
 
 _services: Services | None = None

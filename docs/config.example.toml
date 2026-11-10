@@ -62,3 +62,12 @@ ai_max_output_tokens = 16000
 languagetool_url = 'http://localhost:8081'
 # languagetool_dir = 'D:\AcademicWriter-Data\languagetool'
 # java_cmd = 'C:\Program Files\Microsoft\jdk-21.0.13.21-hotspot\bin\java.exe'
+
+# Traitements dans les logiciels du poste (Python, Excel, Octave, R, Scilab, CalculiX, Maxima).
+# Désactivé par défaut. Même activé, chaque lancement exige une confirmation explicite (confirm=true).
+# Les logiciels d'automatisme industriel (TIA Portal, CODESYS…) ne sont jamais pilotés.
+software_execution = false
+software_timeout_s = 180
+
+# Adresse e-mail exigée par Unpaywall (facultative ; jamais envoyée si absente).
+# unpaywall_email = 'prenom.nom@exemple.org'
