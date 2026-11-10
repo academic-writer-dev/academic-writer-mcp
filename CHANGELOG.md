@@ -1,5 +1,13 @@
 # Journal des versions
 
+## Non publié
+
+- Bibliothèques gratuites du monde ajoutées à `find_works_by_topic` : J-STAGE et NDL Search (Japon), OSTI.GOV
+  (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Brésil, Chili, Afrique du Sud) ; registre porté à
+  51 fournisseurs (CiNii, Research Data Australia, Library of Congress, DPLA, Trove, Redalyc vérifiés et écartés,
+  avec la raison).
+- КиберЛенинка (OAI-PMH officiel), constantes CODATA (NIST), Europeana (clé), articles russes via OpenAlex.
+
 ## 1.2.0 — 2026-11-10 — Assistant académique universel
 
 - Profils d'enseignants structurés (définitions, structure attendue, style, règles, barème) ; extraction du barème

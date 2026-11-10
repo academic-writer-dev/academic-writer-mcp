@@ -4,6 +4,9 @@
 - Sources russes : КиберЛенинка par OAI-PMH (métadonnées, sans année ni résumé ; pas de recherche distante :
   moissonner les revues utiles) ; eLIBRARY, РГБ, НЭБ, РНБ, ГПНТБ, ВИНИТИ : pas d'API autorisée → liens manuels ;
   РГБ / НЭБ / УрФУ injoignables depuis l'adresse IP actuelle (à retester sans VPN).
+- Asie / Amériques / Afrique : J-STAGE, NDL, OSTI, Érudit, AJOL, SciELO = notices et liens (lecture sur le site) ;
+  NDL Search répond parfois lentement (attente maximale 30 s, sans bloquer les autres bases) ; CiNii, Research
+  Data Australia (robots.txt), Library of Congress (403), DPLA et Trove (clé), Redalyc : non intégrés.
 - BASE (refus par IP), OAPEN et Gallica (HTTP 403), DART-Europe (pas d'API) : non intégrés.
 - Semantic Scholar sans clé : quota public souvent saturé ; clé réservée aux adresses institutionnelles.
 - OpenAlex sans clé : budget gratuit partagé par adresse IP.

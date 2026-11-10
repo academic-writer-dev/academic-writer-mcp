@@ -2,7 +2,7 @@
 
 # Statut des fournisseurs documentaires
 
-Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 6, PAID_EXCLUDED : 1, PUBLIC_FREE : 19, UNAVAILABLE : 10, UNVERIFIED_EXCLUDED : 2.
+Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_ACCOUNT : 1, FREE_API_KEY : 8, PAID_EXCLUDED : 1, PUBLIC_FREE : 25, UNAVAILABLE : 14, UNVERIFIED_EXCLUDED : 2.
 
 Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVERIFIED_EXCLUDED, UNAVAILABLE.
 
@@ -39,6 +39,18 @@ Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVER
 | [Google Books](https://www.googleapis.com/books) | international | livres (métadonnées) | `FREE_API_KEY` | clé gratuite | non | api | OK (clé configurée) |
 | [Open Library](https://openlibrary.org) | international | livres | `PUBLIC_FREE` | aucune | prêt / domaine public | api | OK |
 | [Internet Archive](https://archive.org) | international | livres numérisés | `PUBLIC_FREE` | aucune | seulement licence libre déclarée | api | OK |
+| [J-STAGE (JST)](https://api.jstage.jst.go.jp/searchapi/do) | Japon | revues scientifiques japonaises | `PUBLIC_FREE` | aucune | lecture sur le site (licence selon la revue) | api | OK : API de recherche publique (Atom) |
+| [NDL Search (Bibliothèque nationale de la Diète)](https://ndlsearch.ndl.go.jp/api/opensearch) | Japon | livres, articles, thèses japonais | `PUBLIC_FREE` | aucune | notices (document selon la bibliothèque) | api | OK : OpenSearch autorisé par robots.txt |
+| [CiNii Research (NII)](https://cir.nii.ac.jp) | Japon | articles, livres, thèses japonais | `UNAVAILABLE` | — | — | manual_link | recherche interdite aux robots (robots.txt) ; ses notices passent par NDL Search |
+| [OSTI.GOV (DOE)](https://www.osti.gov/api/v1) | États-Unis | rapports techniques, articles, données (énergie, sciences) | `PUBLIC_FREE` | aucune | souvent sur le site (droits selon le document) | api | OK : API publique autorisée par robots.txt |
+| [Library of Congress](https://www.loc.gov) | États-Unis | catalogue, collections numérisées | `UNAVAILABLE` | — | — | manual_link | HTTP 403 au client automatisé (non contourné) |
+| [DPLA](https://dp.la) | États-Unis | collections patrimoniales | `FREE_API_KEY` | clé personnelle obligatoire | selon institution | manual_link | HTTP 403 sans clé ; non intégré |
+| [Érudit](https://www.erudit.org) | Canada | revues savantes francophones | `PUBLIC_FREE` | aucune (via Crossref) | libre ou différé selon la revue | api | OK : recherche Crossref, préfixe DOI 10.7202 |
+| [African Journals Online (AJOL)](https://www.ajol.info) | Afrique | ≈ 500 revues africaines | `PUBLIC_FREE` | aucune (via Crossref) | selon la revue (aucun PDF téléchargé : demande du site) | api | OK : recherche Crossref, préfixe DOI 10.4314 |
+| [SciELO (Brésil, Chili, Afrique du Sud)](https://scielo.org) | Amérique latine / Afrique | revues en libre accès | `PUBLIC_FREE` | aucune (via Crossref) | oui (CC selon la revue) | api | OK : recherche Crossref, préfixes 10.1590, 10.4067, 10.17159 |
+| [Redalyc](https://www.redalyc.org) | Amérique latine | revues en libre accès | `UNAVAILABLE` | — | sur le site | manual_link | OAI-PMH sans résultat ; revues souvent présentes dans DOAJ et OpenAlex |
+| [Trove (Bibliothèque nationale d'Australie)](https://trove.nla.gov.au) | Australie | livres, journaux, revues australiens | `FREE_API_KEY` | clé personnelle obligatoire (HTTP 401 sans clé) | selon document | manual_link | non intégré (pas de clé) |
+| [Research Data Australia](https://researchdata.edu.au) | Australie | jeux de données de recherche | `UNAVAILABLE` | — | — | manual_link | API sous /registry/, interdite aux robots (robots.txt) |
 | [eLIBRARY.RU / РИНЦ](https://elibrary.ru) | Russie | articles russes | `UNAVAILABLE` | pas d'API publique | selon revue | manual_link | lien de recherche (via Яндекс) ; aucune extraction |
 | [КиберЛенинка](https://cyberleninka.ru/oai) | Russie | articles en libre accès (≈ 4 000 revues) | `PUBLIC_FREE` | aucune (OAI-PMH officiel) | sur le site (PDF interdits aux robots) | api | OK : OAI-PMH autorisé par robots.txt ; moissonnage par revue + index local |
 | [РГБ (dont Электронная библиотека диссертаций)](https://search.rsl.ru) | Russie | catalogue, thèses | `UNAVAILABLE` | pas d'API publique | consultation sur place / payante pour certaines thèses | manual_link | lien de recherche |

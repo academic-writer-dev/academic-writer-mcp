@@ -7,7 +7,7 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 
 | Outil | Rôle | Bases |
 |---|---|---|
-| `find_works_by_topic` | Recherche par thème ; filtres auteur, années, type ; `services` pour restreindre | Internet Archive, Open Library, DOAJ, arXiv, Crossref, OpenAlex, Semantic Scholar, Europe PMC, PubMed, HAL, Zenodo, OpenAIRE, ERIC, DNB, CORE (clé), DataCite (données) |
+| `find_works_by_topic` | Recherche par thème ; filtres auteur, années, type ; `services` pour restreindre | Internet Archive, Open Library, DOAJ, arXiv, Crossref, OpenAlex, Semantic Scholar, Europe PMC, PubMed, HAL, Zenodo, OpenAIRE, ERIC, DNB, CORE (clé), DataCite (données) ; J-STAGE et NDL Search (Japon), OSTI.GOV (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Brésil, Chili, Afrique du Sud) |
 | `search_sources` | Fiche d'un ouvrage précis (titre, ISBN) | Google Books (clé), OpenAlex, Crossref |
 | `verify_source_metadata` | Vérifie auteurs, titre, année, DOI d'une source enregistrée | Crossref, Open Library, Google Books |
 | `check_retractions` | Rétractations, retraits, corrections, avis d'inquiétude | Crossref (updates) ; OpenAlex marque `[RÉTRACTÉ]` |
@@ -17,7 +17,7 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 | `lookup_constant` | Constantes physiques fondamentales (copie locale hors connexion) | NIST — CODATA 2022 |
 | `search_heritage` | Objets numérisés des musées, archives, bibliothèques (licence par objet) | Europeana (clé gratuite) |
 | `cyberleninka_journals`, `cyberleninka_harvest` | Revues russes en libre accès : moissonnage OAI-PMH officiel, index local, recherche via `find_works_by_topic` | КиберЛенинка |
-| `list_source_providers` | Registre des 40 fournisseurs et statuts | — |
+| `list_source_providers` | Registre des 51 fournisseurs et statuts | — |
 
 ## Règles
 
@@ -30,6 +30,12 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
   - eLIBRARY, РГБ, НЭБ, РНБ, ГПНТБ : pas d'API publique autorisant l'automatisation → liens manuels
     (`confirm_source_verification` pour noter la vérification) ; РГБ, НЭБ et dépôts universitaires (УрФУ)
     n'acceptaient pas la connexion depuis l'adresse IP du poste le 2026-11-10 (délai dépassé).
+- Asie, Amériques, Afrique, Océanie (vérifié le 2026-11-10) :
+  - J-STAGE (API publique), NDL Search (OpenSearch autorisé par robots.txt), OSTI.GOV (API publique) ;
+  - Érudit, AJOL, SciELO : recherche par l'API Crossref restreinte à leurs préfixes DOI (10.7202 ; 10.4314 ;
+    10.1590, 10.4067, 10.17159) — aucune requête vers leurs sites, aucun PDF téléchargé ;
+  - écartés : CiNii Research et Research Data Australia (recherche interdite aux robots), Library of Congress
+    (HTTP 403), DPLA et Trove (clé personnelle obligatoire), Redalyc (OAI vide ; revues présentes dans DOAJ).
 - Aucun scraping ni contournement de protection.
 - Mode connecté requis ; seuls les termes de recherche ou les identifiants (DOI, ISBN) sont envoyés.
 - Aucune référence inventée : chaque fiche vient d'un catalogue et doit être confirmée par l'utilisateur.

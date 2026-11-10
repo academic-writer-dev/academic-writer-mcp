@@ -150,14 +150,17 @@ def register(mcp: MCPServer) -> None:
         query: Annotated[str, Field(description="Thème de recherche (ex. « нарезание зубчатых колес методом обката »). "
                                                 "Essayer aussi la formulation en anglais pour plus de résultats.")],
         kind: Annotated[Literal["books", "articles", "datasets", "all"], Field(
-            description="books : Internet Archive, Open Library ; articles : DOAJ, arXiv, Crossref, Semantic Scholar, "
-                        "Europe PMC, PubMed, HAL, Zenodo, CORE (clé) ; datasets : DataCite, Zenodo.")] = "all",
+            description="books : Internet Archive, Open Library, DNB, NDL (Japon) ; articles : DOAJ, arXiv, Crossref, "
+                        "Semantic Scholar, Europe PMC, PubMed, HAL, Zenodo, OpenAlex, OpenAIRE, ERIC, CORE (clé), "
+                        "J-STAGE (Japon), OSTI (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Amérique "
+                        "latine, Afrique du Sud) ; datasets : DataCite, Zenodo.")] = "all",
         open_access_only: Annotated[bool, Field(description="Seulement les textes intégraux légalement téléchargeables.")] = False,
         language: Annotated[Literal["ru", "en", "fr"] | None, Field(description="Langue des livres (Internet Archive).")] = None,
         limit: Annotated[int, Field(ge=1, le=25)] = 10,
         services: Annotated[list[str] | None, Field(
             description="Restreindre aux bases citées (ex. [\"pubmed\", \"europe_pmc\"] en médecine, [\"hal\"] pour "
-                        "les travaux français).")] = None,
+                        "les travaux français, [\"jstage\", \"ndl\"] Japon, [\"osti\"] énergie / États-Unis, "
+                        "[\"erudit\"] Canada, [\"ajol\"] Afrique, [\"scielo\"] Amérique latine).")] = None,
         author: Annotated[str | None, Field(description="Nom d'un auteur (filtre).")] = None,
         year_from: int | None = None,
         year_to: int | None = None,
@@ -166,6 +169,7 @@ def register(mcp: MCPServer) -> None:
     ) -> DiscoveryResult:
         """Trouve des livres, manuels, articles et jeux de données RÉELS sur un thème dans des bases légales et
         gratuites (Internet Archive, Open Library, DOAJ, arXiv, Crossref, Semantic Scholar, Europe PMC, PubMed, HAL,
+        J-STAGE et NDL (Japon), OSTI (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Amérique latine),
         Zenodo, DataCite, CORE), classés par pertinence, avec lien, licence et fiche pré-remplie. open_access = texte
         intégral sous licence libre attestée (une simple lecture gratuite n'est pas présentée comme libre accès).
         Aucune bibliothèque pirate. Présenter les résultats à l'utilisateur, qui choisit."""

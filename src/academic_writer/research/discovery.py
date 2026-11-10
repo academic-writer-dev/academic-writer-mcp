@@ -276,6 +276,10 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
         plans.append(("eric", more.eric_url(query, per), more.parse_eric))
     if kind in ("books", "all"):
         plans.append(("dnb", more.dnb_url(query, per), more.parse_dnb))
+    if not open_access_only:  # Asie, Amériques, Afrique : notices (lecture sur le site, pas de licence libre attestée)
+        from academic_writer.research import world_sources
+
+        plans.extend(world_sources.plans(query, per, kind))
     if kind == "datasets":
         plans.append(("datacite", osc.datacite_url(query, per), osc.parse_datacite))
         plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))
@@ -306,7 +310,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
 
     from concurrent.futures import ThreadPoolExecutor
 
-    with ThreadPoolExecutor(max_workers=6) as pool:
+    with ThreadPoolExecutor(max_workers=12) as pool:
         for name, found, error in pool.map(run, plans):
             if name not in services:
                 services.append(name)
