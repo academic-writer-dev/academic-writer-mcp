@@ -7,7 +7,8 @@
 - BASE (refus par IP), OAPEN et Gallica (HTTP 403), DART-Europe (pas d'API) : non intégrés.
 - Semantic Scholar sans clé : quota public souvent saturé ; clé réservée aux adresses institutionnelles.
 - OpenAlex sans clé : budget gratuit partagé par adresse IP.
-- OECD, IMF, NIST, Europeana, DDB : accessibles mais non intégrés.
+- OECD : requêtes de données refusées au client automatisé (HTTP 403) ; IMF et DDB : non intégrés.
+- Europeana, CORE : intégrés mais inactifs sans clé personnelle gratuite.
 - Pertinence par mots-clés : des résultats hors sujet peuvent subsister ; des résultats pertinents peuvent être écartés.
 
 ## Documents et OCR
