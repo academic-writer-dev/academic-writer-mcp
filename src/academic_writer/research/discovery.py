@@ -248,6 +248,12 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                 return osc.parse_semantic_scholar(_http(osc.semantic_scholar_url(query, per),
                                                         headers={"x-api-key": _key}), query)
             plans.append(("semantic_scholar", "", s2))
+        elif getattr(fetch, "__name__", "") == "http_text":
+            from academic_writer.research.fulltext import http_text as _http
+
+            def s2_public(_text, query):  # sans clé : une seule tentative (quota public souvent saturé)
+                return osc.parse_semantic_scholar(_http(osc.semantic_scholar_url(query, per), retries=0), query)
+            plans.append(("semantic_scholar", "", s2_public))
         else:
             plans.append(("semantic_scholar", osc.semantic_scholar_url(query, per), osc.parse_semantic_scholar))
         plans.append(("europe_pmc", osc.europe_pmc_url(query, per), osc.parse_europe_pmc))
