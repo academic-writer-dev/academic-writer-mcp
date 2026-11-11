@@ -44,7 +44,8 @@ Mode STRICT `find_works_by_topic(..., discipline="genie_mecanique")` (aussi `fab
 | DOAJ | revues classées LCC TJ (machines), TL (véhicules, aéronautique), TS (fabrication), TA349-359 (mécanique appliquée), TA401-492 (matériaux, RDM) |
 | J-STAGE | revues JSME : Mechanical Engineering Journal, Journal of Advanced Mechanical Design, Systems, and Manufacturing, Transactions of the JSME |
 | NASA NTRS | rapports techniques NASA (API publique) |
-| КиберЛенинка | 18 revues russes (МГТУ им. Баумана « Машиностроение », Известия вузов. Машиностроение, Обработка металлов, Динамика систем, механизмов и машин…), après moissonnage |
+| Revues d'universités russes (OpenAlex) | Вестник МГТУ «Станкин», СТИН, RUDN Journal of Engineering Research, Вестник РУДН, Записки Горного института, Горные науки и технологии, Известия вузов. Машиностроение, Технология машиностроения |
+| КиберЛенинка | 20 revues russes (МГТУ им. Баумана « Машиностроение », Известия вузов. Машиностроение, Обработка металлов, Динамика систем, механизмов и машин…), après moissonnage |
 | autres | Crossref, arXiv, HAL, Zenodo, OpenAIRE, OSTI, SciELO, AJOL, Érudit, Internet Archive, Open Library, DNB |
 
 Retirées dans ce mode : PubMed, Europe PMC, ERIC (hors sujet), NDL (lente). engrXiv : API interdite aux robots.

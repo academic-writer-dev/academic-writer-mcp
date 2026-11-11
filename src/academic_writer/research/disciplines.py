@@ -35,6 +35,7 @@ class Discipline(BaseModel):
     ntrs: bool
     cyberleninka_journals: dict[str, str]
     skip_services: tuple[str, ...]
+    openalex_journals: dict[str, str] = {}
 
 
 _MECHANICAL_RU = {
@@ -56,6 +57,20 @@ _MECHANICAL_RU = {
     "journal_32484": "Качество в обработке материалов",
     "journal_29527": "Авиационные материалы и технологии",
     "journal_7896": "Вестник РУДН. Серия: Инженерные исследования",
+    "journal_22732": "Записки Горного института (Санкт-Петербургский горный университет)",
+    "journal_34950": "Горное оборудование и электромеханика",
+}
+
+# Revues russes de génie mécanique interrogées par l'API OpenAlex (identifiants vérifiés le 2026-11-11)
+_MECHANICAL_RU_OPENALEX = {
+    "S4210196529": "Вестник МГТУ «Станкин» (СТАНКИН)",
+    "S4306530908": "СТИН (Станки и инструмент)",
+    "S4210240895": "RUDN Journal of Engineering Research (РУДН)",
+    "S4306538689": "Вестник РУДН. Серия: Инженерные исследования",
+    "S4210178371": "Записки Горного института (Горный университет)",
+    "S4210180145": "Горные науки и технологии (МИСИС)",
+    "S4306539224": "Известия высших учебных заведений. Машиностроение",
+    "S7407058982": "Технология машиностроения",
 }
 
 _MECHANICAL = Discipline(
@@ -63,7 +78,8 @@ _MECHANICAL = Discipline(
     openalex_subfields=("2210", "2211", "2209", "2203", "2202", "2206", "2506", "2503"),
     doaj_lcc=("TJ1-1570", "TL1-4050", "TS1-2301", "TA349-359", "TA401-492"),
     jstage_journals=("mej", "jamdsm", "transjsme"),
-    ntrs=True, cyberleninka_journals=_MECHANICAL_RU, skip_services=("pubmed", "europe_pmc", "eric", "ndl"))
+    ntrs=True, cyberleninka_journals=_MECHANICAL_RU, skip_services=("pubmed", "europe_pmc", "eric", "ndl"),
+    openalex_journals=_MECHANICAL_RU_OPENALEX)
 
 # profils de discipline du serveur rattachés au génie mécanique général
 DISCIPLINES = {"genie_mecanique": _MECHANICAL}
@@ -180,7 +196,20 @@ def parse_ntrs(text: str | None, query: str) -> list[DiscoveredWork]:
     return works
 
 
-def extra_plans(profile: Discipline, query: str, per: int, kind: str) -> list[tuple]:
+def journals_parser():
+    from academic_writer.research import openscience_more as more
+
+    def parse(text: str | None, query: str) -> list[DiscoveredWork]:
+        works = more.parse_openalex(text, query)
+        for work in works:
+            work.service = "revues_ru_meca"
+        return works
+    parse.__name__ = "parse_revues_ru_meca"
+    return parse
+
+
+def extra_plans(profile: Discipline, query: str, per: int, kind: str, openalex_key: str | None = None) -> list[tuple]:
+    from academic_writer.research import openscience_more as more
     from academic_writer.research import world_sources as world
 
     plans: list[tuple] = []
@@ -189,4 +218,8 @@ def extra_plans(profile: Discipline, query: str, per: int, kind: str) -> list[tu
             plans.append(("jstage", world.jstage_url(query, per) + f"&cdjournal={code}", world.parse_jstage))
         if profile.ntrs:
             plans.append(("ntrs", ntrs_url(query, per), parse_ntrs))
+        if profile.openalex_journals:  # revues d'universités russes (СТАНКИН, РУДН, Горный…) par l'API OpenAlex
+            journal_filter = "primary_location.source.id:" + "|".join(profile.openalex_journals)
+            plans.append(("revues_ru_meca", more.openalex_url(query, per, key=openalex_key, topic_filter=journal_filter),
+                          journals_parser()))
     return plans

@@ -2,6 +2,10 @@
 
 ## Non publié
 
+- Revues d'universités russes en génie mécanique : СТАНКИН (Вестник МГТУ «Станкин», СТИН), РУДН, Горный
+  университет, МИСИС, Известия вузов. Машиностроение, Технология машиностроения (API OpenAlex, filtre par revue) ;
+  КиберЛенинка : + Записки Горного института, Горное оборудование и электромеханика (index : 12 000 articles).
+
 - Bibliothèques ajoutées : БНТУ (Biélorussie, en russe), ТГУ Тольятти, УрФУ (dépôts d'universités), La Referencia
   (Amérique latine), Open Textbook Library (422 manuels ouverts en index local, dont 22 de génie mécanique) ;
   outils `find_writing_guides` (guides de rédaction TP / TD / mémoire / rapport / projet) et

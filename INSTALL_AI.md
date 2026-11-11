@@ -72,7 +72,7 @@ Sans clé, le serveur fonctionne (OpenAlex avec un quota partagé ; Google Books
 
 ## Étape 6 — Facultatif
 
-- Index russe de génie mécanique (≈ 20 minutes) : dans Claude, « Moissonne les revues russes de génie mécanique ».
+- Index russe de génie mécanique (20 revues, ≈ 20 minutes) : dans Claude, « Moissonne les revues russes de génie mécanique ».
 - OCR des documents scannés : voir `docs/INSTALLATION_WINDOWS.md`, section 5.
 - Transfert des projets d'un ancien PC : `academic-writer backup` sur l'ancien, puis
   `academic-writer restore <fichier.zip> --yes` sur le nouveau (Claude fermé).

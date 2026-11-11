@@ -291,7 +291,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
     auto_notice = None
     if profile:  # discipline imposée : bases hors sujet retirées, revues et rapports spécialisés ajoutés
         plans = [plan for plan in plans if plan[0] not in profile.skip_services]
-        plans += disciplines.extra_plans(profile, query, per, kind)
+        plans += disciplines.extra_plans(profile, query, per, kind, keys.get("openalex"))
     elif auto_domain:  # domaine reconnu : sources spécialisées AJOUTÉES, aucune base retirée
         auto_profile, topic_filter = disciplines.resolve(auto_domain)
         extra: list[tuple[str, str, Callable]] = []
@@ -303,7 +303,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
             if kind in ("articles", "all"):
                 extra.append(("doaj", "https://doaj.org/api/search/articles/"
                               f"{q(disciplines.doaj_query(query, auto_profile))}?pageSize={per}", parse_doaj))
-            extra += disciplines.extra_plans(auto_profile, query, per, kind)
+            extra += disciplines.extra_plans(auto_profile, query, per, kind, keys.get("openalex"))
 
         def marked(plan: tuple[str, str, Callable]) -> tuple[str, str, Callable]:
             name, url, parser = plan

@@ -2,7 +2,7 @@
 
 # Statut des fournisseurs documentaires
 
-Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_API_KEY : 2, PUBLIC_FREE : 30.
+Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_API_KEY : 2, PUBLIC_FREE : 31.
 
 Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVERIFIED_EXCLUDED, UNAVAILABLE.
 
@@ -39,4 +39,5 @@ Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVER
 | [УрФУ — Université fédérale de l'Oural (elar)](https://elar.urfu.ru) | Russie | manuels, méthodiques, articles, guides de ВКР | `PUBLIC_FREE` | aucune | sur le dépôt (droits selon le document) | api | OK (test du 2026-11-11 : 1 706 documents pour « зубчатые колеса ») ; OpenSearch autorisé par robots.txt |
 | [La Referencia (dépôts d'Amérique latine)](https://www.lareferencia.info) | Amérique latine | articles, thèses, livres (es, pt) | `PUBLIC_FREE` | aucune | selon le dépôt | api | OK (test du 2026-11-11 : 1,4 s) ; API VuFind publique autorisée par robots.txt |
 | [Open Textbook Library (Université du Minnesota)](https://open.umn.edu/opentextbooks) | États-Unis | manuels universitaires sous licence ouverte : ingénierie, génie mécanique, physique, mathématiques, rédaction | `PUBLIC_FREE` | aucune | oui (licence ouverte, PDF gratuit sur la page) | api | OK (test du 2026-11-11) ; catalogue par matière en index local |
+| [Revues russes de génie mécanique (СТАНКИН, СТИН, РУДН, Горный, МИСИС, Известия вузов. Машиностроение, Технология машиностроения)](https://api.openalex.org) | Russie | articles de génie mécanique, machines-outils, mines | `PUBLIC_FREE` | aucune (clé OpenAlex facultative) | selon la revue | api | OK (test du 2026-11-11 : engrenages, usure des outils, vibrations des machines-outils) ; via l'API publique OpenAlex (filtre par revue), autorisée par robots.txt |
 | [КиберЛенинка](https://cyberleninka.ru/oai) | Russie | articles en libre accès (≈ 4 000 revues) | `PUBLIC_FREE` | aucune (OAI-PMH officiel) | sur le site (PDF interdits aux robots) | api | OK (test du 2026-11-10 : résultats pour 5/9 thèmes de domaines variés, 14 références) ; OAI-PMH officiel autorisé par robots.txt ; index local de 10 800 articles de génie mécanique |

@@ -57,7 +57,7 @@ def test_aliases_and_unknown_discipline() -> None:
 
 def test_russian_mechanical_journals_and_registry() -> None:
     journals = disciplines.DISCIPLINES["genie_mecanique"].cyberleninka_journals
-    assert len(journals) == 18 and all(k.startswith("journal_") for k in journals)
+    assert len(journals) == 20 and all(k.startswith("journal_") for k in journals)
     assert "journal_11101" in journals  # Вестник МГТУ им. Баумана. Серия «Машиностроение»
     by_id = {p.id: p for p in PROVIDERS}
     assert by_id["ntrs"].integration == "api" and by_id["ntrs"].access == "PUBLIC_FREE"
@@ -115,3 +115,42 @@ def test_auto_mode_ranks_specialized_first() -> None:
     result = find_by_topic("gear fatigue", fetch, "all", auto_domain="genie_mecanique", auto_label="Génie mécanique")
     assert result.works[0].title == "Gear fatigue strength"
     assert any(n.startswith("Domaine reconnu : Génie mécanique") for n in result.notices)
+
+
+def test_russian_university_journals_via_openalex() -> None:
+    urls = []
+
+    def fetch(url: str):
+        urls.append(urllib.parse.unquote(url))
+        if "primary_location.source.id" in url:
+            return json.dumps({"results": [{"id": "https://openalex.org/W9", "display_name": "Износ режущего инструмента",
+                                            "primary_location": {"source": {"display_name": "Вестник МГТУ Станкин"}}}]})
+        return None
+
+    result = find_by_topic("износ режущего инструмента", fetch, "articles", discipline="genie_mecanique")
+    assert "revues_ru_meca" in result.services
+    journal_url = next(u for u in urls if "primary_location.source.id" in u)
+    assert "S4210196529" in journal_url and "S4210178371" in journal_url  # СТАНКИН, Записки Горного института
+    assert any(w.service == "revues_ru_meca" for w in result.works)
+    journals = disciplines.DISCIPLINES["genie_mecanique"].cyberleninka_journals
+    assert {"journal_22732", "journal_34950", "journal_7896"} <= set(journals)  # Горный, горное оборудование, РУДН
+
+
+def test_russian_university_journals_via_openalex() -> None:
+    urls = []
+
+    def fetch(url: str):
+        urls.append(urllib.parse.unquote(url))
+        if "primary_location.source.id" in url:
+            return json.dumps({"results": [{"id": "https://openalex.org/W9", "display_name": "Вибрации металлорежущих станков",
+                                            "primary_location": {"source": {"display_name": "Вестник МГТУ Станкин"}}}]})
+        return None
+
+    result = find_by_topic("вибрации металлорежущих станков", fetch, "articles", discipline="genie_mecanique",
+                           services_filter=["revues_ru_meca"])
+    assert result.services == ["revues_ru_meca"] and result.works[0].service == "revues_ru_meca"
+    journal_filter = next(u for u in urls if "primary_location.source.id" in u)
+    for source in ("S4210196529", "S4210240895", "S4210178371"):  # СТАНКИН, РУДН, Горный
+        assert source in journal_filter
+    journals = disciplines.DISCIPLINES["genie_mecanique"].cyberleninka_journals
+    assert {"journal_22732", "journal_34950", "journal_7896"} <= set(journals)  # Горный, горное оборудование, РУДН

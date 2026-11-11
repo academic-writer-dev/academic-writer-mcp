@@ -2,7 +2,7 @@
 
 Date du contrôle : 2026-11-10. Version 1.2.0 (et ajouts non publiés, voir [CHANGELOG](../CHANGELOG.md)).
 
-## 1. Bibliothèques connectées et opérationnelles : 32
+## 1. Bibliothèques connectées et opérationnelles : 33
 
 Test réel depuis le poste (mode connecté), 9 thèmes de domaines et de langues variés : mécanique (gear fatigue),
 médecine (diabetes treatment), droit (labour law dismissal), histoire (french revolution), informatique (neural
@@ -47,6 +47,15 @@ Ajoutées le 2026-11-11 (livres, manuels, méthodiques d'universités ; tests r�
 | Open Textbook Library | États-Unis | 422 manuels ouverts indexés (dont 22 de génie mécanique) | manuels universitaires sous licence ouverte : ingénierie, physique, mathématiques, rédaction |
 
 Les dépôts russophones ne sont interrogés que pour une recherche écrite en cyrillique.
+
+Revues d'universités russes de génie mécanique (ajoutées le 2026-11-11, recherche spécialisée génie mécanique) :
+- par l'API OpenAlex : Вестник МГТУ «Станкин» (СТАНКИН), СТИН (Станки и инструмент), RUDN Journal of Engineering
+  Research et Вестник РУДН. Инженерные исследования (РУДН), Записки Горного института (Горный университет),
+  Горные науки и технологии (МИСИС), Известия вузов. Машиностроение, Технология машиностроения ;
+- par КиберЛенинка (index local, 20 revues, 12 000 articles) : ajout de Записки Горного института et Горное
+  оборудование и электромеханика.
+Non intégrés : bibliothèque de СТАНКИН (adresse introuvable), dépôt ouvert du РУДН (site sans interface de
+recherche automatisée : pas d'aspiration de pages).
 
 ### Guides de rédaction (`find_writing_guides`)
 

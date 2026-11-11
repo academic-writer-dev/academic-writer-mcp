@@ -35,6 +35,7 @@ Date : 2026-11-10. Méthode : requête réelle depuis le poste (seuls des termes
 - **УрФУ — Université fédérale de l'Oural (elar)** — OK (test du 2026-11-11 : 1 706 documents pour « зубчатые колеса ») ; OpenSearch autorisé par robots.txt (`PUBLIC_FREE`)
 - **La Referencia (dépôts d'Amérique latine)** — OK (test du 2026-11-11 : 1,4 s) ; API VuFind publique autorisée par robots.txt (`PUBLIC_FREE`)
 - **Open Textbook Library (Université du Minnesota)** — OK (test du 2026-11-11) ; catalogue par matière en index local (`PUBLIC_FREE`)
+- **Revues russes de génie mécanique (СТАНКИН, СТИН, РУДН, Горный, МИСИС, Известия вузов. Машиностроение, Технология машиностроения)** — OK (test du 2026-11-11 : engrenages, usure des outils, vibrations des machines-outils) ; via l'API publique OpenAlex (filtre par revue), autorisée par robots.txt (`PUBLIC_FREE`)
 - **КиберЛенинка** — OK (test du 2026-11-10 : résultats pour 5/9 thèmes de domaines variés, 14 références) ; OAI-PMH officiel autorisé par robots.txt ; index local de 10 800 articles de génie mécanique (`PUBLIC_FREE`)
 
 Points notables :
