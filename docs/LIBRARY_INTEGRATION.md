@@ -7,7 +7,7 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 
 | Outil | Rôle | Bases |
 |---|---|---|
-| `find_works_by_topic` | Recherche par thème ; filtres auteur, années, type ; `services` pour restreindre | Internet Archive, Open Library, DOAJ, arXiv, Crossref, OpenAlex, Europe PMC, PubMed, HAL, Zenodo, OpenAIRE, ERIC, DNB, DataCite (données) ; J-STAGE et NDL Search (Japon), OSTI.GOV (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Brésil, Chili, Afrique du Sud) |
+| `find_works_by_topic` | Recherche par thème ; filtres auteur, années, type ; `services` pour restreindre | Internet Archive, Open Library, DOAJ, arXiv, Crossref, OpenAlex, Europe PMC, PubMed, HAL, Zenodo, OpenAIRE, ERIC, DNB, DataCite (données) ; J-STAGE et NDL Search (Japon), OSTI.GOV (États-Unis), Érudit (Canada), AJOL (Afrique), SciELO (Brésil, Chili, Afrique du Sud), La Referencia (Amérique latine), Open Textbook Library (manuels ouverts) ; en cyrillique : БНТУ, ТГУ Тольятти, УрФУ |
 | `search_sources` | Fiche d'un ouvrage précis (titre, ISBN) | Google Books (clé), OpenAlex, Crossref |
 | `verify_source_metadata` | Vérifie auteurs, titre, année, DOI d'une source enregistrée | Crossref, Open Library, Google Books |
 | `check_retractions` | Rétractations, retraits, corrections, avis d'inquiétude | Crossref (updates) ; OpenAlex marque `[RÉTRACTÉ]` |
@@ -17,7 +17,9 @@ Statut détaillé de chaque fournisseur : [provider_status.md](provider_status.m
 | `lookup_constant` | Constantes physiques fondamentales (copie locale hors connexion) | NIST — CODATA 2022 |
 | `cyberleninka_harvest_discipline` | Moissonne les 18 revues russes de génie mécanique (OAI-PMH officiel) | КиберЛенинка |
 | `cyberleninka_journals`, `cyberleninka_harvest` | Revues russes en libre accès : moissonnage OAI-PMH officiel, index local, recherche via `find_works_by_topic` | КиберЛенинка |
-| `list_source_providers` | Registre des 27 bibliothèques connectées et statuts | — |
+| `find_writing_guides` | Guides et méthodiques pour rédiger un TP, un TD, un mémoire, un rapport, un projet | УрФУ, БНТУ, ТГУ Тольятти, Open Textbook Library, OpenAlex, DOAJ, Open Library, Internet Archive, HAL, La Referencia |
+| `update_open_textbooks` | Met à jour l'index local des manuels ouverts (par matière, ≈ 2 minutes, une fois par mois) | Open Textbook Library |
+| `list_source_providers` | Registre des 32 bibliothèques connectées et statuts | — |
 
 ## Reconnaissance automatique du domaine
 

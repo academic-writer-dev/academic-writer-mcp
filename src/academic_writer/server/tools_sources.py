@@ -319,3 +319,29 @@ def register(mcp: MCPServer) -> None:
         ensuite trouvés par find_works_by_topic. Aucun PDF téléchargé."""
         with user_errors():
             return get_services().sources.cyberleninka_harvest_discipline(discipline, max_pages_per_journal)
+
+    @mcp.tool(title="Guides de rédaction (TP, TD, mémoire, rapport, projet)",
+              annotations=ToolAnnotations(read_only_hint=True, open_world_hint=True, idempotent_hint=True))
+    def find_writing_guides(
+        work_type: Annotated[str, Field(description="tp, td, memoire, rapport, projet (ou un type de projet : "
+                                                    "memoire_master, compte_rendu_tp…).")],
+        language: Annotated[Literal["fr", "ru", "en"] | None, Field(description="Langue des guides ; vide : les "
+                                                                             "trois langues.")] = None,
+        limit: Annotated[int, Field(ge=3, le=40)] = 12,
+    ) -> DiscoveryResult:
+        """Trouve des guides, méthodiques (« методические указания ») et manuels RÉELS expliquant comment rédiger et
+        présenter un compte rendu de TP, un TD, un mémoire (licence, master, thèse), un rapport ou un projet de
+        cours : dépôts d'universités (УрФУ, БНТУ, ТГУ Тольятти), manuels ouverts (Open Textbook Library),
+        OpenAlex, DOAJ, Open Library, Internet Archive, HAL, La Referencia. Les consignes de l'établissement priment."""
+        with user_errors():
+            return get_services().sources.writing_guides(work_type, language, limit)
+
+    @mcp.tool(title="Mettre à jour les manuels ouverts",
+              annotations=ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True,
+                                          open_world_hint=True))
+    def update_open_textbooks() -> dict:
+        """Télécharge (une page par seconde, ~1 minute) le catalogue des manuels universitaires sous licence ouverte
+        de l'Open Textbook Library pour l'ingénierie, le génie mécanique, la physique, les mathématiques appliquées,
+        la rédaction et la communication, et le garde dans un index local (à refaire environ une fois par mois)."""
+        with user_errors():
+            return get_services().sources.update_open_textbooks()

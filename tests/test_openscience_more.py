@@ -78,8 +78,10 @@ def test_provider_registry_is_honest() -> None:
     assert all(p.integration == "api" and p.verification.startswith("OK") for p in PROVIDERS)
     assert not {"base", "viniti", "semantic_scholar", "core", "unpaywall", "europeana", "elibrary"} & set(by_id)
     russian_api = [p for p in PROVIDERS if p.region == "Russie" and p.integration == "api"]
-    # seule КиберЛенинка, et seulement par son interface officielle OAI-PMH (autorisée par robots.txt)
-    assert [p.id for p in russian_api] == ["cyberleninka"] and "OAI-PMH" in russian_api[0].verification
+    # sources russes : seulement par des interfaces publiques autorisées par robots.txt (OAI-PMH, DSpace, OpenSearch)
+    assert {p.id for p in russian_api} == {"cyberleninka", "tltsu", "urfu"}
+    assert all("robots.txt" in p.verification for p in russian_api)
+    assert "OAI-PMH" in next(p for p in russian_api if p.id == "cyberleninka").verification
     assert all(p.integration != "api" or p.access in ("PUBLIC_FREE", "FREE_API_KEY", "FREE_ACCOUNT") for p in PROVIDERS)
 
 

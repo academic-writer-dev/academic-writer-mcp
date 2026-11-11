@@ -349,7 +349,56 @@ class SourceService:
                              services_filter=services,
                              author=author, year_from=year_from, year_to=year_to, publication_type=publication_type,
                              local_records=self._cyberleninka_records(), discipline=discipline,
-                             auto_domain=auto_domain, auto_label=self._domain_label(auto_domain))
+                             auto_domain=auto_domain, auto_label=self._domain_label(auto_domain),
+                             textbooks=self._textbooks())
+
+    def _textbooks(self) -> list:
+        from academic_writer.research.libraries_more import otl_records
+
+        return otl_records(self.settings.data_dir)
+
+    def update_open_textbooks(self):
+        """Met à jour l'index local des manuels ouverts (Open Textbook Library), une page par seconde."""
+        from academic_writer.research.libraries_more import OTL_SUBJECTS, otl_harvest
+
+        self._require_connected("la mise à jour des manuels ouverts")
+        try:
+            count = otl_harvest(self.settings.data_dir, self.text_fetcher)
+        except (ValueError, OSError) as exc:
+            raise ValidationFailed(f"Mise à jour impossible : {exc}") from exc
+        return {"textbooks": count, "subjects": list(OTL_SUBJECTS.values()),
+                "next_step": "Les manuels apparaissent dans find_works_by_topic (base « open_textbooks ») et dans "
+                             "find_writing_guides."}
+
+    def writing_guides(self, work_type: str, language: str | None = None, limit: int = 12):
+        """Guides et méthodiques RÉELS pour rédiger un TP, un TD, un mémoire, un rapport ou un projet."""
+        from academic_writer.research.discovery import DiscoveryResult
+        from academic_writer.research.libraries_more import GUIDE_QUERIES, GUIDE_SERVICES, WORK_TYPES
+
+        key = WORK_TYPES.get(work_type, work_type)
+        if key not in GUIDE_QUERIES:
+            raise ValidationFailed("Type de travail : tp, td, memoire, rapport ou projet.")
+        self._require_connected("la recherche de guides de rédaction")
+        languages = [language] if language in ("fr", "ru", "en") else ["fr", "ru", "en"]
+        queries = [q for lang in languages for q in GUIDE_QUERIES[key][lang]]
+        works, services, notices, seen = [], [], [], set()
+        for query in queries:
+            result = find_by_topic(query, self.text_fetcher, "all", limit=max(4, min(limit, 15)),
+                                   keys=self._service_keys(), services_filter=GUIDE_SERVICES,
+                                   local_records=self._cyberleninka_records(), textbooks=self._textbooks())
+            services += [s for s in result.services if s not in services]
+            notices += [n for n in result.notices if "indisponible" in n and n not in notices]
+            for work in result.works:
+                signature = work.title.casefold()[:70]
+                if signature not in seen:
+                    seen.add(signature)
+                    works.append(work)
+        works.sort(key=lambda w: (-w.relevance, -(w.year or 0)))
+        works = works[: max(3, min(limit, 40))]
+        notices.append("Guides, méthodiques et manuels trouvés dans les bibliothèques : vérifier qu'ils correspondent "
+                       "aux consignes de VOTRE établissement, qui priment toujours.")
+        return DiscoveryResult(query=" | ".join(queries), services=services, count=len(works), works=works,
+                               notices=notices)
 
     def _domain_label(self, domain_id: str | None) -> str | None:
         from academic_writer.domains.registry import DomainRegistry

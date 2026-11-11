@@ -2,6 +2,12 @@
 
 ## Non publié
 
+- Bibliothèques ajoutées : БНТУ (Biélorussie, en russe), ТГУ Тольятти, УрФУ (dépôts d'universités), La Referencia
+  (Amérique latine), Open Textbook Library (422 manuels ouverts en index local, dont 22 de génie mécanique) ;
+  outils `find_writing_guides` (guides de rédaction TP / TD / mémoire / rapport / projet) et
+  `update_open_textbooks`. Écartés après test : DOAB, OAPEN, Shodhganga, KoreaScience, Garuda, КПИ, ХПИ, ТПУ, БГУ,
+  КФУ, Самарский университет, СФУ, ЮУрГУ, СПбГУ.
+
 - Installation automatique : script `scripts/install.ps1` (uv, Git, dépôt, dépendances, configuration non
   écrasée, Claude Desktop et Claude Code, test de démarrage) et instructions pour un assistant IA (`INSTALL_AI.md`) ;
   guide pour autoriser l'installation (permissions de l'IA, accès au dépôt).

@@ -28,11 +28,18 @@ français, en russe ou en anglais, et Claude appelle les bons outils du serveur.
 ## Recherches seules
 
 - « Trouve des articles sur la fatigue des engrenages » : le domaine est reconnu tout seul (génie mécanique
-  prioritaire) ; 22 bases sont interrogées.
+  prioritaire) ; 27 bases sont interrogées (dépôts russophones pour une recherche en cyrillique).
 - « Cherche seulement en génie mécanique : … » (recherche stricte) ; « … sans spécialisation » (recherche générale).
 - « Cherche dans AJOL / SciELO / J-STAGE / КиберЛенинка : … » pour une région précise.
 - « Quelle est la valeur de la constante d'Avogadro ? » (NIST) ; « PIB de la France en 2021 » (Banque mondiale, Eurostat).
 - « Ce DOI a-t-il été rétracté ? » (Crossref).
+
+## Guides de rédaction
+
+- « Trouve des guides pour rédiger un compte rendu de TP » ; « … un mémoire de master, en russe » ; « … un projet
+  de cours de Детали машин ». Le serveur cherche les méthodiques des universités (УрФУ, БНТУ, ТГУ Тольятти), les
+  manuels ouverts et les guides publiés. Les consignes de votre établissement priment toujours.
+- Une fois par mois : « Mets à jour les manuels ouverts » (≈ 2 minutes).
 
 ## Contrôler un document déjà écrit
 

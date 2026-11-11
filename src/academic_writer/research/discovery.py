@@ -219,7 +219,7 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
                   author: str | None = None, year_from: int | None = None, year_to: int | None = None,
                   publication_type: str | None = None, local_records: list | None = None,
                   discipline: str | None = None, auto_domain: str | None = None,
-                  auto_label: str | None = None) -> DiscoveryResult:
+                  auto_label: str | None = None, textbooks: list | None = None) -> DiscoveryResult:
     from academic_writer.research import disciplines
     from academic_writer.research import openscience as osc
     from academic_writer.research import openscience_more as more
@@ -269,6 +269,9 @@ def find_by_topic(query: str, fetch: TextFetcher, kind: str = "all", open_access
         from academic_writer.research import world_sources
 
         plans.extend(world_sources.plans(query, per, kind))
+        from academic_writer.research import libraries_more
+
+        plans.extend(libraries_more.plans(query, per, kind, textbooks))
     if kind == "datasets":
         plans.append(("datacite", osc.datacite_url(query, per), osc.parse_datacite))
         plans.append(("zenodo", osc.zenodo_url(query, per), osc.parse_zenodo))

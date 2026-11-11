@@ -30,6 +30,11 @@ Date : 2026-11-10. Méthode : requête réelle depuis le poste (seuls des termes
 - **Érudit** — OK (test du 2026-11-10 : résultats pour 8/9 thèmes de domaines variés, 38 références) (`PUBLIC_FREE`)
 - **African Journals Online (AJOL)** — OK (test du 2026-11-10 : résultats pour 7/9 thèmes de domaines variés, 31 références) (`PUBLIC_FREE`)
 - **SciELO (Brésil, Chili, Afrique du Sud)** — OK (test du 2026-11-10 : résultats pour 7/9 thèmes de domaines variés, 29 références) (`PUBLIC_FREE`)
+- **БНТУ — Université technique nationale de Biélorussie (en russe)** — OK (test du 2026-11-11 : 716 documents pour « зубчатые колеса », 202 pour le projet de « Детали машин ») ; API DSpace 7 autorisée par robots.txt (`PUBLIC_FREE`)
+- **ТГУ — Université d'État de Tolyatti** — OK (test du 2026-11-11 : 25 documents pour « зубчатые колеса », 296 guides d'oformlenie de ВКР) ; API DSpace 7 autorisée par robots.txt (`PUBLIC_FREE`)
+- **УрФУ — Université fédérale de l'Oural (elar)** — OK (test du 2026-11-11 : 1 706 documents pour « зубчатые колеса ») ; OpenSearch autorisé par robots.txt (`PUBLIC_FREE`)
+- **La Referencia (dépôts d'Amérique latine)** — OK (test du 2026-11-11 : 1,4 s) ; API VuFind publique autorisée par robots.txt (`PUBLIC_FREE`)
+- **Open Textbook Library (Université du Minnesota)** — OK (test du 2026-11-11) ; catalogue par matière en index local (`PUBLIC_FREE`)
 - **КиберЛенинка** — OK (test du 2026-11-10 : résultats pour 5/9 thèmes de domaines variés, 14 références) ; OAI-PMH officiel autorisé par robots.txt ; index local de 10 800 articles de génie mécanique (`PUBLIC_FREE`)
 
 Points notables :

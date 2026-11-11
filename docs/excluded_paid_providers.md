@@ -19,5 +19,10 @@ Retirés le 2026-11-10 après test réel : ils ne sont plus ni interrogés, ni l
 | DART-Europe, RePEc, IMF | pas d'interface automatisée exploitable |
 | eLIBRARY, РГБ, НЭБ, РНБ, ГПНТБ, ФЭМБ | pas d'API publique autorisée ; РГБ et НЭБ injoignables depuis le poste |
 | ВИНИТИ РАН | accès payant |
+| DOAB, OAPEN (livres en libre accès) | HTTP 403 aux requêtes automatisées (2026-11-11 ; jamais contourné) |
+| Shodhganga (Inde), KoreaScience (Corée) | connexion refusée depuis le poste (délai de négociation TLS dépassé) |
+| Garuda (Indonésie), КПИ et ХПИ (Ukraine) | adresse introuvable depuis le poste |
+| ТПУ, БГУ, КФУ, Самарский университет, СФУ, ЮУрГУ | pas d'interface de recherche exploitable ou HTTP 403 |
+| СПбГУ | dépôt joignable mais résultats sans rapport avec l'ingénierie |
 
 Fournisseurs d'IA payants (Anthropic, OpenAI) : présents mais **désactivés par défaut** (mode connecté + clé + consentement écrit du projet) ; jamais obligatoires.

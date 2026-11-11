@@ -2,7 +2,7 @@
 
 # Statut des fournisseurs documentaires
 
-Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_API_KEY : 2, PUBLIC_FREE : 25.
+Vérification réelle le 2026-11-10 depuis le poste de l'utilisateur (mode connecté). Répartition : FREE_API_KEY : 2, PUBLIC_FREE : 30.
 
 Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVERIFIED_EXCLUDED, UNAVAILABLE.
 
@@ -34,4 +34,9 @@ Statuts : PUBLIC_FREE (A), FREE_ACCOUNT / FREE_API_KEY (B), PAID_EXCLUDED, UNVER
 | [Érudit](https://www.erudit.org) | Canada | revues savantes francophones | `PUBLIC_FREE` | aucune (via Crossref) | libre ou différé selon la revue | api | OK (test du 2026-11-10 : résultats pour 8/9 thèmes de domaines variés, 38 références) |
 | [African Journals Online (AJOL)](https://www.ajol.info) | Afrique | ≈ 500 revues africaines | `PUBLIC_FREE` | aucune (via Crossref) | selon la revue (aucun PDF téléchargé : demande du site) | api | OK (test du 2026-11-10 : résultats pour 7/9 thèmes de domaines variés, 31 références) |
 | [SciELO (Brésil, Chili, Afrique du Sud)](https://scielo.org) | Amérique latine / Afrique | revues en libre accès | `PUBLIC_FREE` | aucune (via Crossref) | oui (CC selon la revue) | api | OK (test du 2026-11-10 : résultats pour 7/9 thèmes de domaines variés, 29 références) |
+| [БНТУ — Université technique nationale de Biélorussie (en russe)](https://rep.bntu.by) | Biélorussie | manuels, méthodiques, articles d'ingénierie mécanique | `PUBLIC_FREE` | aucune | sur le dépôt (droits selon le document) | api | OK (test du 2026-11-11 : 716 documents pour « зубчатые колеса », 202 pour le projet de « Детали машин ») ; API DSpace 7 autorisée par robots.txt |
+| [ТГУ — Université d'État de Tolyatti](https://dspace.tltsu.ru) | Russie | manuels de Детали машин, ТММ, guides de ВКР | `PUBLIC_FREE` | aucune | sur le dépôt (droits selon le document) | api | OK (test du 2026-11-11 : 25 documents pour « зубчатые колеса », 296 guides d'oformlenie de ВКР) ; API DSpace 7 autorisée par robots.txt |
+| [УрФУ — Université fédérale de l'Oural (elar)](https://elar.urfu.ru) | Russie | manuels, méthodiques, articles, guides de ВКР | `PUBLIC_FREE` | aucune | sur le dépôt (droits selon le document) | api | OK (test du 2026-11-11 : 1 706 documents pour « зубчатые колеса ») ; OpenSearch autorisé par robots.txt |
+| [La Referencia (dépôts d'Amérique latine)](https://www.lareferencia.info) | Amérique latine | articles, thèses, livres (es, pt) | `PUBLIC_FREE` | aucune | selon le dépôt | api | OK (test du 2026-11-11 : 1,4 s) ; API VuFind publique autorisée par robots.txt |
+| [Open Textbook Library (Université du Minnesota)](https://open.umn.edu/opentextbooks) | États-Unis | manuels universitaires sous licence ouverte : ingénierie, génie mécanique, physique, mathématiques, rédaction | `PUBLIC_FREE` | aucune | oui (licence ouverte, PDF gratuit sur la page) | api | OK (test du 2026-11-11) ; catalogue par matière en index local |
 | [КиберЛенинка](https://cyberleninka.ru/oai) | Russie | articles en libre accès (≈ 4 000 revues) | `PUBLIC_FREE` | aucune (OAI-PMH officiel) | sur le site (PDF interdits aux robots) | api | OK (test du 2026-11-10 : résultats pour 5/9 thèmes de domaines variés, 14 références) ; OAI-PMH officiel autorisé par robots.txt ; index local de 10 800 articles de génie mécanique |
